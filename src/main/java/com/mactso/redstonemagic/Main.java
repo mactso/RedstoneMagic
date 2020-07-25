@@ -3,7 +3,8 @@ package com.mactso.redstonemagic;
 
 
 import com.mactso.redstonemagic.config.MyConfig;
-import com.mactso.redstonemagic.events.GolemDropsEvent;
+import com.mactso.redstonemagic.events.ChunkEvent;
+import com.mactso.redstonemagic.events.MyBreakEvent;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,9 +31,9 @@ public class Main {
 	   // Register ourselves for server and other game events we are interested in
 		@SubscribeEvent 
 		public void preInit (final FMLCommonSetupEvent event) {
-			System.out.println("Poor Golems: Registering Handler");
-			MinecraftForge.EVENT_BUS.register(new GolemDropsEvent());
-			
+			System.out.println("RedStoneMagic: Registering Handler");
+			MinecraftForge.EVENT_BUS.register(new ChunkEvent());
+			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());			
 		}       
 
 		// in 14.4 and later, config file loads when the server starts when the world starts.
