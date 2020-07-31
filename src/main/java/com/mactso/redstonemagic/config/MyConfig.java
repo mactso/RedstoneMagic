@@ -27,9 +27,8 @@ public class MyConfig
 	}
 
 	public static int debugLevel;
-	public static int secondsBetweenIronDrops;
-	public static int MinIronDropAmount;
-	public static int MaxIronDropAmount;
+	public static int maxChunkRedstoneMagic;
+	public static int maxPlayerRedstoneMagic;
 	
 	@SubscribeEvent
 	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent)
@@ -43,9 +42,8 @@ public class MyConfig
 	public static void bakeConfig()
 	{
 		debugLevel = SERVER.debugLevel.get();
-		secondsBetweenIronDrops = SERVER.secondsBetweenIronDrops.get();
-		MinIronDropAmount = SERVER.MinIronDropAmount.get();
-		MaxIronDropAmount = SERVER.MaxIronDropAmount.get();
+		maxChunkRedstoneMagic = SERVER.maxChunkRedstoneMagic.get();
+		maxPlayerRedstoneMagic = SERVER.maxPlayerRedstoneMagic.get();
 
 
 	}
@@ -55,38 +53,30 @@ public class MyConfig
 	{
 
 		public final IntValue debugLevel;
-		public final IntValue secondsBetweenIronDrops;
-		public final IntValue MinIronDropAmount;
-		public final IntValue MaxIronDropAmount;
+		public final IntValue maxChunkRedstoneMagic;
+		public final IntValue maxPlayerRedstoneMagic;
 
 		
 		public Server(ForgeConfigSpec.Builder builder)
 		{
-			builder.push("Poor Golems Control Values");
+			builder.push("Redstone Magic Control Values");
 
 			debugLevel = builder
 					.comment("Debug Level: 0 = Off, 1 = Log, 2 = Chat+Log")
 					.translation(Main.MODID + ".config." + "debugLevel")
 					.defineInRange("debugLevel", () -> 0, 0, 2);
 			
-			secondsBetweenIronDrops = builder
-					.comment("Seconds Between Iron Drops")
-					.translation(Main.MODID + ".config." + "secondsBetweenIronDrops")
-					.defineInRange("secondsBetweenIronDrops", () -> 60, 1, 3600);
+			maxChunkRedstoneMagic = builder
+					.comment("Max Chunk Redstone Magic Amount")
+					.translation(Main.MODID + ".config." + "maxChunkRedstoneMagic")
+					.defineInRange("maxChunkRedstoneMagic", () -> 60, 1, 3600);
 
-			
-			MinIronDropAmount = builder
-					.comment("Min Iron Drop Amount Maximum")
-					.translation(Main.MODID + ".config." + "MinIronDropAmount")
-					.defineInRange("MinIronDropAmount", () -> 1, 0, 1);
-
-			MaxIronDropAmount = builder
-					.comment("Max Iron Drop Amount Maximum")
-					.translation(Main.MODID + ".config." + "MaxIronDropAmount")
-					.defineInRange("MaxIronDropAmount", () -> 9, 0, 32);
-
-			
+			maxPlayerRedstoneMagic = builder
+					.comment("Max Player Redstone Magic Amount")
+					.translation(Main.MODID + ".config." + "maxPlayerRedstoneMagic")
+					.defineInRange("maxPlayerRedstoneMagic", () -> 1, 0, 1);
 			builder.pop();
+			
 		}
 	}
 }

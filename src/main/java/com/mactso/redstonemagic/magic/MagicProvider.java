@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.magic;
 
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.world.chunk.Chunk;
@@ -16,6 +17,10 @@ public class MagicProvider implements ICapabilityProvider, ICapabilitySerializab
 		storage = new MagicStorage(chunk);
 	}
 
+	public MagicProvider (ServerPlayerEntity serverPlayerEntity) {
+		storage = new MagicStorage(serverPlayerEntity);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {

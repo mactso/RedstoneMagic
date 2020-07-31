@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.events;
 
+import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.magic.CapabilityMagic;
 import com.mactso.redstonemagic.magic.IMagicStorage;
 
@@ -8,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.Chunk;
@@ -30,6 +32,22 @@ public class MyBreakEvent {
     		BlockPos pos = event.getPos();
     		IWorld world = event.getWorld();
     		IChunk ichunk = world.getChunk(pos);
+			double randint = world.getRandom().nextDouble();
+			randint *= 3.0;
+			int redstoneMagicIncrease = 3+(int)randint+bonusLevel;
+			
+    		if (event.getPlayer() instanceof ServerPlayerEntity) {
+    			ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) event.getPlayer();
+    			LazyOptional<IMagicStorage> optPlayer = serverPlayerEntity.getCapability(CapabilityMagic.MAGIC);
+    			if (optPlayer.isPresent())
+    			{
+    				IMagicStorage cap = optPlayer.orElseGet(null);
+    				if (cap.getMagicStored()+redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
+    					cap.addMagic(redstoneMagicIncrease);
+    				}
+    				System.out.println("Increase Player Redstone Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");    			
+    			}
+    		}
 //    		java.util.List<ItemStack> list = event.getDrops();
 //    		int redstoneMagicAmount = 0;
 //    		for (ItemStack stack:list) {
@@ -40,15 +58,14 @@ public class MyBreakEvent {
     		if (ichunk instanceof Chunk)
     		{
     			Chunk chunk = (Chunk) ichunk;
-    			LazyOptional<IMagicStorage> opt = chunk.getCapability(CapabilityMagic.MAGIC);
-    			if (opt.isPresent())
+    			LazyOptional<IMagicStorage> optChunk = chunk.getCapability(CapabilityMagic.MAGIC);
+    			if (optChunk.isPresent())
     			{
-    				IMagicStorage cap = opt.orElseGet(null);
-    				double randint = world.getRandom().nextDouble();
-    				randint *= 3.0;
-    				int redstoneMagicIncrease = 3+(int)randint+bonusLevel;
-    				cap.addMagic(redstoneMagicIncrease);
-    				System.out.println("Increase Redstone Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");
+    				IMagicStorage cap = optChunk.orElseGet(null);
+    				if (cap.getMagicStored()+redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
+    					cap.addMagic(redstoneMagicIncrease);
+    				}
+    				System.out.println("Increase Redstone Chunk Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");
     			}
     		}
     	}
