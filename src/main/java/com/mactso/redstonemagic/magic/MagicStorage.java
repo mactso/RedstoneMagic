@@ -5,17 +5,13 @@ import net.minecraft.world.chunk.Chunk;
 
 public class MagicStorage implements IMagicStorage
 {
-	Chunk chunk;
-	ServerPlayerEntity serverPlayerEntity;
+	Object object;
 	public int energy;
 
-	public MagicStorage(Chunk chunk) {
-		this.chunk = chunk;
+	public MagicStorage(Object object) {
+		this.object = object;
 	}
 
-	public MagicStorage(ServerPlayerEntity serverPlayerEntity) {
-		this.serverPlayerEntity = serverPlayerEntity;
-	}
 	
 	@Override
 	public int getMagicStored() {

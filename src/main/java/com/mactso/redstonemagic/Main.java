@@ -5,6 +5,7 @@ package com.mactso.redstonemagic;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.events.ChunkEvent;
 import com.mactso.redstonemagic.events.MyBreakEvent;
+import com.mactso.redstonemagic.events.onServerPlayerEvent;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -51,6 +52,7 @@ public class Main {
 		@SubscribeEvent 
 		public void preInit (final FMLCommonSetupEvent event) {
 			System.out.println("RedStoneMagic: Registering Handler");
+			MinecraftForge.EVENT_BUS.register(new onServerPlayerEvent());
 			MinecraftForge.EVENT_BUS.register(new ChunkEvent());
 			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());			
 		}       

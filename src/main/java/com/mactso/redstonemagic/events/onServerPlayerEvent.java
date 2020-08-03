@@ -12,12 +12,25 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class onServerPlayerEvent {
+// may also need to get onClonePlayer events.
+	public class onServerPlayerEvent {
 
 	 @SubscribeEvent
 	 public void onPlayer(AttachCapabilitiesEvent <ServerPlayerEntity> event)
 	 {
-		 event.addCapability(new ResourceLocation(Main.MODID, "magic_capability"), new MagicProvider(event.getObject()));
+		 ServerPlayerEntity serverPlayerEntity;
+		 if (event.getObject() instanceof ServerPlayerEntity) {
+			 serverPlayerEntity = (ServerPlayerEntity) event.getObject();
+		 } else {
+			 return;
+		 }
+		 LazyOptional<IMagicStorage> optPlayer = serverPlayerEntity.getCapability(CapabilityMagic.MAGIC);
+		 if (optPlayer.isPresent()) {
+			 return;
+		 }
+		 else {
+			 event.addCapability(new ResourceLocation(Main.MODID, "magic_capability"), new MagicProvider(serverPlayerEntity));
+		 }
 		    
 
 
