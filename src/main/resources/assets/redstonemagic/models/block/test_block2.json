@@ -1,0 +1,7 @@
+{
+  "loader": "forge:obj", "model": "redstonemagic:models/block/test_block2.obj", "flip-v": true,
+  "parent": "block/block",
+  "textures": {
+      "particle": "redstonemagic:block/test_block2"
+  }
+}

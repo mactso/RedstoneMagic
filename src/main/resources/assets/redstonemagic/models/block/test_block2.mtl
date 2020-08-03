@@ -1,0 +1,6 @@
+newmtl temp
+illum 0
+map_Kd redstonemagic:block/test_block2
+newmtl temp2
+illum 0
+map_Kd redstonemagic:block/test_block2
