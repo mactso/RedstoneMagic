@@ -48,6 +48,7 @@ public class MyBreakEvent {
     				System.out.println("Increase Player Redstone Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");    			
     			}
     		}
+    		
 //    		java.util.List<ItemStack> list = event.getDrops();
 //    		int redstoneMagicAmount = 0;
 //    		for (ItemStack stack:list) {
