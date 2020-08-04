@@ -31,7 +31,8 @@ public class Main {
 
 			FMLJavaModLoadingContext.get().getModEventBus().register(this);
 	        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER,MyConfig.SERVER_SPEC );
-//			MinecraftForge.EVENT_BUS.register(this);
+
+	        //			MinecraftForge.EVENT_BUS.register(this);
 			
 	    }
 
@@ -46,7 +47,7 @@ public class Main {
 	    {
 	    	ModBlocks.register(event.getRegistry());
 	    }
-
+	    
 	    
 	   // Register ourselves for server and other game events we are interested in
 		@SubscribeEvent 

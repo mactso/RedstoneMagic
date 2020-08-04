@@ -5,6 +5,7 @@ import com.mactso.redstonemagic.magic.CapabilityMagic;
 import com.mactso.redstonemagic.magic.IMagicStorage;
 import com.mactso.redstonemagic.magic.MagicProvider;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.LazyOptional;
@@ -16,7 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 	public class onServerPlayerEvent {
 
 	 @SubscribeEvent
-	 public void onPlayer(AttachCapabilitiesEvent <ServerPlayerEntity> event)
+	 public void onPlayer(AttachCapabilitiesEvent <Entity> event)
 	 {
 		 ServerPlayerEntity serverPlayerEntity;
 		 if (event.getObject() instanceof ServerPlayerEntity) {
