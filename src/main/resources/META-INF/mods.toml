@@ -3,7 +3,7 @@ loaderVersion="[32,)"
 [[mods]]
 modId="redstonemagic"
 version="${file.jarVersion}"
-displayName="Poor Golems Mod"
+displayName="Redstone Magic"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/villagers-respawn"
 updateJSONURL="https://github.com/mactso/PoorGolems/raw/master/update.json"
 logoFile="logo.png"

@@ -20,6 +20,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.item.ModItems;
+import com.mactso.redstonemagic.network.Register;
 
 @Mod("redstonemagic")
 public class Main {
@@ -36,6 +37,12 @@ public class Main {
 			
 	    }
 
+	    @SubscribeEvent
+	    public void setupCommon(final FMLCommonSetupEvent event)
+	    {
+	        Register.initPackets();
+	    }
+	    
 	    @SubscribeEvent
 	    public void onItemsRegistry(final RegistryEvent.Register<Item> event)
 	    {

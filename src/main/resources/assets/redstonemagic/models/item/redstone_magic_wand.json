@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft:block/redstone_magic_wand"
+    "layer0": "redstonemagic:item/redstone_magic_wand"
   }
 }

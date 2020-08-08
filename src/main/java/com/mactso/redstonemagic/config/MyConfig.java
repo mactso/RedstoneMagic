@@ -4,7 +4,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mactso.redstonemagic.Main;
+import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
@@ -44,7 +48,7 @@ public class MyConfig
 		debugLevel = SERVER.debugLevel.get();
 		maxChunkRedstoneMagic = SERVER.maxChunkRedstoneMagic.get();
 		maxPlayerRedstoneMagic = SERVER.maxPlayerRedstoneMagic.get();
-
+		SpellManager.redstoneMagicSpellInit();
 
 	}
 
@@ -78,6 +82,22 @@ public class MyConfig
 			builder.pop();
 			
 		}
+	}
+	
+	// support for any color chattext
+	public static void sendChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
+		StringTextComponent component = new StringTextComponent (chatMessage);
+		component.func_240701_a_(textColor);
+		p.sendMessage(component, p.getUniqueID());
+	}
+	
+	// support for any color, optionally bold text.
+	public static void sendBoldChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
+		StringTextComponent component = new StringTextComponent (chatMessage);
+
+		component.func_240701_a_(TextFormatting.BOLD);
+		component.func_240701_a_(textColor);
+		p.sendMessage(component, p.getUniqueID());
 	}
 }
 

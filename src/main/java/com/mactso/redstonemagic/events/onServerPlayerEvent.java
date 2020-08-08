@@ -27,6 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 		 }
 		 LazyOptional<IMagicStorage> optPlayer = serverPlayerEntity.getCapability(CapabilityMagic.MAGIC);
 		 if (optPlayer.isPresent()) {
+			 System.out.println ("Redstone Magic.OnPlayer(): Player already as capability and this should never happen.");
 			 return;
 		 }
 		 else {
