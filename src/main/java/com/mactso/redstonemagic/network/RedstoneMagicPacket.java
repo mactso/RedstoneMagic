@@ -49,7 +49,7 @@ public class RedstoneMagicPacket
 		{
 			ctx.get().enqueueWork( () -> 
 			{
-				Mobs.process(message.cmd, (LivingEntity) entity, serverPlayer);
+				Mobs.processCastSpells(message.cmd, (LivingEntity) entity, serverPlayer);
 				}
 			);
 		}

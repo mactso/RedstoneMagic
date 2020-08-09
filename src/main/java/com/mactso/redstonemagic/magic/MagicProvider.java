@@ -32,13 +32,13 @@ public class MagicProvider implements ICapabilityProvider, ICapabilitySerializab
 	@Override
 	public CompoundNBT serializeNBT() {
 		CompoundNBT ret = new CompoundNBT();
-		ret.putInt("magicStored", storage.getMagicStored());
+		ret.putInt("magicStored", storage.getManaStored());
 		return ret;
 	}
 
 	@Override
 	public void deserializeNBT(CompoundNBT nbt) {
 		int magic = nbt.getInt("magicStored");
-		storage.addMagic(magic);
+		storage.addMana(magic);
 	}
 }

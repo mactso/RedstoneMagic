@@ -20,7 +20,7 @@ public class CapabilityMagic
             @Override
             public INBT writeNBT(Capability<IMagicStorage> capability, IMagicStorage instance, Direction side)
             {
-                return IntNBT.valueOf(instance.getMagicStored());
+                return IntNBT.valueOf(instance.getManaStored());
             }
 
             @Override
@@ -28,7 +28,7 @@ public class CapabilityMagic
             {
                 if (!(instance instanceof MagicStorage))
                     throw new IllegalArgumentException("Can not deserialize to an instance that isn't the default implementation");
-                ((MagicStorage)instance).energy = ((IntNBT)nbt).getInt();
+                ((MagicStorage)instance).addMana(((IntNBT)nbt).getInt());
             }
         },
         () -> new MagicStorage(null));

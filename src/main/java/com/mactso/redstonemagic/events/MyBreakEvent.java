@@ -42,10 +42,7 @@ public class MyBreakEvent {
     			if (optPlayer.isPresent())
     			{
     				IMagicStorage cap = optPlayer.orElseGet(null);
-    				if (cap.getMagicStored()+redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
-    					cap.addMagic(redstoneMagicIncrease);
-    				}
-    				System.out.println("Increase Player Redstone Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");    			
+   					cap.addMana(redstoneMagicIncrease);  // checks for max capacity internally based on object type.
     			}
     		}
     		
@@ -63,10 +60,10 @@ public class MyBreakEvent {
     			if (optChunk.isPresent())
     			{
     				IMagicStorage cap = optChunk.orElseGet(null);
-    				if (cap.getMagicStored()+redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
-    					cap.addMagic(redstoneMagicIncrease);
+    				if (cap.getManaStored()+redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
+    					cap.addMana(redstoneMagicIncrease);
     				}
-    				System.out.println("Increase Redstone Chunk Magic by " + redstoneMagicIncrease + " to " + cap.getMagicStored() + ".");
+    				System.out.println("Increase Redstone Chunk Magic by " + redstoneMagicIncrease + " to " + cap.getManaStored() + ".");
     			}
     		}
     	}

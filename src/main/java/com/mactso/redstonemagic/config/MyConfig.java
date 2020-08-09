@@ -7,6 +7,7 @@ import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -78,7 +79,7 @@ public class MyConfig
 			maxPlayerRedstoneMagic = builder
 					.comment("Max Player Redstone Magic Amount")
 					.translation(Main.MODID + ".config." + "maxPlayerRedstoneMagic")
-					.defineInRange("maxPlayerRedstoneMagic", () -> 1, 0, 1);
+					.defineInRange("maxPlayerRedstoneMagic", () -> 255, 0, 511);
 			builder.pop();
 			
 		}
@@ -87,7 +88,7 @@ public class MyConfig
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
 		StringTextComponent component = new StringTextComponent (chatMessage);
-		component.func_240701_a_(textColor);
+//		component.getStyle().setColor(textColor);
 		p.sendMessage(component, p.getUniqueID());
 	}
 	
@@ -95,8 +96,8 @@ public class MyConfig
 	public static void sendBoldChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
 		StringTextComponent component = new StringTextComponent (chatMessage);
 
-		component.func_240701_a_(TextFormatting.BOLD);
-		component.func_240701_a_(textColor);
+		component.getStyle().setBold(true);
+//		component.getStyle().setColor(textColor.getColor());
 		p.sendMessage(component, p.getUniqueID());
 	}
 }
