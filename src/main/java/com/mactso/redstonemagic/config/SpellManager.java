@@ -20,6 +20,7 @@ public class SpellManager {
 		RedstoneMagicSpellItem s = redstoneMagicSpellItemHashtable.get(spellKey);
 
 		return s;
+		
 	}
 
 
