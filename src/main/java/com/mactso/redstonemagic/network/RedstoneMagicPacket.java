@@ -16,24 +16,29 @@ public class RedstoneMagicPacket
 {
 	private int cmd;
 	private int id;
+	private int timeLeft;
 	
-	public RedstoneMagicPacket(int cmd, int id)
+	public RedstoneMagicPacket(int cmd, int id, int timeLeft)
 	{
 		this.cmd = cmd;
 		this.id = id;
+		this.timeLeft = timeLeft;
 	}
 	
 	public void encode(PacketBuffer buf)
 	{
 		buf.writeByte(cmd);
 		buf.writeVarInt(id);
+		buf.writeVarInt(timeLeft);
+
 	}
 
 	public static RedstoneMagicPacket readPacketData(PacketBuffer buf)
 	{
 		int cmd = buf.readByte();
 		int id = buf.readVarInt();
-		return new RedstoneMagicPacket(cmd, id);
+		int timeLeft = buf.readVarInt();
+		return new RedstoneMagicPacket(cmd, id, timeLeft);
 	}
 
 	public static void writePacketData(RedstoneMagicPacket msg, PacketBuffer buf)
@@ -44,15 +49,13 @@ public class RedstoneMagicPacket
 	public static void processRedstoneMagicPacket(RedstoneMagicPacket message, Supplier<NetworkEvent.Context> ctx)
 	{
 		ServerPlayerEntity serverPlayer = ctx.get().getSender();
-		Entity entity = serverPlayer.world.getEntityByID(message.id);
-		if (entity instanceof LivingEntity)
-		{
-			ctx.get().enqueueWork( () -> 
+		Entity targetEntity = serverPlayer.world.getEntityByID(message.id);
+
+		ctx.get().enqueueWork( () -> 
 			{
-				Mobs.processCastSpells(message.cmd, (LivingEntity) entity, serverPlayer);
-				}
-			);
-		}
+				Mobs.processCastSpells(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
+			}
+		);
 		ctx.get().setPacketHandled(true);
 	}
 }

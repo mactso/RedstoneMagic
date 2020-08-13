@@ -35,7 +35,7 @@ public class MyBreakEvent {
 			double randint = world.getRandom().nextDouble();
 			randint *= 3.0;
 			int redstoneMagicIncrease = 3+(int)randint+bonusLevel;
-			
+
     		if (event.getPlayer() instanceof ServerPlayerEntity) {
     			ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) event.getPlayer();
     			LazyOptional<IMagicStorage> optPlayer = serverPlayerEntity.getCapability(CapabilityMagic.MAGIC);

@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.BossInfo;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
@@ -85,19 +86,34 @@ public class MyConfig
 		}
 	}
 	
+
+	// support for debug messages
+	public static void dbgPrintln(String dbgMsg) {
+		if (debugLevel > 0) {
+			System.out.println (dbgMsg);
+		}
+	}
+	public static void dbgPrintln(PlayerEntity p, String dbgMsg) {
+		if (debugLevel > 1) {
+			sendChat (p, dbgMsg, Color.func_240744_a_(TextFormatting.YELLOW));
+		}
+	}
+
+
+	
 	// support for any color chattext
-	public static void sendChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
+	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {
 		StringTextComponent component = new StringTextComponent (chatMessage);
-//		component.getStyle().setColor(textColor);
+		component.getStyle().setColor(color);
 		p.sendMessage(component, p.getUniqueID());
 	}
 	
 	// support for any color, optionally bold text.
-	public static void sendBoldChat(PlayerEntity p, String chatMessage, TextFormatting textColor) {
+	public static void sendBoldChat(PlayerEntity p, String chatMessage, Color color) {
 		StringTextComponent component = new StringTextComponent (chatMessage);
 
 		component.getStyle().setBold(true);
-//		component.getStyle().setColor(textColor.getColor());
+		component.getStyle().setColor(color);
 		p.sendMessage(component, p.getUniqueID());
 	}
 }

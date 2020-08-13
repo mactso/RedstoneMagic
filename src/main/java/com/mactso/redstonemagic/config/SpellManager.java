@@ -11,13 +11,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class SpellManager {
 	public static Hashtable<String, RedstoneMagicSpellItem> redstoneMagicSpellItemHashtable = new Hashtable<>();
 	
-	public static RedstoneMagicSpellItem getRedstoneMagicSpellItem(String spellKey) {
+	public static RedstoneMagicSpellItem getRedstoneMagicSpellItem(String spellNumberKey) {
 
 		if (redstoneMagicSpellItemHashtable.isEmpty()) {
 			redstoneMagicSpellInit();
 		}
 
-		RedstoneMagicSpellItem s = redstoneMagicSpellItemHashtable.get(spellKey);
+		RedstoneMagicSpellItem s = redstoneMagicSpellItemHashtable.get(spellNumberKey);
 
 		return s;
 		
@@ -25,16 +25,16 @@ public class SpellManager {
 
 
 	public static void redstoneMagicSpellInit() {
-		// Key, Translation Key, English Comment, Cost Code, Max Power/Duration, Max Damage
+		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
 		final String[] defaultSpellValues = 
-				{"1,RM.DMG,Red Bolt Damage,C2,4,6;",
-				 "2,RM.HEAL,Crimson Heal,C2,4,6;",
-				 "3,RM.DOT,Blood Loss DoT,C1,8,3",
-				 "4,RM.TWSP,Cardinal Call WorldSpawn,CDis,1,1;",
-				 "5,RM.THOM,Ruby Slippers Home,CDis,1,1;",
-				 "6,RM.RESI,Chromatic Protection Resistance,C1,1,4;",
-				 "7,RM.RCRS,Blood Clean Remove BadEffects,C4,1,1;",
-				 "8,RM.SDOT,Blood Snare Slow & DoT,C3,4,2"
+				{"0,RM.DMG,Red Bolt Damage,1,4,6,T",
+				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
+				 "2,RM.DOT,Blood Loss DoT,1,8,3,T",
+				 "3,RM.SDOT,Blood Snare Slow & DoT,3,4,2,T",
+				 "4,RM.RESI,Chromatic Protection Resistance,1,1,4,B",
+				 "5,RM.TELE,Cardinal Call W-Up- Bed-Down,1,1,1,S",
+				 "6,RM.BUFF,Multi-Buff-CDis,4,1,4,S",
+				 "7,RM.RCRS,Blood Clean Remove BadEffects,4,1,1,B"
 				 };
 		
 		List <String> dTL6464 = new ArrayList<>();
@@ -44,19 +44,22 @@ public class SpellManager {
 
 
 		defaultMobBreakPercentageValues = dTL6464.toArray(new String[i]);
-		
+		System.out.println("reinit spell manager");		
 		i = 0;
 		redstoneMagicSpellItemHashtable.clear();
 		while (i < defaultSpellValues.length) {
 			try {
+				System.out.println(defaultSpellValues[i]);
 				StringTokenizer st = new StringTokenizer(defaultSpellValues[i], ",");
 				String spellKey = st.nextToken();
 				String spellTranslationKey = st.nextToken();
 				String spellComment = st.nextToken();
-				String spellCostCode = st.nextToken();
-				String spellMaxPower = st.nextToken();
-
-				redstoneMagicSpellItemHashtable.put(spellKey, new RedstoneMagicSpellItem(spellTranslationKey, spellComment, spellCostCode, spellMaxPower));
+				int spellBaseCost = Integer.parseInt(st.nextToken());
+				int spellMinPower = Integer.parseInt(st.nextToken());
+				int spellMaxPower = Integer.parseInt(st.nextToken());
+				String spellTargetType = st.nextToken();
+				
+				redstoneMagicSpellItemHashtable.put(spellKey, new RedstoneMagicSpellItem(spellTranslationKey, spellComment, spellBaseCost, spellMinPower, spellMaxPower, spellTargetType));
 			} catch (Exception e) {
 				System.out.println("RedstoneMagic :  Error on Spell: " + defaultMobBreakPercentageValues[i]);
 			}
@@ -68,36 +71,50 @@ public class SpellManager {
 	public static class RedstoneMagicSpellItem {
 		String spellTranslationKey;
 		String spellComment;
-		String spellCostCode;
-		String spellMaxPower;
+		int spellBaseCost;
+		int spellMinPower;
+		int spellMaxPower;
+		String spellTargetType;
 
 		public RedstoneMagicSpellItem(
 				String spellTranslationKey,
 				String spellComment,
-				String spellCostCode,
-				String spellMaxPower
+				int spellBaseCost,
+				int spellMinPower,
+				int spellMaxPower,
+				String spellTargetType
 				) 
 		{
 			this.spellTranslationKey = spellTranslationKey;
 			this.spellComment  		 = spellComment;
-			this.spellCostCode 	 	 = spellCostCode;
+			this.spellBaseCost 	 	 = spellBaseCost;
+			this.spellMinPower 		 = spellMinPower;
 			this.spellMaxPower 		 = spellMaxPower;
+			this.spellTargetType     = spellTargetType;
 		}
 
 		public String getSpellTranslationKey() {
 			return spellTranslationKey;
 		}
 		
-		public String getSpellCostCode() {
-			return spellCostCode;
+		public int getSpellBaseCost() {
+			return spellBaseCost;
 		}
-		
-		public String getSpellMaxPower() {
+	
+
+		public int getSpellMinPower() {
+			return spellMaxPower;
+		}
+		public int getSpellMaxPower() {
 			return spellMaxPower;
 		}
 		
 		public String getSpellComment() {
 			return spellComment;
+		}
+
+		public String getSpellTargetType() {
+			return spellTargetType;
 		}
 
 	}
