@@ -15,15 +15,15 @@ public class ModItems {
 
 	public static final Item REDSTONE_MAGIC_PYLON_MINOR 
 	 = new BlockItem(ModBlocks.REDSTONE_MAGIC_PYLON_MINOR, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_magic_pylon_minor");
-	public static final Item REDSTONE_MAGIC_WAND	
-	 = new RedstoneMagicWand(new Properties().group(ItemGroup.REDSTONE).maxDamage(484)).setRegistryName("redstone_magic_wand");
+	public static final Item REDSTONE_FOCUS	
+	 = new RedstoneFocus(new Properties().group(ItemGroup.REDSTONE).maxDamage(484)).setRegistryName("redstone_focus");
 
 //	public static final Item REDSTONE_POWER_BLOCK = new BlockItem(ModBlocks.REDSTONE_POWER_BLOCK, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_power_block");
 
 	public static void register(IForgeRegistry<Item> forgeRegistry)
 	{
 		forgeRegistry.register(REDSTONE_MAGIC_PYLON_MINOR );
-		forgeRegistry.register(REDSTONE_MAGIC_WAND );
+		forgeRegistry.register(REDSTONE_FOCUS );
 	}
 	
 }

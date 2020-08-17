@@ -1,4 +1,4 @@
-package com.mactso.redstonemagic.spelltargets;
+package com.mactso.redstonemagic.spells;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +23,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -33,6 +34,7 @@ import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
@@ -43,6 +45,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
@@ -54,7 +57,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import com.mactso.redstonemagic.magic.CapabilityMagic;
 import com.mactso.redstonemagic.magic.IMagicStorage;
 
-public class Mobs {
+public class CastSpells {
 //	private static final Logger LOGGER = LogManager.getLogger();
 ////	public static boolean move_state = true;
 ////	public static boolean look_state = true;
@@ -66,7 +69,7 @@ public class Mobs {
 	static final int FULL_INTENSITY = 80;
 
 	// server dist
-	public static void processCastSpells(int spellNumber, LivingEntity entity, ServerPlayerEntity serverPlayer,
+	public static void processSpellForServer(int spellNumber, LivingEntity entity, ServerPlayerEntity serverPlayer,
 			int costFactor) {
 		String spellKey = Integer.toString(spellNumber);
 		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(spellKey);
@@ -94,12 +97,11 @@ public class Mobs {
 		String spellTranslationKey = spell.getSpellTranslationKey();
 		if (spellTargetType.equals(("T"))) {
 			serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(),
-					SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.4f, 0.3f);
+					SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.3f);
 		}
 		if (spellTargetType.equals("B")) {
 			serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(),
-					SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.AMBIENT, 0.4f, 0.3f);
-
+					SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.AMBIENT, 0.6f, 0.3f);
 		}
 		if (spellTargetType.equals("S")) {
 			serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(),
@@ -107,23 +109,24 @@ public class Mobs {
 		}
 
 		LazyOptional<IMagicStorage> optPlayer = serverPlayer.getCapability(CapabilityMagic.MAGIC);
-		IMagicStorage cap = optPlayer.orElseGet(null);
+		IMagicStorage playerManaStorage = optPlayer.orElseGet(null);
 		if (optPlayer.isPresent()) {
 
-			int currentMana = cap.getManaStored(); // checks for max capacity internally based on object type.
+			int currentMana = playerManaStorage.getManaStored(); // checks for max capacity internally based on object type.
 			if (spellCost > currentMana) {
 				serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(), SoundEvents.BLOCK_BASALT_FALL,
 						SoundCategory.AMBIENT, 0.5f, 0.8f);
 				MyConfig.sendChat(serverPlayer, "You don't have enough mana to finish the spell.",
 						Color.func_240744_a_(TextFormatting.RED));
+				return false;
 			}
 		} else {
 			return false;
 		}
 
 		if (castSpellAtTarget(spell, targetEntity, spellCost, serverPlayer)) {
-			cap.useMana(spellCost);
-			MyConfig.sendChat(serverPlayer, "You have " + cap.getManaStored() + "mana left.",
+			playerManaStorage.useMana(spellCost);
+			MyConfig.sendChat(serverPlayer, "You have " + playerManaStorage.getManaStored() + "mana left.",
 					Color.func_240744_a_(TextFormatting.RED));
 		}
 
@@ -174,6 +177,8 @@ public class Mobs {
 			if (damage < 2) {
 				damage = 2 * spellCost;
 			}
+//			spawnDamageParticles(targetEntity, spellCost, ParticleTypes.DAMAGE_INDICATOR); 
+
 			return (targetEntity.attackEntityFrom(myDamageSource, damage));
 		}
 
@@ -299,7 +304,8 @@ public class Mobs {
 			serverWorld.getChunkProvider().registerTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverTargetPlayer.getEntityId());
 			targetEntity.world.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_PORTAL_TRAVEL,
 					SoundCategory.AMBIENT, soundVolume, pitch);
-			targetEntity.setLocationAndAngles((double)wX, (double)wY, (double)wZ, headYaw, headPitch); 
+			serverTargetPlayer.teleport(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
+//			targetEntity.setLocationAndAngles((double)wX, (double)wY, (double)wZ, headYaw, headPitch); 
 			return true;
 		}		
 		return false;

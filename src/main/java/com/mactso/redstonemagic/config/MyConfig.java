@@ -25,6 +25,8 @@ public class MyConfig
 	private static final Logger LOGGER = LogManager.getLogger();
 	public static final Server SERVER;
 	public static final ForgeConfigSpec SERVER_SPEC;
+	public static long castTime = 0;
+	
 	static
 	{
 		final Pair<Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Server::new);
@@ -75,7 +77,7 @@ public class MyConfig
 			maxChunkRedstoneMagic = builder
 					.comment("Max Chunk Redstone Magic Amount")
 					.translation(Main.MODID + ".config." + "maxChunkRedstoneMagic")
-					.defineInRange("maxChunkRedstoneMagic", () -> 60, 1, 3600);
+					.defineInRange("maxChunkRedstoneMagic", () -> 256000, 1, 256000);
 
 			maxPlayerRedstoneMagic = builder
 					.comment("Max Player Redstone Magic Amount")
@@ -85,8 +87,15 @@ public class MyConfig
 			
 		}
 	}
-	
 
+	public static  long getCastTime () {
+		return castTime;
+	}
+
+	public static void setCastTime (long newCastTime) {
+		castTime = newCastTime;
+	}
+	
 	// support for debug messages
 	public static void dbgPrintln(String dbgMsg) {
 		if (debugLevel > 0) {
@@ -114,6 +123,7 @@ public class MyConfig
 
 		component.getStyle().setBold(true);
 		component.getStyle().setColor(color);
+		
 		p.sendMessage(component, p.getUniqueID());
 	}
 }

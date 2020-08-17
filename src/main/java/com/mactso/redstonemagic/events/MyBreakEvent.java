@@ -55,6 +55,7 @@ public class MyBreakEvent {
 //    		}
     		if (ichunk instanceof Chunk)
     		{
+    			int debug=6;
     			Chunk chunk = (Chunk) ichunk;
     			LazyOptional<IMagicStorage> optChunk = chunk.getCapability(CapabilityMagic.MAGIC);
     			if (optChunk.isPresent())

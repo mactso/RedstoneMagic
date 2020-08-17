@@ -2,7 +2,7 @@ package com.mactso.redstonemagic.network;
 
 import java.util.function.Supplier;
 
-import com.mactso.redstonemagic.spelltargets.Mobs;
+import com.mactso.redstonemagic.spells.CastSpells;
 
 //import com.lupicus.bk.Mobs;
 
@@ -53,7 +53,7 @@ public class RedstoneMagicPacket
 
 		ctx.get().enqueueWork( () -> 
 			{
-				Mobs.processCastSpells(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
+				CastSpells.processSpellForServer(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
 			}
 		);
 		ctx.get().setPacketHandled(true);
