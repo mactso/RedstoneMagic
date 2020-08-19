@@ -2,12 +2,12 @@
   "parent": "minecraft:story/root",
 	"display": {
 		"title": {
-			"text": "An Ancient Power",
-			"color": "green"
+			"text": "Use redstone and iron to craft a redstone focus to cast spells",
+			"color": "red"
 		},
 		"description": {
-			"text": "Craft a Redstone Focus to make Spells",
-			"color": "green"
+			"text": "An Ancient Power",
+			"color": "red"
 		},
 		"icon": {
 			"item": "minecraft:redstone",

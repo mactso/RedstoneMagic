@@ -9,7 +9,9 @@ import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.spells.CastSpells;
+import com.mojang.serialization.Codec;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -22,7 +24,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.IParticleData.IDeserializer;
+import net.minecraft.particles.ParticleType;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -39,11 +44,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.client.event.sound.SoundEvent;
 import net.minecraft.util.math.RayTraceResult.Type;
-
+import net.minecraft.particles.BasicParticleType;
 public class RedstoneFocus extends ShieldItem {
 	
 	public static int NBTNumberField = 99;
 	private final int damageReduceAmount;
+
+	private static final IParticleData HARM_PARTICLE_DATA = new BlockParticleData(ParticleTypes.BLOCK, Blocks.BRICKS.getDefaultState()),
+	HEAL_PARTICLE_DATA = new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_CONCRETE.getDefaultState());
 
 	@Override
 	public boolean isShield(ItemStack stack, LivingEntity entity) {
@@ -129,10 +137,12 @@ public class RedstoneFocus extends ShieldItem {
         		} else {
  // TODO maybe can/should do this on the server...       			
         			if (spell.getSpellTranslationKey() == "RM.DMG"){
-        				spawnDamageParticles(targetEntity, costFactor, ParticleTypes.DAMAGE_INDICATOR); 
+        				spawnDamageParticles(targetEntity, costFactor, HARM_PARTICLE_DATA); 
         			}
         			if ((spell.getSpellTranslationKey() == "RM.HEAL") && !(targetEntity.isLiving())) {
-        				spawnDamageParticles(targetEntity, costFactor, ParticleTypes.DAMAGE_INDICATOR); 
+        				spawnDamageParticles(targetEntity, costFactor, HEAL_PARTICLE_DATA); 
+        			} else {
+        				spawnDamageParticles(targetEntity, costFactor, HARM_PARTICLE_DATA);
         			}
         				
                 	Network.sendToServer(new RedstoneMagicPacket(spellNumber, targetEntity.getEntityId(), costFactor ));
@@ -214,17 +224,25 @@ public class RedstoneFocus extends ShieldItem {
     }
 	
     public void spawnDamageParticles(Entity entity, int particleCount, IParticleData particleType) {
-        if (entity.world.isRemote) {
-           for(int i = 0; i < particleCount; ++i) {
-              double d0 = entity.world.rand.nextGaussian() * 0.02D;
-              double d1 = entity.world.rand.nextGaussian() * 0.02D;
-              double d2 = entity.world.rand.nextGaussian() * 0.02D;
-              double d3 = 10.0D;
-              entity.world.addParticle(particleType, entity.getPosXWidth(1.0D) - d0 * 10.0D, entity.getPosYRandom() - d1 * 10.0D, entity.getPosZRandom(1.0D) - d2 * 10.0D, d0, d1, d2);
-           }
-        } else {
-//           this.world.setEntityState(this, (byte)20); what does this do?
-        }
-
-     }
+    	  if (!(entity.world.isRemote())) {
+              for(int i = 0; i < particleCount; ++i) {
+            	  double posX = entity.getPosX();
+            	  double posY = entity.getPosY();
+            	  double posZ = entity.getPosZ();
+                  double motionX = entity.world.rand.nextGaussian() * 0.02D;
+                  double motionY = entity.world.rand.nextGaussian() * 0.02D;
+                  double motionZ = entity.world.rand.nextGaussian() * 0.02D;
+                  double PosXWidth = entity.getPosXWidth(1.0D);
+                  double PosYWidth = PosXWidth;
+                  double PosZWidth = entity.getPosZWidth(1.0D);
+                      entity.world.addParticle(
+                            particleType, 
+                            posX + 0.5D + motionX, 
+                            posY + 0.5D + motionY, 
+                            posZ + 0.5D + motionZ, 
+                            motionX, motionY, motionZ);
+              }
+         }
+    		  
+    }
 }

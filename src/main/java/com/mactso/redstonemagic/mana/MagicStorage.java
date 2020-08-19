@@ -1,4 +1,4 @@
-package com.mactso.redstonemagic.magic;
+package com.mactso.redstonemagic.mana;
 
 import com.mactso.redstonemagic.config.MyConfig;
 

@@ -1,9 +1,9 @@
 package com.mactso.redstonemagic.events;
 
 import com.mactso.redstonemagic.Main;
-import com.mactso.redstonemagic.magic.CapabilityMagic;
-import com.mactso.redstonemagic.magic.IMagicStorage;
-import com.mactso.redstonemagic.magic.MagicProvider;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
+import com.mactso.redstonemagic.mana.IMagicStorage;
+import com.mactso.redstonemagic.mana.MagicProvider;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;

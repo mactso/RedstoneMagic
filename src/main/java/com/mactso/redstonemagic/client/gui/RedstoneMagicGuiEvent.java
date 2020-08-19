@@ -12,8 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 
 import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.MyConfig;
-import com.mactso.redstonemagic.magic.CapabilityMagic;
-import com.mactso.redstonemagic.magic.IMagicStorage;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
+import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 

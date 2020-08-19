@@ -13,8 +13,8 @@ import org.apache.logging.log4j.Logger;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
-import com.mactso.redstonemagic.magic.CapabilityMagic;
-import com.mactso.redstonemagic.magic.IMagicStorage;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
+import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 
@@ -34,6 +34,7 @@ import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
+import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
@@ -54,8 +55,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.TicketType;
 import net.minecraftforge.common.util.LazyOptional;
-import com.mactso.redstonemagic.magic.CapabilityMagic;
-import com.mactso.redstonemagic.magic.IMagicStorage;
 
 public class CastSpells {
 //	private static final Logger LOGGER = LogManager.getLogger();
@@ -177,7 +176,7 @@ public class CastSpells {
 			if (damage < 2) {
 				damage = 2 * spellCost;
 			}
-//			spawnDamageParticles(targetEntity, spellCost, ParticleTypes.DAMAGE_INDICATOR); 
+			serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.DAMAGE_INDICATOR); 
 
 			return (targetEntity.attackEntityFrom(myDamageSource, damage));
 		}
@@ -200,6 +199,8 @@ public class CastSpells {
 			targetEntity.attackEntityFrom(myDamageSource, 1);
 			targetEntity
 					.addPotionEffect(new EffectInstance(Effects.POISON, secondsDuration, effectIntensity, true, true));
+			serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.ANGRY_VILLAGER); 
+
 			return true;
 		}
 
@@ -216,8 +217,9 @@ public class CastSpells {
 				}
 			}
 			targetEntity.attackEntityFrom(myDamageSource, 1);
-			targetEntity
-					.addPotionEffect(new EffectInstance(Effects.POISON, secondsDuration, effectIntensity, true, true));
+			targetEntity.addPotionEffect(new EffectInstance(Effects.POISON, secondsDuration, effectIntensity, true, true));
+			serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.ANGRY_VILLAGER); 
+
 			ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
 			if (ei != null) {
 				if ((ei.getDuration() < 11) || (ei.getAmplifier() <= effectIntensity)) {
@@ -226,6 +228,8 @@ public class CastSpells {
 			}
 			targetEntity.addPotionEffect(
 					new EffectInstance(Effects.SLOWNESS, secondsDuration, effectIntensity, true, true));
+			serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.SMOKE); 
+
 			return true;
 		}
 
@@ -235,10 +239,12 @@ public class CastSpells {
 				damage = 2 * spellCost;
 			}
 			if (targetEntity.isEntityUndead()) {
+				serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.DAMAGE_INDICATOR); 
 				return (targetEntity.attackEntityFrom(myDamageSource, damage));
 			}
 			if (targetEntity.isAlive()) {
 				targetEntity.heal((float) damage);
+				serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.HEART); 
 				return true;
 			}
 			return false;
@@ -256,6 +262,8 @@ public class CastSpells {
 			}
 			targetEntity
 					.addPotionEffect(new EffectInstance(Effects.RESISTANCE, FOUR_SECONDS * spellCost, 1, true, true));
+			serverSpawnDamageParticles(targetEntity, spellCost, ParticleTypes.WHITE_ASH); 
+
 			return true;
 		}
 
@@ -310,4 +318,26 @@ public class CastSpells {
 		}		
 		return false;
 	}
+    public static void serverSpawnDamageParticles(Entity entity, int particleCount, IParticleData particleType) {
+  	  if (!(entity.world.isRemote())) {
+            for(int i = 0; i < particleCount; ++i) {
+          	  double posX = entity.getPosX();
+          	  double posY = entity.getPosY();
+          	  double posZ = entity.getPosZ();
+                double motionX = entity.world.rand.nextGaussian() * 0.02D;
+                double motionY = entity.world.rand.nextGaussian() * 0.02D;
+                double motionZ = entity.world.rand.nextGaussian() * 0.02D;
+                double PosXWidth = entity.getPosXWidth(1.0D);
+                double PosYWidth = PosXWidth;
+                double PosZWidth = entity.getPosZWidth(1.0D);
+                    entity.world.addParticle(
+                          particleType, 
+                          posX + 0.5D + motionX, 
+                          posY + 0.5D + motionY, 
+                          posZ + 0.5D + motionZ, 
+                          motionX, motionY, motionZ);
+            }
+       }
+  		  
+  }
 }

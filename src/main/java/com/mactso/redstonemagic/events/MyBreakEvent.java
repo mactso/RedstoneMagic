@@ -1,8 +1,8 @@
 package com.mactso.redstonemagic.events;
 
 import com.mactso.redstonemagic.config.MyConfig;
-import com.mactso.redstonemagic.magic.CapabilityMagic;
-import com.mactso.redstonemagic.magic.IMagicStorage;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
+import com.mactso.redstonemagic.mana.IMagicStorage;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
