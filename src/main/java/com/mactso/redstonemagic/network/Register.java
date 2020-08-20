@@ -8,5 +8,9 @@ public class Register
 	    		RedstoneMagicPacket::writePacketData,
 	    		RedstoneMagicPacket::readPacketData,
 	    		RedstoneMagicPacket::processRedstoneMagicPacket);
+	    Network.registerMessage(SyncClientManaPacket.class,
+	    		SyncClientManaPacket::writePacketData,
+	    		SyncClientManaPacket::readPacketData,
+	    		SyncClientManaPacket::processSyncClientManaPacket);
 	}
 }

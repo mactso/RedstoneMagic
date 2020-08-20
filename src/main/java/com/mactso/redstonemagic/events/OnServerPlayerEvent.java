@@ -14,7 +14,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 // may also need to get onClonePlayer events.
-	public class onServerPlayerEvent {
+	public class OnServerPlayerEvent {
 
 	 @SubscribeEvent
 	 public void onPlayer(AttachCapabilitiesEvent <Entity> event)

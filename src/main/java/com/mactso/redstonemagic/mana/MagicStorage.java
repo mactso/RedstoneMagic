@@ -21,46 +21,39 @@ public class MagicStorage implements IMagicStorage
 	}
 
 	@Override
+	public void setMana(int amount) {
+		manaStored = amount;
+	}
+	
+	@Override
 	public void addMana(int amount) {
 		int max = 0;
 		String objectType = "";
+		
+		this.manaStored += amount;
 		if (object instanceof ServerPlayerEntity) {
 			max = MyConfig.maxPlayerRedstoneMagic;
-			if (MyConfig.debugLevel > 1 ) {
-				objectType = "Player";
-				System.out.println("Add " + amount + " mana to " + objectType + ".");    			
-			}
+			objectType = "Player";
 		} else 
 		if (object instanceof Chunk ){
 			max = MyConfig.maxChunkRedstoneMagic;
-			if (MyConfig.debugLevel > 1 ) {
-				objectType = "Chunk";
-				System.out.println("Add " + amount + " mana to " + objectType + ".");    			
-			}
+			objectType = "Chunk";
 		}
-		if ( this.manaStored + amount  < max ) {
-			this.manaStored += amount;
-			if (MyConfig.debugLevel > 1 ) {
-				System.out.println(objectType + " mana increased by " + amount + " to " + manaStored + ".");    			
-			}
-		} else {
-			manaStored = max;
-			if (MyConfig.debugLevel > 1 ) {
-				System.out.println(objectType + " mana increased by " + amount + " to " + manaStored + ".");    			
-			}
+
+		if (this.manaStored > max) {
+			this.manaStored = max;
 		}
+		MyConfig.dbgPrintln(objectType + " mana increased by " + amount + " to " + manaStored + ".");    			
 	}
 	
 	@Override
 	public boolean useMana (int amount) {
 		if (amount<= manaStored) {
 			manaStored = manaStored - amount;
-			System.out.println("Spell cast for "+amount+"mana, leaving "+manaStored+" mana..");    
+			MyConfig.dbgPrintln("Spell cast for "+amount+"mana, leaving "+manaStored+" mana..");    
 			return true;
 		}
-		if (MyConfig.debugLevel > 1 ) {
-			System.out.println(manaStored + " Not enough mana to cast spell.");    			
-		}
+		MyConfig.dbgPrintln(manaStored + " Not enough mana to cast spell.");    			
 		return false;
 	}
 

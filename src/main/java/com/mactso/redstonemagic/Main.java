@@ -3,9 +3,7 @@ package com.mactso.redstonemagic;
 
 
 import com.mactso.redstonemagic.config.MyConfig;
-import com.mactso.redstonemagic.events.ChunkEvent;
-import com.mactso.redstonemagic.events.MyBreakEvent;
-import com.mactso.redstonemagic.events.onServerPlayerEvent;
+import com.mactso.redstonemagic.events.*;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -75,9 +73,11 @@ public class Main {
 		@SubscribeEvent 
 		public void preInit (final FMLCommonSetupEvent event) {
 			System.out.println("RedStoneMagic: Registering Handler");
-			MinecraftForge.EVENT_BUS.register(new onServerPlayerEvent());
+			MinecraftForge.EVENT_BUS.register(new OnServerPlayerEvent());
 			MinecraftForge.EVENT_BUS.register(new ChunkEvent());
-			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());			
+			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());
+			MinecraftForge.EVENT_BUS.register(new OnPlayerCloned());
+			MinecraftForge.EVENT_BUS.register(new OnPlayerLoggedIn());
 		}       
 
 //		@SubscribeEvent

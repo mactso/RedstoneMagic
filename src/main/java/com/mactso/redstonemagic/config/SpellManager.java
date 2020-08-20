@@ -27,7 +27,7 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
 		final String[] defaultSpellValues = 
-				{"0,RM.DMG,Red Bolt Damage,1,4,6,T",
+				{"0,RM.NUKE,Red Bolt Damage,1,4,6,T",
 				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
 				 "2,RM.DOT,Blood Loss DoT,1,8,3,T",
 				 "3,RM.SDOT,Blood Snare Slow & DoT,3,4,2,T",

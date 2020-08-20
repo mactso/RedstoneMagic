@@ -15,5 +15,4 @@ public class ChunkEvent {
     {
     	event.addCapability(new ResourceLocation(Main.MODID, "magic_capability"), new MagicProvider(event.getObject()));
     }
-
 }

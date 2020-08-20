@@ -37,6 +37,8 @@ public class MyConfig
 	public static int debugLevel;
 	public static int maxChunkRedstoneMagic;
 	public static int maxPlayerRedstoneMagic;
+	private static int currentPlayerRedstoneMana;
+	private static int currentChunkRedstoneMana;
 	
 	@SubscribeEvent
 	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent)
@@ -108,7 +110,19 @@ public class MyConfig
 		}
 	}
 
+	public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
+		currentPlayerRedstoneMana = newPlayerRedstoneMana;
+ 	}
+	public static int getCurrentPlayerRedstoneMana() {
+		return currentPlayerRedstoneMana;
+	}
 
+	public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
+		currentChunkRedstoneMana = newChunkRedstoneMana;
+ 	}
+	public static int getCurrentChunkRedstoneMana() {
+		return currentChunkRedstoneMana;
+	}
 	
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {
@@ -126,5 +140,6 @@ public class MyConfig
 		
 		p.sendMessage(component, p.getUniqueID());
 	}
+	
 }
 
