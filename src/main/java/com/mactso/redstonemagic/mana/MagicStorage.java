@@ -43,17 +43,17 @@ public class MagicStorage implements IMagicStorage
 		if (this.manaStored > max) {
 			this.manaStored = max;
 		}
-		MyConfig.dbgPrintln(objectType + " mana increased by " + amount + " to " + manaStored + ".");    			
+		MyConfig.dbgPrintln(1, objectType + " mana increased by " + amount + " to " + manaStored + ".");    			
 	}
 	
 	@Override
 	public boolean useMana (int amount) {
 		if (amount<= manaStored) {
 			manaStored = manaStored - amount;
-			MyConfig.dbgPrintln("Spell cast for "+amount+"mana, leaving "+manaStored+" mana..");    
+			MyConfig.dbgPrintln(1, "Spell cast for "+amount+"mana, leaving "+manaStored+" mana..");    
 			return true;
 		}
-		MyConfig.dbgPrintln(manaStored + " Not enough mana to cast spell.");    			
+		MyConfig.dbgPrintln(1, manaStored + " Not enough mana to cast spell.");    			
 		return false;
 	}
 

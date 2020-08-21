@@ -53,7 +53,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	private final int manaTextureHeight = 38, manaTextureWidth = 38;
 	private static int personalMana = 200;
 	private static int chunkMana = 23714;
-	private static float cycle;
+	private static float cycle=0.3f;
 	private static float cycleDirection = 0.01F;
 	private static String castingTimeString = "*********************";
 	static ItemStack REDSTONE_FOCUS_STACK = new ItemStack (ModItems.REDSTONE_FOCUS_ITEM);
@@ -101,7 +101,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		long netSpellCastingTime = 0;
 
 		if (MyConfig.getCastTime() > 0) {
-			netSpellCastingTime = (mc.world.getGameTime()- MyConfig.getCastTime())/4;
+			netSpellCastingTime = (mc.world.getGameTime()- MyConfig.getCastTime()+5)/10;
 			if (netSpellCastingTime > 4) netSpellCastingTime = 4;
 		}
 
@@ -142,35 +142,32 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		MainWindow scaled = mc.getMainWindow();
 		int width = scaled.getScaledWidth();
 		int height = scaled.getScaledHeight();
-//		String personalManaString = "Personal Redstone Mana : " + Integer.toString (personalMana);
-//		int personalStringWidth = fontRender.getStringWidth(personalManaString) ;
-//		int chunkStringWidth = fontRender.getStringWidth(chunkManaString) ;
-//		int personalStartX = (width/2) - (personalStringWidth / 2);
-//		int personalStartY = (height/2) + 20;
-//		String chunkManaString = "Chunk Redstone Mana : " + Integer.toString (chunkMana);
-//		int chunkStartX = (width/2) - (chunkStringWidth / 2);
-//		int chunkStartY = (height/2)+40;
-
-//		String castingSpellString = "Casting Time : " + Long.toString (netSpellCastingTime);
 		String castingSpellString = "";
 		if (netSpellCastingTime >0) {
 			castingSpellString = castingTimeString.substring (0,(int)(netSpellCastingTime*2)+1);
 		}
-		int spellCastingStringWidth = fontRender.getStringWidth(castingSpellString) ;
-		int spellCastTimeStartX = (width/2) - (spellCastingStringWidth / 2) + 1;
+		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2) + 1;
 		int spellCastTimeStartY = displayTopPosY + fontRender.FONT_HEIGHT;
-
-		Color colour = new Color(250, 30, 90);
+		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(MyConfig.getSpellBeingCast()) / 2) + 1;
+		int spellBeingCastStartY = displayTopPosY - fontRender.FONT_HEIGHT*3;
+		int redChannelr = 30 + (int) (netSpellCastingTime * 20);
+;
+		Color colour = new Color(redChannelr + 100, 130-redChannelr , 100);
+		String spellBeingCast = "";
+		if (netSpellCastingTime > 0) spellBeingCast = MyConfig.getSpellBeingCast();
+		if (netSpellCastingTime == 4) {
+			colour = new Color(250, 20 , 20);
+		}
 		Color colourBlack = new Color(0, 0, 0);
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
 		if (MyConfig.getCastTime() > 0) {
+			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
+			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, colour.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX, (float)spellCastTimeStartY, colour.getRGB());
 		}
-//		fontRender.drawString(ms, personalManaString, (float)personalStartX, (float)personalStartY, colour.getRGB());
-//		fontRender.drawString(ms, chunkManaString, (float)chunkStartX, (float)chunkStartY, colour.getRGB());
 
 		GL11.glPopMatrix();
 

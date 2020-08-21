@@ -26,6 +26,7 @@ public class MyConfig
 	public static final Server SERVER;
 	public static final ForgeConfigSpec SERVER_SPEC;
 	public static long castTime = 0;
+	public static String spellBeingCast = "";
 	
 	static
 	{
@@ -99,13 +100,13 @@ public class MyConfig
 	}
 	
 	// support for debug messages
-	public static void dbgPrintln(String dbgMsg) {
-		if (debugLevel > 0) {
+	public static void dbgPrintln(int dbgLevel, String dbgMsg) {
+		if (dbgLevel <= debugLevel) {
 			System.out.println (dbgMsg);
 		}
 	}
-	public static void dbgPrintln(PlayerEntity p, String dbgMsg) {
-		if (debugLevel > 1) {
+	public static void dbgPrintln(PlayerEntity p, String dbgMsg, int dbgLevel) {
+		if (dbgLevel <= debugLevel ) {
 			sendChat (p, dbgMsg, Color.func_240744_a_(TextFormatting.YELLOW));
 		}
 	}
@@ -123,7 +124,12 @@ public class MyConfig
 	public static int getCurrentChunkRedstoneMana() {
 		return currentChunkRedstoneMana;
 	}
-	
+	public static void setSpellBeingCast(String newSpellBeingCast) {
+		spellBeingCast = newSpellBeingCast;
+ 	}
+	public static String getSpellBeingCast() {
+		return spellBeingCast;
+	}
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {
 		StringTextComponent component = new StringTextComponent (chatMessage);

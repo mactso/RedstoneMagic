@@ -73,8 +73,8 @@ public class MyBreakEvent {
 					chunkMana = cap.getManaStored();
 					manaChanged = true;
 				}
-				MyConfig.dbgPrintln("Increase Redstone Chunk Magic by " + redstoneMagicIncrease + " to "
-						+ cap.getManaStored() + ".");
+				MyConfig.dbgPrintln(1, "Increase Redstone Chunk Magic by " + redstoneMagicIncrease + " to "
+								+ cap.getManaStored() + ".");
 			}
 		}
 		Network.sendToClient(new SyncClientManaPacket(playerMana, chunkMana), serverPlayerEntity);

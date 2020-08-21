@@ -53,7 +53,7 @@ public class RedstoneMagicPacket
 
 		ctx.get().enqueueWork( () -> 
 			{
-				CastSpells.processSpellForServer(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
+				CastSpells.processSpellOnServer(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
 			}
 		);
 		ctx.get().setPacketHandled(true);
