@@ -92,13 +92,7 @@ public class MyConfig
 		}
 	}
 
-	public static  long getCastTime () {
-		return castTime;
-	}
 
-	public static void setCastTime (long newCastTime) {
-		castTime = newCastTime;
-	}
 	
 	// support for debug messages
 	public static void dbgPrintln(int dbgLevel, String dbgMsg) {
@@ -111,34 +105,41 @@ public class MyConfig
 			sendChat (p, dbgMsg, Color.func_240744_a_(TextFormatting.YELLOW));
 		}
 	}
-
-	public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
-		currentPlayerRedstoneMana = newPlayerRedstoneMana;
- 	}
-	public static int getCurrentPlayerRedstoneMana() {
-		return currentPlayerRedstoneMana;
-	}
-
-	public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
-		currentChunkRedstoneMana = newChunkRedstoneMana;
- 	}
-	public static int getCurrentChunkRedstoneMana() {
-		return currentChunkRedstoneMana;
-	}
 	
-	public static void setSpellBeingCast(String newSpellBeingCast) {
-		spellBeingCast = newSpellBeingCast;
- 	}
-	public static String getSpellBeingCast() {
-		return spellBeingCast;
-	}
+//	public static  long getCastTime () {
+//		return castTime;
+//	}
+//
+//	public static void setCastTime (long newCastTime) {
+//		castTime = newCastTime;
+//	}
+//	public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
+//		currentPlayerRedstoneMana = newPlayerRedstoneMana;
+// 	}
+//	public static int getCurrentPlayerRedstoneMana() {
+//		return currentPlayerRedstoneMana;
+//	}
 
-	public static void setSpellPrepared(String newSpellPrepared) {
-		spellPrepared = newSpellPrepared;
- 	}
-	public static String getSpellPrepared() {
-		return spellPrepared;
-	}
+//	public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
+//		currentChunkRedstoneMana = newChunkRedstoneMana;
+// 	}
+//	public static int getCurrentChunkRedstoneMana() {
+//		return currentChunkRedstoneMana;
+//	}
+	
+//	public static void setSpellBeingCast(String newSpellBeingCast) {
+//		spellBeingCast = newSpellBeingCast;
+// 	}
+//	public static String getSpellBeingCast() {
+//		return spellBeingCast;
+//	}
+
+//	public static void setSpellPrepared(String newSpellPrepared) {
+//		spellPrepared = newSpellPrepared;
+// 	}
+//	public static String getSpellPrepared() {
+//		return spellPrepared;
+//	}
 	
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {

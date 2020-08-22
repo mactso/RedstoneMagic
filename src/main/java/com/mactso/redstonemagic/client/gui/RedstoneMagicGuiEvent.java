@@ -1,6 +1,5 @@
 package com.mactso.redstonemagic.client.gui;
 
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IngameGui;
 import net.minecraft.client.gui.screen.Screen;
@@ -40,11 +39,9 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-
-
+//https://github.com/KurodaAkira/RPG-Hud/tree/MC-Forge-1.16.1/src/main/java/net/spellcraftgaming/rpghud
 //https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
-// @OnlyIn(value=Dist.CLIENT)
+@OnlyIn(value=Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = Main.MODID, value = Dist.CLIENT)
 public class RedstoneMagicGuiEvent extends IngameGui {
 
@@ -60,6 +57,10 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	private static ItemStack REDSTONE_FOCUS_STACK = new ItemStack (ModItems.REDSTONE_FOCUS_ITEM);
 	private static String lastSpellPrepared = "";
 	private static int timerSpellPreparedDisplay = 40;
+	public static long castTime = 0;
+	public static String spellBeingCast = "";
+	public static String spellPrepared = "";
+
 
 	//	   private final ResourceLocation barx = new ResourceLocation (Main.MODID, resourcePathIn:"textures/gui/rmgui.png");
 	private final ResourceLocation bar = new ResourceLocation (Main.MODID, "textures/gui/rm_gui.png");
@@ -69,8 +70,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RedstoneMagicGuiEvent.mc = mc;
 	}
 
-
-	@SubscribeEvent(priority = EventPriority.NORMAL)
+	@OnlyIn(Dist.CLIENT)
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void renderOverlay(RenderGameOverlayEvent.Post event) {
 
 		ElementType type = event.getType();
@@ -78,7 +79,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			return;
 		}
 
-		personalMana = MyConfig.getCurrentPlayerRedstoneMana();
+		personalMana = Main.getCurrentPlayerRedstoneMana();
 		
 		boolean hasNoFocusItem = true;
 
@@ -103,8 +104,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.pushMatrix();
 		long netSpellCastingTime = 0;
 
-		if (MyConfig.getCastTime() > 0) {
-			netSpellCastingTime = (mc.world.getGameTime()- MyConfig.getCastTime()+5)/10;
+		if (RedstoneMagicGuiEvent.getCastTime() > 0) {
+			netSpellCastingTime = (mc.world.getGameTime()- RedstoneMagicGuiEvent.getCastTime()+5)/10;
 			if (netSpellCastingTime > 4) netSpellCastingTime = 4;
 		}
 
@@ -151,15 +152,15 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int height = scaled.getScaledHeight();
 		String castingSpellString = ""; // xxxxxxxx
 		if (netSpellCastingTime >0) castingSpellString = castingTimeString.substring (0,(int)(netSpellCastingTime*2)+1);
-		int spellPreparedStartX = (width/2) - (fontRender.getStringWidth(MyConfig.getSpellPrepared())  / 2) + 1;
+		int spellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellPrepared())  / 2) + 1;
 		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2) + 1;
 		int spellCastTimeStartY = displayTopPosY + fontRender.FONT_HEIGHT;
-		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(MyConfig.getSpellBeingCast()) / 2) + 1;
+		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
 		int spellBeingCastStartY = displayTopPosY - fontRender.FONT_HEIGHT*3;
 		int redChannelr = 30 + (int) (netSpellCastingTime * 30);
 		Color color = new Color(redChannelr + 90, 160-redChannelr , 100);
 		String spellBeingCast = "";
-		if (netSpellCastingTime > 0) spellBeingCast = MyConfig.getSpellBeingCast();
+		if (netSpellCastingTime > 0) spellBeingCast = RedstoneMagicGuiEvent.getSpellBeingCast();
 		if (netSpellCastingTime == 4) {
 			color = new Color(250, 40 , 40);
 			if (flashCycle >10) {
@@ -168,10 +169,9 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		}
 
-
 		Color colourBlack = new Color(0, 0, 0);
-		if (!(lastSpellPrepared.equals(MyConfig.getSpellPrepared()))) {
-			lastSpellPrepared = MyConfig.getSpellPrepared();
+		if (!(lastSpellPrepared.equals(RedstoneMagicGuiEvent.getSpellPrepared()))) {
+			lastSpellPrepared = RedstoneMagicGuiEvent.getSpellPrepared();
 			timerSpellPreparedDisplay = 80;
 		}
 		Color colourPrepared = new Color(230, 80, 100);
@@ -179,7 +179,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
-		if (MyConfig.getCastTime() > 0) {
+		if (RedstoneMagicGuiEvent.getCastTime() > 0) {
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, colourBlack.getRGB());
@@ -198,4 +198,29 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		//https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
 		mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 	}
+	
+	public static  long getCastTime () {
+		return castTime;
+	}
+
+	public static void setCastTime (long newCastTime) {
+		castTime = newCastTime;
+	}
+	
+	
+	public static void setSpellBeingCast(String newSpellBeingCast) {
+		spellBeingCast = newSpellBeingCast;
+ 	}
+	public static String getSpellBeingCast() {
+		return spellBeingCast;
+	}
+
+	public static void setSpellPrepared(String newSpellPrepared) {
+		MyConfig.dbgPrintln(1, "prepared " + newSpellPrepared + "." );
+		spellPrepared = newSpellPrepared;
+ 	}
+	public static String getSpellPrepared() {
+		return spellPrepared;
+	}
+
 }

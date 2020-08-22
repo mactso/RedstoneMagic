@@ -153,12 +153,9 @@ public class CastSpells {
 		}
 
 		targetEntity.attackEntityFrom(myDamageSource, 1);
-		targetEntity
-				.addPotionEffect(new EffectInstance(Effects.POISON, secondsDuration, effectIntensity, true, true));
-		serverWorld.playSound(null, targetEntity.getPosition(),
-				SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
-		serverWorld.playSound(null, targetEntity.getPosition(),
-				SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
+		targetEntity.addPotionEffect(new EffectInstance(Effects.POISON, secondsDuration, effectIntensity, true, true));
+		serverWorld.playSound(null, targetEntity.getPosition(),SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
+		serverWorld.playSound(null, targetEntity.getPosition(),SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
 		drawSpellBeam(serverPlayer, serverWorld, targetEntity);
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 3, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 3, ParticleTypes.WITCH); 

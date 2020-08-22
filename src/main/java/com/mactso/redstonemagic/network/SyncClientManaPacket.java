@@ -2,6 +2,7 @@ package com.mactso.redstonemagic.network;
 
 import java.util.function.Supplier;
 
+import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.spells.CastSpells;
 
@@ -28,8 +29,8 @@ public class SyncClientManaPacket {
 
 		ctx.get().enqueueWork( () -> 
 			{
-				if (message.playerMana >= 0) MyConfig.setCurrentPlayerRedstoneMana(message.playerMana);
-				if (message.chunkMana >= 0) MyConfig.setCurrentChunkRedstoneMana(message.chunkMana);
+				if (message.playerMana >= 0) Main.setCurrentPlayerRedstoneMana(message.playerMana);
+				if (message.chunkMana >= 0) Main.setCurrentChunkRedstoneMana(message.chunkMana);
 			}
 		);
 		ctx.get().setPacketHandled(true);
