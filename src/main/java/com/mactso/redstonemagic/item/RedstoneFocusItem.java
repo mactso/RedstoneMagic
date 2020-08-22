@@ -47,7 +47,7 @@ import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.particles.BasicParticleType;
 public class RedstoneFocusItem extends ShieldItem {
 	
-	public static int NBTNumberField = 99;
+	public static int NBT_NUMBER_FIELD = 99;
 	private final int damageReduceAmount;
 
 //	private static final IParticleData HARM_PARTICLE_DATA = new BlockParticleData(ParticleTypes.BLOCK, Blocks.BRICKS.getDefaultState()),
@@ -84,9 +84,10 @@ public class RedstoneFocusItem extends ShieldItem {
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		// TODO Auto-generated method stub
-         CompoundNBT compoundnbt = stack.getOrCreateTag();
-	     int spellNumberKey =  compoundnbt != null && compoundnbt.contains("spellNumber", NBTNumberField) ? compoundnbt.getInt("spellNumber") : 0;
-	     SpellManager.RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumberKey));
+        CompoundNBT compoundnbt = stack.getOrCreateTag();
+        int spellNumberKey =  compoundnbt != null && compoundnbt.contains("spellNumber", NBT_NUMBER_FIELD) ? compoundnbt.getInt("spellNumber") : 0;
+	    SpellManager.RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumberKey));
+		MyConfig.setSpellPrepared(spell.getSpellComment());
 		tooltip.add(new StringTextComponent("Spell Number : " + spell.getSpellComment()));
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 	}
@@ -110,9 +111,11 @@ public class RedstoneFocusItem extends ShieldItem {
 			MyConfig.dbgPrintln(1, "Not casting a spell.  do nothing.");
 			return; // not casting a spell. not preparing a spell.
 		}
+		
+		PlayerEntity playerEntity = (PlayerEntity) entityLiving;		
 		if (spellState == 1) { // just prepared a spell. TODO move chat message here.
 			compoundnbt.putInt("spellState", 0); // not casting a spell.
-			MyConfig.dbgPrintln(1, "Just prepared a spell.  do nothing.");
+			MyConfig.dbgPrintln(1, playerEntity.getName().toString() + "prepared spell: " + MyConfig.getSpellPrepared() );
 			return;
 		}
 		// spellState == 2.. casting a spell.
@@ -126,7 +129,7 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		float soundVolumeModifier =  0.1f * netSpellCastingTime;
 
-		PlayerEntity playerEntity = (PlayerEntity) entityLiving;
+
 		if (playerEntity == null) {
 			MyConfig.dbgPrintln(2, "playerEntity null on PlayerStoppedUsingCall.");
 			return; // impossible error.
@@ -208,6 +211,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			    spellState = 1;
 			    compoundnbt.putInt("spellState", spellState); 
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
+				MyConfig.setSpellPrepared(spell.getSpellComment());
 				MyConfig.sendChat (playerIn,"You switch to "+ spell.getSpellComment()  + ".",Color.func_240744_a_(TextFormatting.DARK_RED));	
 			} else {  // start casting current spell
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
@@ -215,7 +219,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				compoundnbt.putInt("spellState", spellState); // currently casting a spell.
 		    	// MyConfig.sendChat (playerIn,"You begin casting "+ spell.getSpellComment()  + ".",Color.func_240744_a_(TextFormatting.DARK_RED));
 		    	MyConfig.setCastTime(playerIn.world.getGameTime());
-				MyConfig.setSpellBeingCast(spell.getSpellComment());
+		    	MyConfig.setSpellBeingCast(spell.getSpellComment());
 			}	
 			
 		} else {

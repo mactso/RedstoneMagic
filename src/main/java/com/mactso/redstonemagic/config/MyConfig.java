@@ -27,6 +27,7 @@ public class MyConfig
 	public static final ForgeConfigSpec SERVER_SPEC;
 	public static long castTime = 0;
 	public static String spellBeingCast = "";
+	public static String spellPrepared = "";
 	
 	static
 	{
@@ -124,12 +125,21 @@ public class MyConfig
 	public static int getCurrentChunkRedstoneMana() {
 		return currentChunkRedstoneMana;
 	}
+	
 	public static void setSpellBeingCast(String newSpellBeingCast) {
 		spellBeingCast = newSpellBeingCast;
  	}
 	public static String getSpellBeingCast() {
 		return spellBeingCast;
 	}
+
+	public static void setSpellPrepared(String newSpellPrepared) {
+		spellPrepared = newSpellPrepared;
+ 	}
+	public static String getSpellPrepared() {
+		return spellPrepared;
+	}
+	
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {
 		StringTextComponent component = new StringTextComponent (chatMessage);

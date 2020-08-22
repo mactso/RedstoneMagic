@@ -177,10 +177,10 @@ public class CastSpells {
 			if (weaponDamage > damage) damage = weaponDamage - 1;
 			boolean damaged = targetEntity.attackEntityFrom(myDamageSource, damage);
 			if (damaged) {
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 				serverWorld.playSound(null, serverPlayer.getPosition(),
 						SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.2f, 0.9f);
+				serverWorld.playSound(null, targetEntity.getPosition(),
+						SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, damage, ParticleTypes.DAMAGE_INDICATOR); 
@@ -197,7 +197,7 @@ public class CastSpells {
 				serverWorld.playSound(null, serverPlayer.getPosition(),
 						SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.AMBIENT, 0.2f, 0.8f);
 				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.9f, 0.25f);
+						SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.9f, 0.86f);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.HEART); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, RedstoneParticleData.REDSTONE_DUST); 
@@ -289,11 +289,12 @@ public class CastSpells {
 		damage = damage * spellCost;
 		if (damage > BOSS_MOB_LIMIT) damage = BOSS_MOB_LIMIT;
 		if (weaponDamage > damage)damage = weaponDamage - 1;
-		
-		serverWorld.playSound(null, targetEntity.getPosition(),
-				SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.2f, 0.9f);
 		boolean damaged = targetEntity.attackEntityFrom(myDamageSource, damage);
 		if (damaged) {
+			serverWorld.playSound(null, serverPlayer.getPosition(),
+					SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.5f, 0.5f);
+			serverWorld.playSound(null, targetEntity.getPosition(),
+					SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.2f, 0.4f);
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, damage, RedstoneParticleData.REDSTONE_DUST); 
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
@@ -315,43 +316,58 @@ public class CastSpells {
 		}
 		// small chance to replace milk bucket with empty bucket.
 		
-		serverWorld.playSound(null, serverPlayer.getPosition(),
-				SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.6f, 0.65f);	
-		serverWorld.playSound(null, serverPlayer.getPosition(),
-				SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.6f, 0.75f);	
-		serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.ENCHANT); 
-		serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.WITCH); 
-		serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.WHITE_ASH); 
 
 		EffectInstance ei = null;
-		ei = targetEntity.getActivePotionEffect(Effects.BLINDNESS);
-		if (ei != null) {
-			targetEntity.removeActivePotionEffect(Effects.BLINDNESS);
-			return true;
+		boolean curseRemoved = false;
+		if (!(curseRemoved)) {
+			ei = targetEntity.getActivePotionEffect(Effects.BLINDNESS);
+			if (ei != null) {
+				targetEntity.removeActivePotionEffect(Effects.BLINDNESS);
+				curseRemoved = true;
+			}
 		}
-		ei = targetEntity.getActivePotionEffect(Effects.WITHER);
-		if (ei != null) {
-			targetEntity.removeActivePotionEffect(Effects.WITHER);
-			return true;
+		if (!(curseRemoved)) {
+			ei = targetEntity.getActivePotionEffect(Effects.WITHER);
+			if (ei != null) {
+				targetEntity.removeActivePotionEffect(Effects.WITHER);
+				curseRemoved = true;
+			}
 		}
-		ei = targetEntity.getActivePotionEffect(Effects.POISON);
-		if (ei != null) {
-			targetEntity.removeActivePotionEffect(Effects.POISON);
-			return true;
+		if (!(curseRemoved)) {
+			ei = targetEntity.getActivePotionEffect(Effects.POISON);
+			if (ei != null) {
+				targetEntity.removeActivePotionEffect(Effects.POISON);
+				curseRemoved = true;
+			}
 		}
-		ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
-		if (ei != null) {
-			targetEntity.removeActivePotionEffect(Effects.SLOWNESS);
-			return true;
+		if (!(curseRemoved)) {
+			ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
+			if (ei != null) {
+				targetEntity.removeActivePotionEffect(Effects.SLOWNESS);
+				curseRemoved = true;
+			}
+			
 		}
-		ei = targetEntity.getActivePotionEffect(Effects.MINING_FATIGUE);
-		if (ei != null) {
-			targetEntity.removeActivePotionEffect(Effects.MINING_FATIGUE);
-			return true;
+		if (!(curseRemoved)) {
+			ei = targetEntity.getActivePotionEffect(Effects.MINING_FATIGUE);
+			if (ei != null) {
+				targetEntity.removeActivePotionEffect(Effects.MINING_FATIGUE);
+				curseRemoved = true;
+			}
+		}
+		
+		if (curseRemoved) {
+			serverWorld.playSound(null, serverPlayer.getPosition(),
+					SoundEvents.BLOCK_NOTE_BLOCK_BELL, SoundCategory.AMBIENT, 0.6f, 0.65f);	
+			serverWorld.playSound(null, serverPlayer.getPosition(),
+					SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.6f, 0.75f);	
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.ENCHANT); 
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.WITCH); 
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.WHITE_ASH); 
 		}
 		MyConfig.dbgPrintln(1, "Remove Curse: remove one negative effect");
 
-		return false;
+		return curseRemoved;
 	}
 
 	private static boolean doSpellResistance(LivingEntity targetEntity, int spellCost, ServerWorld serverWorld) {

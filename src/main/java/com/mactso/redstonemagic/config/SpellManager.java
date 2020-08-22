@@ -27,14 +27,14 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
 		final String[] defaultSpellValues = 
-				{"0,RM.NUKE,Red Bolt Damage,1,4,6,T",
+				{"0,RM.NUKE,Red Bolt,1,4,6,T",
 				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
-				 "2,RM.DOT,Blood Loss DoT,1,8,3,T",
-				 "3,RM.SDOT,Blood Snare Slow & DoT,3,4,2,T",
-				 "4,RM.RESI,Chromatic Protection Resistance,1,1,4,B",
-				 "5,RM.TELE,Cardinal Call W-Up- Bed-Down,1,1,1,S",
-				 "6,RM.BUFF,Multi-Buff-CDis,4,1,4,S",
-				 "7,RM.RCRS,Blood Clean Remove BadEffects,4,1,1,B"
+				 "2,RM.DOT,Blood Loss,1,8,3,T",
+				 "3,RM.SDOT,Snaring Blood Loss,3,4,2,T",
+				 "4,RM.RESI,Rose Resistance,1,1,4,B",
+				 "5,RM.TELE,Cardinal Call,1,1,1,S",
+				 "6,RM.BUFF,Multi Buff,4,1,4,S",
+				 "7,RM.RCRS,Remove Curse,4,1,1,B"
 				 };
 		
 		List <String> dTL6464 = new ArrayList<>();
