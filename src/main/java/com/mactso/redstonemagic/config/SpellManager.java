@@ -30,7 +30,7 @@ public class SpellManager {
 				{"0,RM.NUKE,Red Bolt,1,4,6,T",
 				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
 				 "2,RM.DOT,Blood Loss,1,8,3,T",
-				 "3,RM.SDOT,Snaring Blood Loss,3,4,2,T",
+				 "3,RM.SDOT,Crimson Cloud,3,4,2,T",
 				 "4,RM.RESI,Rose Resistance,1,1,4,B",
 				 "5,RM.TELE,Cardinal Call,1,1,1,S",
 				 "6,RM.BUFF,Multi Buff,4,1,4,S",

@@ -372,7 +372,7 @@ public class CastSpells {
 
 	private static boolean doSpellResistance(LivingEntity targetEntity, int spellCost, ServerWorld serverWorld) {
 		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.RESISTANCE);
-		int effectDuration = spellCost * FOUR_SECONDS;
+		int effectDuration = FOUR_SECONDS + spellCost * FOUR_SECONDS;
 		int effectIntensity = 0;
 		if (ei != null) {
 			int durationLeft = ei.getDuration();
@@ -382,12 +382,21 @@ public class CastSpells {
 					return false;
 				}
 				effectIntensity = 1;
+				effectDuration = THIRTY_SECONDS;
 			} 
 			targetEntity.removeActivePotionEffect(Effects.RESISTANCE);
 		}
 		targetEntity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
-		serverWorld.playSound(null, targetEntity.getPosition(),
-				SoundEvents.ENTITY_DOLPHIN_SWIM, SoundCategory.AMBIENT, 0.9f, 0.25f);
+		
+		if (effectIntensity == 0) {
+			serverWorld.playSound(null, targetEntity.getPosition(),
+					SoundEvents.ENTITY_DOLPHIN_SWIM, SoundCategory.AMBIENT, 0.9f, 0.25f);
+			
+		} else {
+			serverWorld.playSound(null, targetEntity.getPosition(),
+					SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.AMBIENT, 0.9f, 0.5f);
+		}
+		
 		targetEntity
 				.addPotionEffect(new EffectInstance(Effects.RESISTANCE, FOUR_SECONDS * spellCost, 0, true, true));
 		serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, ParticleTypes.ENCHANT); 
