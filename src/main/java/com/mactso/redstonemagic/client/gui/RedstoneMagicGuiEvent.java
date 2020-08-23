@@ -15,6 +15,7 @@ import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.RedstoneFocusItem;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
+import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
@@ -107,6 +108,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		if (RedstoneMagicGuiEvent.getCastTime() > 0) {
 			netSpellCastingTime = (mc.world.getGameTime()- RedstoneMagicGuiEvent.getCastTime()+5)/10;
 			if (netSpellCastingTime > 4) netSpellCastingTime = 4;
+
 		}
 
 
@@ -132,6 +134,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int displayScaledHeight = 128;
 		int displayLeftPosX = (manaWidth/2)-11; // confirmed location on screen.
 		int displayTopPosY = (int) (manaHeight * 0.75f); // confirmed location on screen.
+		int lastSpellPreparedTopPosY = (int) (manaHeight * 0.05f); // confirmed location on screen.
+
 		if (manaHeight > 500) {
 			displayTopPosY = (int) (manaHeight * 0.85f);
 		}
@@ -175,6 +179,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			timerSpellPreparedDisplay = 80;
 		}
 		Color colourPrepared = new Color(230, 80, 100);
+		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.lastSpellPrepared)  / 2) + 1;
 		
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
@@ -189,9 +194,13 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		
 		if (timerSpellPreparedDisplay > 0) {
 			timerSpellPreparedDisplay--;
-			fontRender.drawString(ms, MyConfig.spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
-			fontRender.drawString(ms, MyConfig.spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
+			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
+			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
 		}
+		
+		fontRender.drawString(ms, lastSpellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
+		fontRender.drawString(ms, lastSpellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
+
 		
 		GL11.glPopMatrix();
 

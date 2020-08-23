@@ -31,9 +31,9 @@ public class SpellManager {
 				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
 				 "2,RM.DOT,Sepsis,1,8,3,T",
 				 "3,RM.SDOT,Crimson Cloud,3,4,2,T",
-				 "4,RM.RESI,Rose Resistance,1,1,4,B",
+				 "4,RM.RESI,Redstone Shield,1,1,4,B",
 				 "5,RM.TELE,Cardinal Call,1,1,1,S",
-				 "6,RM.BUFF,Multi Buff,4,1,4,S",
+				 "6,RM.BUFF,Multi Buff,4,1,4,B",
 				 "7,RM.RCRS,Remove Curse,4,1,1,B"
 				 };
 		
