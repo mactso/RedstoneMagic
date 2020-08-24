@@ -27,21 +27,20 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
 		final String[] defaultSpellValues = 
-				{"0,RM.NUKE,Red Bolt,1,4,6,T",
-				 "1,RM.HEAL,Crimson Heal,2,4,6,B",
-				 "2,RM.DOT,Sepsis,1,8,3,T",
-				 "3,RM.SDOT,Crimson Cloud,3,4,2,T",
-				 "4,RM.RESI,Redstone Shield,1,1,4,B",
-				 "5,RM.TELE,Cardinal Call,1,1,1,S",
-				 "6,RM.BUFF,Multi Buff,4,1,4,B",
-				 "7,RM.RCRS,Remove Curse,4,1,1,B"
+				{"0,RM.NUKE,Red Bolt,1,T",
+				 "1,RM.HEAL,Crimson Heal,2,B",
+				 "2,RM.DOT,Sepsis,2,T",
+				 "3,RM.SDOT,Crimson Cloud,3,T",
+				 "4,RM.RESI,Redstone Shield,1,B",
+				 "5,RM.TELE,Cardinal Call,1,S",
+				 "6,RM.BUFF,Multi Buff,2,B",
+				 "7,RM.RCRS,Remove Curse,2,B"
 				 };
 		
 		List <String> dTL6464 = new ArrayList<>();
 		final String[]  defaultMobBreakPercentageValues;
 		
 		int i = 0;
-
 
 		defaultMobBreakPercentageValues = dTL6464.toArray(new String[i]);
 		System.out.println("reinit spell manager");		
@@ -55,11 +54,9 @@ public class SpellManager {
 				String spellTranslationKey = st.nextToken();
 				String spellComment = st.nextToken();
 				int spellBaseCost = Integer.parseInt(st.nextToken());
-				int spellMinPower = Integer.parseInt(st.nextToken());
-				int spellMaxPower = Integer.parseInt(st.nextToken());
 				String spellTargetType = st.nextToken();
 				
-				redstoneMagicSpellItemHashtable.put(spellKey, new RedstoneMagicSpellItem(spellTranslationKey, spellComment, spellBaseCost, spellMinPower, spellMaxPower, spellTargetType));
+				redstoneMagicSpellItemHashtable.put(spellKey, new RedstoneMagicSpellItem(spellTranslationKey, spellComment, spellBaseCost, spellTargetType));
 			} catch (Exception e) {
 				System.out.println("RedstoneMagic :  Error on Spell: " + defaultMobBreakPercentageValues[i]);
 			}
@@ -72,15 +69,11 @@ public class SpellManager {
 		String spellTranslationKey;
 		String spellComment;
 		int spellBaseCost;
-		int spellMinPower;
-		int spellMaxPower;
 		String spellTargetType;
 
 		public RedstoneMagicSpellItem(
 				String spellTranslationKey,
 				String spellComment,
-				int spellBaseCost,
-				int spellMinPower,
 				int spellMaxPower,
 				String spellTargetType
 				) 
@@ -88,8 +81,6 @@ public class SpellManager {
 			this.spellTranslationKey = spellTranslationKey;
 			this.spellComment  		 = spellComment;
 			this.spellBaseCost 	 	 = spellBaseCost;
-			this.spellMinPower 		 = spellMinPower;
-			this.spellMaxPower 		 = spellMaxPower;
 			this.spellTargetType     = spellTargetType;
 		}
 
@@ -99,14 +90,6 @@ public class SpellManager {
 		
 		public int getSpellBaseCost() {
 			return spellBaseCost;
-		}
-	
-
-		public int getSpellMinPower() {
-			return spellMaxPower;
-		}
-		public int getSpellMaxPower() {
-			return spellMaxPower;
 		}
 		
 		public String getSpellComment() {

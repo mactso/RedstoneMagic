@@ -26,8 +26,8 @@ public class MyConfig
 	public static final Server SERVER;
 	public static final ForgeConfigSpec SERVER_SPEC;
 	public static long castTime = 0;
-	public static String spellBeingCast = "";
-	public static String spellPrepared = "";
+
+
 	
 	static
 	{
@@ -39,8 +39,6 @@ public class MyConfig
 	public static int debugLevel;
 	public static int maxChunkRedstoneMagic;
 	public static int maxPlayerRedstoneMagic;
-	private static int currentPlayerRedstoneMana;
-	private static int currentChunkRedstoneMana;
 	
 	@SubscribeEvent
 	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent)
@@ -86,7 +84,7 @@ public class MyConfig
 			maxPlayerRedstoneMagic = builder
 					.comment("Max Player Redstone Magic Amount")
 					.translation(Main.MODID + ".config." + "maxPlayerRedstoneMagic")
-					.defineInRange("maxPlayerRedstoneMagic", () -> 255, 0, 511);
+					.defineInRange("maxPlayerRedstoneMagic", () -> 396, 0, 511);
 			builder.pop();
 			
 		}

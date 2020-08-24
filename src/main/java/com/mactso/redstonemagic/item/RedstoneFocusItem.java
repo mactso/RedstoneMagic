@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.item;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -11,42 +12,31 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.spells.CastSpells;
 import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
-import com.mojang.serialization.Codec;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.BowItem;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.IParticleData.IDeserializer;
-import net.minecraft.particles.ParticleType;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.Color;
-
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.util.math.RayTraceResult.Type;
-import net.minecraft.particles.BasicParticleType;
 
 public class RedstoneFocusItem extends ShieldItem {
 
@@ -56,6 +46,7 @@ public class RedstoneFocusItem extends ShieldItem {
 	private static int tickSound = 0;
 	private static int soundSpellNumber = 0;
 	private static boolean castingASpell = false;
+	private static boolean fullyCharged = false;
 //	private static final IParticleData HARM_PARTICLE_DATA = new BlockParticleData(ParticleTypes.BLOCK, Blocks.BRICKS.getDefaultState()),
 //	HEAL_PARTICLE_DATA = new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_CONCRETE.getDefaultState());
 
@@ -63,7 +54,6 @@ public class RedstoneFocusItem extends ShieldItem {
 	public boolean isShield(ItemStack stack, LivingEntity entity) {
 		return true;
 	}
-	
 	
 
 	@Override
@@ -93,8 +83,8 @@ public class RedstoneFocusItem extends ShieldItem {
 	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		// TODO Auto-generated method stub
 		CompoundNBT compoundnbt = stack.getOrCreateTag();
-		int spellNumberKey = compoundnbt != null && compoundnbt.contains("spellNumber", NBT_NUMBER_FIELD)
-				? compoundnbt.getInt("spellNumber")
+		int spellNumberKey = compoundnbt != null && compoundnbt.contains("spellKeyNumber", NBT_NUMBER_FIELD)
+				? compoundnbt.getInt("spellKeyNumber")
 				: 0;
 		SpellManager.RedstoneMagicSpellItem spell = SpellManager
 				.getRedstoneMagicSpellItem(Integer.toString(spellNumberKey));
@@ -113,11 +103,36 @@ public class RedstoneFocusItem extends ShieldItem {
 			MyConfig.dbgPrintln(1, "onPlayerStoppedUsing: servercall");
 			return;
 		}
+		
+		int baseWeaponDamage = 0;
+		boolean handNotFocusOrWeaponOrEmpty = true;
+		ItemStack handItem = entityLiving.getHeldItemMainhand();
+		if (handItem.getItem() instanceof RedstoneFocusItem) {
+			handNotFocusOrWeaponOrEmpty = false;
+		}else
+		if (handItem != null) {
+			Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
+			while((d.iterator().hasNext()) && (baseWeaponDamage == 0)) {
+				baseWeaponDamage = (int) d.iterator().next().getAmount();
+				if (baseWeaponDamage > 1) {
+					handNotFocusOrWeaponOrEmpty = false;
+				}
+			}
+		} else {
+			handNotFocusOrWeaponOrEmpty = false;
+		}
+
+		if (handNotFocusOrWeaponOrEmpty) {
+			castingASpell = false;
+			soundModifier = 0.3f;
+			return;
+		}
+
 		int spellState = 0;
 		CompoundNBT compoundnbt = stack.getOrCreateTag();
 		if (compoundnbt == null)
 			return;
-		if (compoundnbt.contains("spellState", 99))
+		if (compoundnbt.contains("spellState",  NBT_NUMBER_FIELD ))
 			spellState = compoundnbt.getInt("spellState"); // 99 : a "number" (int, float, double, long)
 		if (spellState == 0) {
 			MyConfig.dbgPrintln(1, "Not casting a spell.  do nothing.");
@@ -144,17 +159,29 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		if (netSpellCastingTime == 0) {
 			MyConfig.sendChat(player, "Your spell fizzled.  Cast slower.", Color.func_240744_a_(TextFormatting.RED));
-			player.world.playSound(player, player.getPosition(), SoundEvents.BLOCK_BLASTFURNACE_FIRE_CRACKLE,
-					SoundCategory.AMBIENT, 0.7f, 0.3f);
+
+			player.world.playSound(player, player.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO,SoundCategory.AMBIENT, 0.7f, 0.3f);
+			castingASpell = false;
+			soundModifier = 0.3f;
+			RedstoneMagicGuiEvent.setSpellBeingCast("");
+			RedstoneMagicGuiEvent.setCastTime(0);
 			return;
 		}
 
 		int spellNumber = 0;
-		if (compoundnbt == null)
-			return; // impossible error.
-		if (compoundnbt.contains("spellNumber", 99))
-			spellNumber = compoundnbt.getInt("spellNumber"); // 99 : a "number" (int, float, double, long)
-
+		if (compoundnbt == null) {
+			castingASpell = false;
+			soundModifier = 0.3f;
+			System.out.println("no compound nbt. 'impossible' error. ");
+			return; // "impossible" error.
+		}
+		
+		if (compoundnbt.contains("spellKeyNumber", 99))
+			spellNumber = compoundnbt.getInt("spellKeyNumber"); // 99 : a "number" (int, float, double, long)
+		System.out.println ("OnStopUsing NBT spellNumber = " + spellNumber);
+		if (spellNumber == 6) {
+			boolean multiBuffbug = true;
+		}
 //    	playerEntity.world.playSound(playerEntity, playerEntity.getPosition(),SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.AMBIENT, 0.6f, 0.5f);
 		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
 		String spellTargetType = spell.getSpellTargetType();
@@ -171,7 +198,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		if (spellTargetType.equals(("T"))) {
 			if (targetEntity == null) {
 				targetEntity = player;
-				MyConfig.sendChat(player, "Your spell missed.", Color.func_240744_a_(TextFormatting.RED));
+				MyConfig.sendChat(player, "Your spell missed.  SpellNumber is " + spellNumber, Color.func_240744_a_(TextFormatting.RED));
 				targetSpellHit = false;
 				soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_SNARE;
 				player.world.playSound(player, targetEntity.getPosition(), SoundEvents.ENTITY_CAT_HISS,
@@ -194,6 +221,7 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		player.world.playSound(player, targetEntity.getPosition(), soundEvent, SoundCategory.AMBIENT, volume, pitch);
 		if (targetSpellHit) {
+			System.out.println ("OnStopUsing Send spellNumber = " + spellNumber);
 			Network.sendToServer(
 					new RedstoneMagicPacket(spellNumber, targetEntity.getEntityId(), (int) netSpellCastingTime));
 		}
@@ -209,119 +237,165 @@ public class RedstoneFocusItem extends ShieldItem {
 	public boolean hasEffect(ItemStack stack) {
 		if (castingASpell) {
 			return true;
+		} else {
+			return false;
 		}
-		return super.hasEffect(stack);
 	}
 
 	@Override
 	public void onUsingTick(ItemStack stack, LivingEntity player, int count) {
 
 		if (castingASpell) {
-			System.out.println( "castingASpell.  ticksound:" + tickSound);
+//			System.out.println( "castingASpell.  ticksound:" + tickSound);
 			playCastingTickSounds(player);
 		}
 		super.onUsingTick(stack, player, count);
 	}
 
+	
 	private void playCastingTickSounds(LivingEntity player) {
 
-		PlayerEntity pE = (PlayerEntity) player;
+		if (!(player instanceof ServerPlayerEntity)) {
+			return;
+		}
+			
+		ServerPlayerEntity spE = (ServerPlayerEntity) player;
+		ServerWorld serverWorld = (ServerWorld) spE.getServerWorld();	
 		if (soundModifier < 0.9f) {
-			System.out.println( "castingASpell.  soundModifier:" + soundModifier);
-			tickSound = (tickSound + 1) % 6;
+			soundModifier = soundModifier + 0.025f;
+	//		System.out.println( "server castingASpell.  soundModifier:" + soundModifier);
+			tickSound = (tickSound + 1) % 3;
+
 			if (tickSound == 0) {
-				System.out.println( "castingASpell.  soundSpellNumber:" + soundSpellNumber);
-				soundModifier = soundModifier + 0.015f;
+				if (soundModifier > 0.7f) {
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.BLOCKS, 0.3f, 0.14f);
+				}
+				System.out.println( "server castingASpell.  soundSpellNumber:" + soundSpellNumber);
 				if (soundSpellNumber == 0) {
-					System.out.println( "castingASpell.  playing Redbolt Sound.");
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.ENTITY_CAT_HISS, SoundCategory.HOSTILE,
-							0.3f + soundModifier, 0.3f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.ENTITY_CAT_HISS, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 1) {
-					System.out.println( "castingASpell.  playing Crimson HealSound.");
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.ENTITY_FOX_AMBIENT, SoundCategory.AMBIENT,
-							0.3f + soundModifier, 0.3f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.ENTITY_FOX_AMBIENT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 2) {
-					System.out.println( "castingASpell.  playing Sepsis Sound.");
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_FIRE_EXTINGUISH,
-							SoundCategory.AMBIENT, 0.3f + soundModifier, 0.4f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 3) {
-					System.out.println( "castingASpell.  playing Crimson Cloud Sound.");
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_FIRE_EXTINGUISH,
-							SoundCategory.AMBIENT, 0.2f + soundModifier, 0.01f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 4) {
-					System.out.println( "castingASpell.  playing spell 4 Sound.");
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_BANJO,
-							SoundCategory.AMBIENT, 0.3f + soundModifier, 0.2f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.ENTITY_COD_DEATH, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 5) {
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_FLUTE,
-							SoundCategory.AMBIENT, 0.3f + soundModifier, 0.2f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_FLUTE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 6) {
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_WOOL_PLACE,
-							SoundCategory.AMBIENT, 0.3f + soundModifier, 0.2f + soundModifier);
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_WOOL_PLACE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (soundSpellNumber == 7) {
-					pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_BASALT_BREAK,
-							SoundCategory.AMBIENT, 0.3f + soundModifier, 0.2f + soundModifier);
-				} // TODO assign sounds for other spells- possibly in array or hashtable.
+					playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_FLUTE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.0f + soundModifier);
+				} 
 			}
 		} else {
+			if (!(fullyCharged)) {
+				fullyCharged = true;
+				tickSound = 19;
+			}
 			tickSound = (tickSound + 1) % 20;
-			System.out.println( "max spell sound tickSound=" + tickSound);
 			if (tickSound == 0) {
-				pE.world.playSound(pE, pE.getPosition(), SoundEvents.BLOCK_FURNACE_FIRE_CRACKLE, SoundCategory.WEATHER,
-						0.4f, 0.14f);
-				System.out.println( "max spell sound created.");
+				playTickSpellSound(spE, serverWorld, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.BLOCKS, 0.3f, 0.14f);
 			}
 		}
+	}
+
+
+
+	private void playTickSpellSound(ServerPlayerEntity spE, ServerWorld serverWorld, SoundEvent soundEvent, SoundCategory soundCategory, float volume, float pitch) {
+		serverWorld.playSound(null, spE.getPosition(), soundEvent, soundCategory, volume, pitch);
+		//System.out.println( "max spell sound created.");
 	}
 
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
 
 		if (!(playerIn instanceof ServerPlayerEntity)) {
-			MyConfig.dbgPrintln(1, "onItemRightClick: clientcall");
-			ItemStack itemstack = playerIn.getHeldItem(handIn);
-			CompoundNBT compoundnbt = itemstack.getOrCreateTag();
-			int spellNumber = compoundnbt != null && compoundnbt.contains("spellNumber", 99)
-					? compoundnbt.getInt("spellNumber")
-					: 0;
-			int spellState = compoundnbt != null && compoundnbt.contains("spellState", 99)
-					? compoundnbt.getInt("spellState")
-					: 0;
-			if (KeyboardHelper.isHoldingShift()) { // change to a new spell.
-				float headPitch = playerIn.rotationPitch;
-				if (headPitch <= -0.1) { // looking up - go backwards thru list.
-					spellNumber = (spellNumber + 7) % 8;
-				} else { // looking straight - go forwards thru list
-					spellNumber = (spellNumber + 1) % 8;
+			int baseWeaponDamage = 0;
+			boolean canUseRedstoneFocus = false;
+			ItemStack handItem = playerIn.getHeldItemMainhand();
+			if (handItem.getItem() instanceof RedstoneFocusItem) {
+				canUseRedstoneFocus = true;
+			}
+			if (handItem != null) {
+				Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND)
+						.get(Attributes.ATTACK_DAMAGE);
+				while ((d.iterator().hasNext()) && (baseWeaponDamage == 0)) {
+					baseWeaponDamage = (int) d.iterator().next().getAmount();
+					if (baseWeaponDamage > 1) {
+						canUseRedstoneFocus = true;
+					}
 				}
-				castingASpell = false;
-				RedstoneMagicGuiEvent.setCastTime(0);	
-				RedstoneMagicGuiEvent.setSpellBeingCast("");
-				compoundnbt.putInt("spellNumber", spellNumber);
-				spellState = 1;
-				compoundnbt.putInt("spellState", spellState);
-				
-				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
-				String spellComment = spell.getSpellComment();
-				RedstoneMagicGuiEvent.setSpellPrepared(spellComment);
-				//MyConfig.sendChat(playerIn, "You switch to " + spell.getSpellComment() + ".", Color.func_240744_a_(TextFormatting.DARK_RED));
-			} else { // start casting current spell
-				soundModifier = 0.29f;
-				tickSound = 0;
-				castingASpell = true;
-				soundSpellNumber = spellNumber;
-				RedstoneMagicGuiEvent.setCastTime(playerIn.world.getGameTime());				
-				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
-				spellState = 2;
-				compoundnbt.putInt("spellState", spellState); // currently casting a spell.
-				// MyConfig.sendChat (playerIn,"You begin casting "+ spell.getSpellComment() +
-				// ".",Color.func_240744_a_(TextFormatting.DARK_RED));
-
-				RedstoneMagicGuiEvent.setSpellBeingCast(spell.getSpellComment());
+			} else {
+				canUseRedstoneFocus = true;
 			}
 
-		} else {
-			MyConfig.dbgPrintln(1, "player serverside call" + RedstoneMagicGuiEvent.getCastTime());
+			if ((canUseRedstoneFocus)) {
+				MyConfig.dbgPrintln(1, "onItemRightClick: clientcall");
+				ItemStack itemstack = playerIn.getHeldItem(handIn);
+				CompoundNBT compoundnbt = itemstack.getOrCreateTag();
+				int spellNumber = compoundnbt != null && compoundnbt.contains("spellKeyNumber", NBT_NUMBER_FIELD)
+						? compoundnbt.getInt("spellKeyNumber")
+						: 0;
+				if (spellNumber == 6) {
+					boolean multiBuffbug = true;
+				}
+				int spellState = compoundnbt != null && compoundnbt.contains("spellState", NBT_NUMBER_FIELD)
+						? compoundnbt.getInt("spellState")
+						: 0;
+				if (KeyboardHelper.isHoldingShift()) { // change to a new spell.
+					float headPitch = playerIn.rotationPitch;
+					if (headPitch <= -0.1) { // looking up - go backwards thru list.
+						System.out.println ("Change Spellnumber - From: " + spellNumber);	
+						spellNumber = (spellNumber + 7) % 8;
+						System.out.println ("Change Spellnumber - to: " + spellNumber);	
+					} else { // looking straight - go forwards thru list
+						System.out.println ("Change Spellnumber + From: " + spellNumber);	
+						spellNumber = (spellNumber + 1) % 8;
+						System.out.println ("Change Spellnumber + to: " + spellNumber);	
+					}
+					castingASpell = false;
+					RedstoneMagicGuiEvent.setCastTime(0);
+					RedstoneMagicGuiEvent.setSpellBeingCast("");
+					compoundnbt.putInt("spellKeyNumber", spellNumber);
+					if (spellNumber == 6) {
+						boolean multiBuffbug = true;
+					}
+					spellState = 1;
+					compoundnbt.putInt("spellState", spellState);
+
+					RedstoneMagicSpellItem spell = SpellManager
+							.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
+					String spellComment = spell.getSpellComment();
+					RedstoneMagicGuiEvent.setSpellPrepared(spellComment);
+					// MyConfig.sendChat(playerIn, "You switch to " + spell.getSpellComment() + ".",
+					// Color.func_240744_a_(TextFormatting.DARK_RED));
+				} else { // start casting current spell
+					soundModifier = 0.29f;
+					tickSound = 0;
+					castingASpell = true;
+					fullyCharged = false;
+					if (spellNumber == 6) {
+						boolean multiBuffbug = true;
+					}					
+					soundSpellNumber = spellNumber;
+					System.out.println ("Start Casting Spellnumber " + spellNumber);	
+					RedstoneMagicGuiEvent.setCastTime(playerIn.world.getGameTime());
+					RedstoneMagicSpellItem spell = SpellManager
+							.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
+					spellState = 2;
+					compoundnbt.putInt("spellState", spellState); // currently casting a spell.
+					// MyConfig.sendChat (playerIn,"You begin casting "+ spell.getSpellComment() +
+					// ".",Color.func_240744_a_(TextFormatting.DARK_RED));
+
+					RedstoneMagicGuiEvent.setSpellBeingCast(spell.getSpellComment());
+				}
+
+			} else {
+				MyConfig.dbgPrintln(1, "player serverside call" + RedstoneMagicGuiEvent.getCastTime());
+			}
+
 		}
 
 		return super.onItemRightClick(worldIn, playerIn, handIn);

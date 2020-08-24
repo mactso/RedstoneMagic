@@ -142,8 +142,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	
 		RenderSystem.color4f(1.0F, 1.0F, 1F, 0.7f);
 		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY, 0.0f, 0.0f, 23, 23, displayScaledWidth, displayScaledHeight);
-		int colorValue6 = ((int)(personalMana+15)/6) * 6;
-		if (colorValue6 >0) colorValue6 += 64;
+		int colorValue6 = ((int)(personalMana+5)/5) * 5;
+		if (colorValue6 >0) colorValue6 += 80;
 		float redChannel = (float)(colorValue6/256.0); 
 		RenderSystem.color4f(redChannel, 0.0F, 0.0F, cycle + 0.1f);
 		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY+2, 0.5f, 23.0f, 23, 23, displayScaledWidth, displayScaledHeight);
