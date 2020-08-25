@@ -11,6 +11,8 @@ import net.minecraftforge.fml.common.Mod;
 
 import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.MyConfig;
+import com.mactso.redstonemagic.config.SpellManager;
+import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.RedstoneFocusItem;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
@@ -56,9 +58,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	private static float cycleDirection = 0.01F;
 	private static String castingTimeString = "*********************";
 	private static ItemStack REDSTONE_FOCUS_STACK = new ItemStack (ModItems.REDSTONE_FOCUS_ITEM);
-	private static String lastSpellPrepared = "";
-	private static int timerSpellPreparedDisplay = 40;
-	public static long castTime = 0;
+	private static int timerDisplayPreparedSpell = 40;
+	public static long timerCastingSpell = 0;
 	public static String spellBeingCast = "";
 	public static String spellPrepared = "";
 
@@ -105,12 +106,11 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.pushMatrix();
 		long netSpellCastingTime = 0;
 
-		if (RedstoneMagicGuiEvent.getCastTime() > 0) {
-			netSpellCastingTime = (mc.world.getGameTime()- RedstoneMagicGuiEvent.getCastTime()+5)/10;
+		if (timerCastingSpell> 0) {
+			netSpellCastingTime = (mc.world.getGameTime()- timerCastingSpell +5)/10;
 			if (netSpellCastingTime > 4) netSpellCastingTime = 4;
 
 		}
-
 
 		int texWidth = 42;
 		flashCycle = flashCycle + 1;
@@ -174,32 +174,29 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		}
 
 		Color colourBlack = new Color(0, 0, 0);
-		if (!(lastSpellPrepared.equals(RedstoneMagicGuiEvent.getSpellPrepared()))) {
-			lastSpellPrepared = RedstoneMagicGuiEvent.getSpellPrepared();
-			timerSpellPreparedDisplay = 80;
-		}
+
 		Color colourPrepared = new Color(230, 80, 100);
-		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.lastSpellPrepared)  / 2) + 1;
+		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(spellPrepared)  / 2) + 1;
 		
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
-		if (RedstoneMagicGuiEvent.getCastTime() > 0) {
+		if (timerCastingSpell > 0) {
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX, (float)spellCastTimeStartY, color.getRGB());
-			timerSpellPreparedDisplay = 0;
+			timerDisplayPreparedSpell = 0;
 		}
 		
-		if (timerSpellPreparedDisplay > 0) {
-			timerSpellPreparedDisplay--;
+		if (timerDisplayPreparedSpell > 0) {
+			timerDisplayPreparedSpell--;
 			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
 		}
 		
-		fontRender.drawString(ms, lastSpellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
-		fontRender.drawString(ms, lastSpellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
+		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
+		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
 
 		
 		GL11.glPopMatrix();
@@ -207,14 +204,28 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		//https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
 		mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 	}
+
+	public static void setPreparedSpellNumber (int preparedSpellNumber) {
+		if ((preparedSpellNumber >=0) &&
+		    (preparedSpellNumber <=7)) { 
+			RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
+			spellPrepared = spell.getSpellComment();
+			timerDisplayPreparedSpell = 80;
+			timerCastingSpell = 0;
+			spellBeingCast = "";
+		}
+	}
 	
-	public static  long getCastTime () {
-		return castTime;
+	public static void setCastPreparedSpellNumber (int castingSpellNumber) {
+		if ((castingSpellNumber >=0) &&
+			    (castingSpellNumber <=7)) { 
+				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(castingSpellNumber));
+				spellBeingCast = spell.getSpellComment();
+				timerDisplayPreparedSpell = 0;
+				RedstoneMagicGuiEvent.mc.world.getGameTime();
+			}		
 	}
 
-	public static void setCastTime (long newCastTime) {
-		castTime = newCastTime;
-	}
 	
 	
 	public static void setSpellBeingCast(String newSpellBeingCast) {

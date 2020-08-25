@@ -1,14 +1,7 @@
 package com.mactso.redstonemagic.network;
 
 import java.util.function.Supplier;
-
 import com.mactso.redstonemagic.Main;
-import com.mactso.redstonemagic.config.MyConfig;
-import com.mactso.redstonemagic.spells.CastSpells;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 

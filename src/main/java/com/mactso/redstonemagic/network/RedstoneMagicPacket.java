@@ -9,6 +9,7 @@ import com.mactso.redstonemagic.spells.CastSpells;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -17,12 +18,14 @@ public class RedstoneMagicPacket
 	private int cmd;
 	private int id;
 	private int timeLeft;
+	private int handIndex;
 	
-	public RedstoneMagicPacket(int cmd, int id, int timeLeft)
+	public RedstoneMagicPacket(int cmd, int id, int timeLeft,int handIndex)
 	{
 		this.cmd = cmd;
 		this.id = id;
 		this.timeLeft = timeLeft;
+		this.handIndex = handIndex;
 	}
 	
 	public void encode(PacketBuffer buf)
@@ -30,6 +33,7 @@ public class RedstoneMagicPacket
 		buf.writeByte(cmd);
 		buf.writeVarInt(id);
 		buf.writeVarInt(timeLeft);
+		buf.writeVarInt(handIndex);
 
 	}
 
@@ -38,7 +42,8 @@ public class RedstoneMagicPacket
 		int cmd = buf.readByte();
 		int id = buf.readVarInt();
 		int timeLeft = buf.readVarInt();
-		return new RedstoneMagicPacket(cmd, id, timeLeft);
+		int slotIndex = buf.readVarInt();
+		return new RedstoneMagicPacket(cmd, id, timeLeft, slotIndex);
 	}
 
 	public static void writePacketData(RedstoneMagicPacket msg, PacketBuffer buf)
@@ -53,7 +58,7 @@ public class RedstoneMagicPacket
 
 		ctx.get().enqueueWork( () -> 
 			{
-				CastSpells.processSpellOnServer(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft);
+				CastSpells.processSpellOnServer(message.cmd, (LivingEntity) targetEntity, serverPlayer, message.timeLeft, message.handIndex);
 			}
 		);
 		ctx.get().setPacketHandled(true);

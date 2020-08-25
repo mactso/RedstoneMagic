@@ -12,5 +12,9 @@ public class Register
 	    		SyncClientManaPacket::writePacketData,
 	    		SyncClientManaPacket::readPacketData,
 	    		SyncClientManaPacket::processSyncClientManaPacket);
+	    Network.registerMessage(SyncClientGuiPacket.class,
+	    		SyncClientGuiPacket::writePacketData,
+	    		SyncClientGuiPacket::readPacketData,
+	    		SyncClientGuiPacket::processSyncClientGuiPacket);
 	}
 }

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
+import com.mactso.redstonemagic.item.RedstoneFocusItem;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
@@ -63,11 +64,14 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.TicketType;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.TridentItem;
+import net.minecraft.nbt.CompoundNBT;
 public class CastSpells {
 	static final int THREE_SECONDS = 60;
 	static final int FOUR_SECONDS = 80;
@@ -93,11 +97,15 @@ public class CastSpells {
 		String spellTargetType = spell.getSpellTargetType();
 		DamageSource myDamageSource = DamageSource.causePlayerDamage(serverPlayer).setDamageBypassesArmor()
 				.setMagicDamage();
+		
 		ServerWorld serverWorld = (ServerWorld) targetEntity.world;
+		
 	  	posX = targetEntity.getPosX();
 	  	posY = targetEntity.getPosY();
 	  	posZ = targetEntity.getPosZ();
+	  	
 	  	int baseWeaponDamage = 0;
+	  	
 		ItemStack handItem = serverPlayer.getHeldItemMainhand();
 		Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
 		while((d.iterator().hasNext()) && (baseWeaponDamage == 0)) {
@@ -615,33 +623,21 @@ public class CastSpells {
 		}
 	}
 
-	public static LivingEntity lookForDistantTarget(PlayerEntity clientPlayer) {
-		double d0 = 30;
-		double d1 = d0 * d0;
-		Vector3d vector3d = clientPlayer.getEyePosition(1.0F);
-		Vector3d vector3d1 = clientPlayer.getLook(1.0F);
-		Vector3d vector3d2 = vector3d.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
-
-		AxisAlignedBB axisalignedbb = clientPlayer.getBoundingBox().expand(vector3d1.scale(d0)).grow(1.0D, 1.0D, 1.0D);
-		EntityRayTraceResult entityraytraceresult = ProjectileHelper.rayTraceEntities(clientPlayer, vector3d, vector3d2,
-				axisalignedbb, (p_215312_0_) -> {
-					return !p_215312_0_.isSpectator() && p_215312_0_.canBeCollidedWith();
-				}, d1);
-		if (entityraytraceresult != null) {
-			Entity entity1 = entityraytraceresult.getEntity();
-			Vector3d vector3d3 = entityraytraceresult.getHitVec();
-			if (entity1 instanceof LivingEntity) {
-				return (LivingEntity) entity1;
-			}
-		}
-		return null;
-	}
-
 	// server dist
 	public static void processSpellOnServer(int spellNumber, LivingEntity targetEntity, ServerPlayerEntity serverPlayer,
-			int spellTime) {
+			int spellTime, int handIndex) {
 
-		System.out.println ("processSpellOnServer spellNumber = " + spellNumber);
+		ItemStack correctRedstoneFocusStack = serverPlayer.getHeldItemMainhand();
+		if (handIndex == 2) {
+			correctRedstoneFocusStack = serverPlayer.getHeldItemOffhand();
+		}
+		CompoundNBT compoundnbt = correctRedstoneFocusStack.getOrCreateTag();
+		long spellCastingStartTime = compoundnbt != null
+				&& compoundnbt.contains("spellCastingStartTime", RedstoneFocusItem.NBT_NUMBER_FIELD)
+						? compoundnbt.getLong("spellCastingStartTime")
+						: 0;
+						compoundnbt.putLong("spellCastingStartTime", RedstoneFocusItem.SPELL_NOT_CASTING);
+
 		IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (playerManaStorage == null) {
 			MyConfig.sendChat(serverPlayer, "Impossible Error: You do not have a mana pool.",
@@ -649,33 +645,31 @@ public class CastSpells {
 			return;
 		}
 
-		String spellKey = Integer.toString(spellNumber);
-		MyConfig.sendChat(serverPlayer, "ProcessServer before Cast.  You have " + playerManaStorage.getManaStored() + "mana left.  SpellKey is " + spellKey, Color.func_240744_a_(TextFormatting.RED));
-		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(spellKey);
+		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
 		int spellCost = spell.getSpellBaseCost() * spellTime;
 		if (spellCost > playerManaStorage.getManaStored()) {
 			serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(), SoundEvents.BLOCK_BASALT_FALL,
 					SoundCategory.AMBIENT, 0.5f, 0.8f);
-			MyConfig.sendChat(serverPlayer, "Not Enough Mana!", Color.func_240744_a_(TextFormatting.YELLOW));
 			return;
 		}
 
 		total_calls = total_calls + 1;
-		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell) ) {
-			MyConfig.sendChat(serverPlayer, "ProcessServer after Cast.  You have " + playerManaStorage.getManaStored() + "mana left.  SpellKey is " + spellKey, Color.func_240744_a_(TextFormatting.RED));
-			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
+		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell)) {
+			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
+					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
 			playerManaStorage.useMana(spellCost);
+			IChunk playerChunk = serverPlayer.world.getChunk(serverPlayer.getPosition());
 //			// TODO get chunk mana here and use 1 mana from chunk
-			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE), serverPlayer);			
-			MyConfig.sendChat(serverPlayer, "ProcessServer after Cast.  You have " + playerManaStorage.getManaStored() + "mana left.  SpellNumber is " + spellNumber, Color.func_240744_a_(TextFormatting.RED));
+			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
+					serverPlayer);
 		} else {
-			MyConfig.sendChat(serverPlayer, "ProcessServer after failed Cast.  You have " + playerManaStorage.getManaStored() + "mana left.  SpellNumber is " + spellNumber, Color.func_240744_a_(TextFormatting.YELLOW));
 			drawSpellBeam(serverPlayer, serverPlayer.getServerWorld(), targetEntity, ParticleTypes.POOF);
-			MyConfig.sendChat(serverPlayer, "You have " + playerManaStorage.getManaStored() + "mana left.", Color.func_240744_a_(TextFormatting.RED));
-			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO, SoundCategory.AMBIENT, 0.4f, 0.25f);
-			MyConfig.dbgPrintln(1, "Serverside Spell :" + spell.getSpellComment() + ".  failed. calls:" + total_calls  +"." );
+			MyConfig.sendChat(serverPlayer, "You have " + playerManaStorage.getManaStored() + "mana left.",
+					Color.func_240744_a_(TextFormatting.RED));
+			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
+					SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO, SoundCategory.AMBIENT, 0.4f, 0.25f);
 		}
-		
+
 	}
 
 	public static void serverSpawnMagicalParticles(Entity entity, ServerWorld serverWorld, int particleCount, IParticleData particleType) {
@@ -701,13 +695,5 @@ public class CastSpells {
 		  int debug = 2;
   }
 
-    public static LivingEntity target(PlayerEntity player) {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.objectMouseOver.getType() == Type.ENTITY) {
-			Entity entity = ((EntityRayTraceResult) mc.objectMouseOver).getEntity();
-			if (entity instanceof LivingEntity)
-				return (LivingEntity) entity;
-		}
-		return null;
-	}
+
 }

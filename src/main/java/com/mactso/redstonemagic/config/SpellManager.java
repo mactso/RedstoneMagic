@@ -9,6 +9,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class SpellManager {
+	public final static String SPELL_TARGET_SELF = "S";
+	public final static String SPELL_TARGET_OTHER = "O";
+	public final static String SPELL_TARGET_BOTH = "B";
+	
 	public static Hashtable<String, RedstoneMagicSpellItem> redstoneMagicSpellItemHashtable = new Hashtable<>();
 	
 	public static RedstoneMagicSpellItem getRedstoneMagicSpellItem(String spellNumberKey) {
@@ -27,10 +31,10 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
 		final String[] defaultSpellValues = 
-				{"0,RM.NUKE,Red Bolt,1,T",
+				{"0,RM.NUKE,Red Bolt,1,O",
 				 "1,RM.HEAL,Crimson Heal,2,B",
-				 "2,RM.DOT,Sepsis,2,T",
-				 "3,RM.SDOT,Crimson Cloud,3,T",
+				 "2,RM.DOT,Sepsis,2,O",
+				 "3,RM.SDOT,Crimson Cloud,3,O",
 				 "4,RM.RESI,Redstone Shield,1,B",
 				 "5,RM.TELE,Cardinal Call,1,S",
 				 "6,RM.BUFF,Multi Buff,2,B",
