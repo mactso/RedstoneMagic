@@ -29,15 +29,15 @@ public class SpellManager {
 
 
 	public static void redstoneMagicSpellInit() {
-		// Key, Translation Key, English Comment, Cost Code, Min power, Max Damage, TargetType
+		// Key, Translation Key, English Comment, BaseCost, Target Type (B,O,S)
 		final String[] defaultSpellValues = 
-				{"0,RM.NUKE,Red Bolt,1,O",
-				 "1,RM.HEAL,Crimson Heal,2,B",
+				{"0,RM.NUKE,Redstone Bolt,1,O",
+				 "1,RM.HEAL,Scarlet Heal,2,B",
 				 "2,RM.DOT,Sepsis,2,O",
 				 "3,RM.SDOT,Crimson Cloud,3,O",
 				 "4,RM.RESI,Redstone Shield,1,B",
 				 "5,RM.TELE,Cardinal Call,1,S",
-				 "6,RM.BUFF,Multi Buff,2,B",
+				 "6,RM.BUFF,Ancient Blessings,2,B",
 				 "7,RM.RCRS,Remove Curse,2,B"
 				 };
 		
@@ -78,7 +78,7 @@ public class SpellManager {
 		public RedstoneMagicSpellItem(
 				String spellTranslationKey,
 				String spellComment,
-				int spellMaxPower,
+				int spellBaseCost,
 				String spellTargetType
 				) 
 		{

@@ -1,15 +1,6 @@
 package com.mactso.redstonemagic.spells;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
@@ -18,60 +9,38 @@ import com.mactso.redstonemagic.item.RedstoneFocusItem;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
-import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.SettingsScreen;
-import net.minecraft.client.gui.screen.EditGamerulesScreen.GamerulesList;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
-import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.play.server.SSpawnParticlePacket;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
-import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.TicketType;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraft.item.SwordItem;
-import net.minecraft.item.TridentItem;
-import net.minecraft.nbt.CompoundNBT;
 public class CastSpells {
 	static final int THREE_SECONDS = 60;
 	static final int FOUR_SECONDS = 80;
@@ -90,6 +59,7 @@ public class CastSpells {
 	static final ItemStack FIRE_CHARGE_STACK = new ItemStack (Items.FIRE_CHARGE);
 	static int total_calls = 0; 
 	
+
 	private static boolean castSpellAtTarget(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			RedstoneMagicSpellItem spell) {
 		
@@ -113,7 +83,7 @@ public class CastSpells {
 	    }
 		int weaponDamage = (int) ((float)(baseWeaponDamage / 4) * spellTime);
 
-		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
+//		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
 
 //***
 		if (spell.getSpellTranslationKey().equals("RM.NUKE")) { // red bolt
@@ -444,6 +414,7 @@ public class CastSpells {
 			ei = targetEntity.getActivePotionEffect(Effects.WITHER);
 			if (ei != null) {
 				targetEntity.removeActivePotionEffect(Effects.WITHER);
+				targetEntity.addPotionEffect(new EffectInstance(Effects.WITHER, 1, 0, true, true));
 				curseRemoved = true;
 			}
 		}
@@ -451,6 +422,7 @@ public class CastSpells {
 			ei = targetEntity.getActivePotionEffect(Effects.POISON);
 			if (ei != null) {
 				targetEntity.removeActivePotionEffect(Effects.POISON);
+				targetEntity.addPotionEffect(new EffectInstance(Effects.POISON, 1, 0, true, true));
 				curseRemoved = true;
 			}
 		}
@@ -598,6 +570,7 @@ public class CastSpells {
 		serverWorld.getChunkProvider().registerTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverTargetPlayer.getEntityId());
 		targetEntity.world.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_PORTAL_TRAVEL,
 				SoundCategory.AMBIENT, soundVolume, pitch);
+		serverSpawnMagicalParticles(serverPlayer, serverWorld, 2, ParticleTypes.POOF);
 		serverTargetPlayer.teleport(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
 		return true;
 	}
@@ -610,7 +583,7 @@ public class CastSpells {
 		Vector3d target3d = targetEntity.getEyePosition(1.0F);
 		double targetDistance = vector3d.distanceTo(target3d);
 		boolean doSpellParticleType = true;
-		for (double d0 = 1.0; d0 < targetDistance; d0=d0+0.5D) {
+		for (double d0 = 0.0; d0 <= targetDistance; d0=d0+0.5D) {
 			Vector3d beamPath3d2 = vectorFocus.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
 			serverSpawnMagicalParticles(beamPath3d2, serverWorld, 1, RedstoneParticleData.REDSTONE_DUST); 
 			doSpellParticleType = !doSpellParticleType;
@@ -644,12 +617,19 @@ public class CastSpells {
 					Color.func_240744_a_(TextFormatting.YELLOW));
 			return;
 		}
-
+		int debug = 1;
 		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
 		int spellCost = spell.getSpellBaseCost() * spellTime;
 		if (spellCost > playerManaStorage.getManaStored()) {
-			serverPlayer.world.playSound(serverPlayer, serverPlayer.getPosition(), SoundEvents.BLOCK_BASALT_FALL,
-					SoundCategory.AMBIENT, 0.5f, 0.8f);
+			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
+					SoundCategory.AMBIENT, 0.7f, 0.8f);
+			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
+					SoundCategory.NEUTRAL, 0.6f, 0.2f);
+			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO,
+					SoundCategory.BLOCKS, 0.8f, 0.4f);
+			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getServerWorld(), 2, ParticleTypes.POOF);
+			MyConfig.sendChat(serverPlayer, "You are out of mana.",
+					Color.func_240744_a_(TextFormatting.RED));
 			return;
 		}
 
@@ -664,8 +644,6 @@ public class CastSpells {
 					serverPlayer);
 		} else {
 			drawSpellBeam(serverPlayer, serverPlayer.getServerWorld(), targetEntity, ParticleTypes.POOF);
-			MyConfig.sendChat(serverPlayer, "You have " + playerManaStorage.getManaStored() + "mana left.",
-					Color.func_240744_a_(TextFormatting.RED));
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO, SoundCategory.AMBIENT, 0.4f, 0.25f);
 		}
@@ -678,7 +656,7 @@ public class CastSpells {
           double yOffset = 0.3D;
           double zOffset = 0.75D;
           particleCount *= 3;
-          serverWorld.spawnParticle(particleType, posX, posY+(double)entity.getEyeHeight(), posZ, particleCount, xOffset, yOffset, zOffset, -0.04D);                
+          serverWorld.spawnParticle(particleType, entity.getPosX(), entity.getPosY()+(double)entity.getEyeHeight(), entity.getPosZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);                
   		  int debug = 2;
     }
 	

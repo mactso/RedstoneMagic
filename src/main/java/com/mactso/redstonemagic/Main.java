@@ -33,8 +33,7 @@ public class Main {
 	    public static Main instance;
 	    public static final String MODID = "redstonemagic"; 
 	    public static final String PREFIX_GUI = MODID +":"+"textures/gui/";
-		private static int currentPlayerRedstoneMana;
-		private static int currentChunkRedstoneMana;
+
 	    
 	    public Main()
 	    {
@@ -87,18 +86,6 @@ public class Main {
 			MinecraftForge.EVENT_BUS.register(new RedstoneMagicGuiEvent (Minecraft.getInstance ()));
 		}
 		
-		public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
-			currentPlayerRedstoneMana = newPlayerRedstoneMana;
-	 	}
-		public static int getCurrentPlayerRedstoneMana() {
-			return currentPlayerRedstoneMana;
-		}
 
-		public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
-			currentChunkRedstoneMana = newChunkRedstoneMana;
-	 	}
-		public static int getCurrentChunkRedstoneMana() {
-			return currentChunkRedstoneMana;
-		}
 
 }

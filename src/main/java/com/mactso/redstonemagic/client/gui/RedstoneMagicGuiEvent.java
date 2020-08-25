@@ -62,7 +62,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	public static long timerCastingSpell = 0;
 	public static String spellBeingCast = "";
 	public static String spellPrepared = "";
-
+	private static int currentPlayerRedstoneMana;
+	private static int currentChunkRedstoneMana;
 
 	//	   private final ResourceLocation barx = new ResourceLocation (Main.MODID, resourcePathIn:"textures/gui/rmgui.png");
 	private final ResourceLocation bar = new ResourceLocation (Main.MODID, "textures/gui/rm_gui.png");
@@ -81,7 +82,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			return;
 		}
 
-		personalMana = Main.getCurrentPlayerRedstoneMana();
+		personalMana = getCurrentPlayerRedstoneMana();
 		
 		boolean hasNoFocusItem = true;
 
@@ -139,13 +140,23 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		if (manaHeight > 500) {
 			displayTopPosY = (int) (manaHeight * 0.85f);
 		}
-	
-		RenderSystem.color4f(1.0F, 1.0F, 1F, 0.7f);
+
+		float blueChannel = 1.0f;
+		if (personalMana < 0) {
+			personalMana = 0;
+		}
+		if (personalMana < 10) {
+			blueChannel = 0.0f;
+		}
+		RenderSystem.color4f(1.0F, 1.0F, blueChannel, 0.65f);
 		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY, 0.0f, 0.0f, 23, 23, displayScaledWidth, displayScaledHeight);
 		int colorValue6 = ((int)(personalMana+5)/5) * 5;
 		if (colorValue6 >0) colorValue6 += 80;
 		float redChannel = (float)(colorValue6/256.0); 
-		RenderSystem.color4f(redChannel, 0.0F, 0.0F, cycle + 0.1f);
+		if (redChannel < 0.0f) {
+			redChannel = 0.0f;
+		}
+		RenderSystem.color4f(redChannel, 1.0F, blueChannel, cycle + 0.05f);
 		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY+2, 0.5f, 23.0f, 23, 23, displayScaledWidth, displayScaledHeight);
 		RenderSystem.popAttributes();
 		RenderSystem.popMatrix();
@@ -181,7 +192,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
-		if (timerCastingSpell > 0) {
+		if (!(spellBeingCast.equals(""))) {
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, colourBlack.getRGB());
@@ -222,7 +233,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(castingSpellNumber));
 				spellBeingCast = spell.getSpellComment();
 				timerDisplayPreparedSpell = 0;
-				RedstoneMagicGuiEvent.mc.world.getGameTime();
+				timerCastingSpell = RedstoneMagicGuiEvent.mc.world.getGameTime();
 			}		
 	}
 
@@ -243,4 +254,17 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		return spellPrepared;
 	}
 
+	public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
+		currentPlayerRedstoneMana = newPlayerRedstoneMana;
+ 	}
+	public static int getCurrentPlayerRedstoneMana() {
+		return currentPlayerRedstoneMana;
+	}
+
+	public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
+		currentChunkRedstoneMana = newChunkRedstoneMana;
+ 	}
+	public static int getCurrentChunkRedstoneMana() {
+		return currentChunkRedstoneMana;
+	}
 }

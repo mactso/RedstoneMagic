@@ -2,6 +2,8 @@ package com.mactso.redstonemagic.network;
 
 import java.util.function.Supplier;
 import com.mactso.redstonemagic.Main;
+import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
+
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -22,8 +24,8 @@ public class SyncClientManaPacket {
 
 		ctx.get().enqueueWork( () -> 
 			{
-				if (message.playerMana >= 0) Main.setCurrentPlayerRedstoneMana(message.playerMana);
-				if (message.chunkMana >= 0) Main.setCurrentChunkRedstoneMana(message.chunkMana);
+				if (message.playerMana >= 0) RedstoneMagicGuiEvent.setCurrentPlayerRedstoneMana(message.playerMana);
+				if (message.chunkMana >= 0) RedstoneMagicGuiEvent.setCurrentChunkRedstoneMana(message.chunkMana);
 			}
 		);
 		ctx.get().setPacketHandled(true);

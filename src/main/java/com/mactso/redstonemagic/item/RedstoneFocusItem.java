@@ -16,7 +16,6 @@ import com.mactso.redstonemagic.spells.CastSpells;
 import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -46,12 +45,15 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class RedstoneFocusItem extends ShieldItem {
 
 	public final static int NBT_NUMBER_FIELD = 99;
 	public final static long SPELL_NOT_CASTING = -1;
 
+	@OnlyIn(value=Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
 		double d0 = 30;
 		double d1 = d0 * d0;
@@ -193,7 +195,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				} else if (preparedSpellNumber == 3) {
 					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 4) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.ENTITY_COD_DEATH, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 5) {
 					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_FLUTE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 6) {
@@ -261,7 +263,6 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		if (playerIn instanceof ServerPlayerEntity) {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) playerIn;
-			MyConfig.sendChat(serverPlayer, "server Player Use Redstone Focus. ", Color.func_240744_a_(TextFormatting.DARK_BLUE));
 			ItemStack itemStack = serverPlayer.getHeldItem(handIn);
 			if (canUseRedstoneFocusItem(serverPlayer)) {
 				if (serverPlayer.isSneaking()) {  // change spell
@@ -289,7 +290,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			//client side NBT will be overwritten.
 			RedstoneMagicGuiEvent.spellBeingCast = "";
 			RedstoneMagicGuiEvent.timerCastingSpell = 0;
-			ClientPlayerEntity clientPlayer = (ClientPlayerEntity) entityLiving;
+			PlayerEntity clientPlayer = (PlayerEntity) entityLiving;
 			if ((canUseRedstoneFocusItem(clientPlayer)) && 
 			   (!(clientPlayer.isSneaking()))) {
 				int handIndex = 0;
@@ -314,14 +315,14 @@ public class RedstoneFocusItem extends ShieldItem {
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 
 				int minimumCastingTime = 1;
-				if (spell.getSpellTranslationKey() == "RM.TELE") {
+				if (spell.getSpellTranslationKey().equals("RM.TELE")) {
 					minimumCastingTime = 4;
 				}
 				if (netSpellCastingTime < minimumCastingTime) {
 					// spell fizzle too fast
 					MyConfig.sendChat(clientPlayer, "Your spell fizzled.  Cast it longer.",
 							Color.func_240744_a_(TextFormatting.RED));
-					clientPlayer.world.playSound(null, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
+					clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
 							0.3f);
 				} else {
 
@@ -347,12 +348,14 @@ public class RedstoneFocusItem extends ShieldItem {
 						soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_CHIME;
 					}
 
-					clientPlayer.world.playSound(null, targetEntity.getPosition(), soundEvent, SoundCategory.PLAYERS,
-							volume, pitch);
-
 					if (targetEntity != null) {
+						clientPlayer.world.playSound(null, targetEntity.getPosition(), soundEvent, SoundCategory.PLAYERS,
+								volume, pitch);
 						Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber,targetEntity.getEntityId(),
 								(int) netSpellCastingTime, handIndex) );
+					} else {
+						clientPlayer.world.playSound(null, clientPlayer.getPosition(), soundEvent, SoundCategory.PLAYERS,
+								volume, pitch);
 					}
 				}
 				
