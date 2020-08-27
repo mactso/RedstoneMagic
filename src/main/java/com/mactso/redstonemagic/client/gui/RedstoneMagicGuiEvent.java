@@ -139,11 +139,11 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int displayScaledWidth = 128;
 		int displayScaledHeight = 128;
 		int displayLeftPosX = (manaWidth/2)-11; // confirmed location on screen.
-		int displayTopPosY = (int) (manaHeight * 0.65f); // confirmed location on screen.
+		int displayManaBarTopPosY = (int) (manaHeight * 0.65f); // confirmed location on screen.
 		if (manaHeight > 300) {
-			displayTopPosY = (int) (manaHeight * 0.75f);
+			displayManaBarTopPosY = (int) (manaHeight * 0.75f);
 		}
-		int lastSpellPreparedTopPosY = (int) (manaHeight * 0.05f); // confirmed location on screen.
+		int lastSpellPreparedTopPosY = (int) (manaHeight * 0.12f); // confirmed location on screen.
 
 		float blueChannel = 1.0f;
 		if (personalMana < 0) {
@@ -157,7 +157,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			blueChannel = 0.0f;
 		}
 		RenderSystem.color4f(1.0F, 1.0F, blueChannel, 0.9f + cycle/10.0f);
-		Screen.blit(event.getMatrixStack(), displayLeftPosX+2, displayTopPosY, 0.0f, 0.0f, 23, 22, displayScaledWidth, displayScaledHeight);
+		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayManaBarTopPosY, 0.0f, 0.0f, 23, 22, displayScaledWidth, displayScaledHeight);
 		int colorValue6 = ((int)(personalMana+5)/5) * 5;
 		if (colorValue6 >0) colorValue6 += 80;
 		float redChannel = (float)(colorValue6/256.0); 
@@ -165,26 +165,30 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			redChannel = 0.0f;
 		}
 		RenderSystem.color4f(redChannel, 1.0F, blueChannel, cycle + 0.05f);
-		Screen.blit(event.getMatrixStack(), displayLeftPosX+2, displayTopPosY+2, 0.5f, 23.0f, 23, 22, displayScaledWidth, displayScaledHeight);
+		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayManaBarTopPosY+2, 0.5f, 23.0f, 23, 22, displayScaledWidth, displayScaledHeight);
 		RenderSystem.popAttributes();
 		RenderSystem.popMatrix();
 
 		FontRenderer fontRender = mc.fontRenderer;
 		MainWindow scaled = mc.getMainWindow();
-		int width = scaled.getScaledWidth();
+		int width = scaled.getScaledWidth() - 1;
 		int height = scaled.getScaledHeight();
 		String castingSpellString = ""; // xxxxxxxx
 		if (netSpellCastingTime >0) castingSpellString = castingTimeString.substring (0,(int)(netSpellCastingTime*2)+1);
 		int spellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellPrepared())  / 2) + 1;
-		int spellManaPercentStartX = (width/2) - (fontRender.getStringWidth(manaPercentString)  / 2) +1;
+		int spellManaPercentStartX = (width/2) - (fontRender.getStringWidth(manaPercentString)  / 2);
 		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2);
-		int spellCastTimeStartY = displayTopPosY + fontRender.FONT_HEIGHT -1;
+		int spellCastTimeStartY = displayManaBarTopPosY + fontRender.FONT_HEIGHT -1;
 		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
-		int spellBeingCastStartY = displayTopPosY - fontRender.FONT_HEIGHT*3;
+		int spellBeingCastStartY = displayManaBarTopPosY - fontRender.FONT_HEIGHT*3;
 		int redChannelr = 30 + (int) (netSpellCastingTime * 30);
-		int spellManaPercentStartY = spellBeingCastStartY;
+		int spellManaPercentStartY = displayManaBarTopPosY;
 
-		Color color = new Color(redChannelr + 90, 160-redChannelr , 100);
+		redChannelr = redChannelr + 90;
+		int greenChannelg = 160 - redChannelr;
+		if (redChannelr > 255) redChannelr = 255;
+		if (greenChannelg < 0) greenChannelg = 0;
+		Color color = new Color(redChannelr, greenChannelg, 100);
 		String spellBeingCast = "";
 		if (netSpellCastingTime > 0) spellBeingCast = RedstoneMagicGuiEvent.getSpellBeingCast();
 		if (netSpellCastingTime == 4) {
@@ -197,7 +201,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		Color colourBlack = new Color(0, 0, 0, 160);
 
-		Color colourPrepared = new Color(230, 80, 100, 200);
+		Color colourPrepared = new Color(230, 90, 100, 110);
 		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(spellPrepared)  / 2) + 1;
 		
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
@@ -212,7 +216,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		} else {
 			if ((manaPercent >3) && (manaPercent<97 )) {
 				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+2, (float)spellCastTimeStartY+1, colourBlack.getRGB());
-				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, color.getRGB());
+				Color colourPercent = new Color(230, 160, 30, 190);
+				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, colourPercent.getRGB());
 			}
 		}
 		

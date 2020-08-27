@@ -8,6 +8,8 @@ import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
+import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.network.SyncClientGuiPacket;
@@ -56,6 +58,8 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	public final static int NBT_NUMBER_FIELD = 99;
 	public final static long SPELL_NOT_CASTING = -1;
+	static final int NO_CHUNK_MANA_UPDATE = -1;
+	
 
 	@OnlyIn(value = Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
@@ -192,7 +196,6 @@ public class RedstoneFocusItem extends ShieldItem {
 		float soundModifier = 0.4f + (0.01f * castingDuration);
 		if (soundModifier < 0.8f) {
 			if ( castingDuration %3 == 0) {
-				System.out.println(" doPlayCastingTickSounds.  preparedSpell=" + preparedSpellNumber);
 				if (preparedSpellNumber == 0) {
 					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.ENTITY_CAT_HISS, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 1) {
@@ -214,7 +217,6 @@ public class RedstoneFocusItem extends ShieldItem {
 		} else {
 			if ( castingDuration %20 == 0) {
 				doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.BLOCKS, 0.3f, 0.14f);
-				System.out.println(" max spell power.");
 			}
 		}
 			
@@ -223,6 +225,7 @@ public class RedstoneFocusItem extends ShieldItem {
 	private void doPlayTickSpellSound(ServerPlayerEntity serverPlayer, ServerWorld serverWorld, SoundEvent soundEvent, SoundCategory soundCategory, float volume, float pitch) {
 		serverWorld.playSound(null, serverPlayer.getPosition(), soundEvent, soundCategory, volume, pitch);
 	}
+
 
 	
 	public int getItemEnchantability() {
@@ -374,6 +377,29 @@ public class RedstoneFocusItem extends ShieldItem {
 	}
 
 	@Override
+	public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
+		if(entityIn instanceof ServerPlayerEntity) {
+			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityIn;
+ 
+			if ((int) (worldIn.getGameTime())%300 == 0) { // every 15 seconds.
+				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+				int manaLevel = playerManaStorage.getManaStored();
+				if (manaLevel < 20) {
+					int manaLevelPercent = (100 * manaLevel) / MyConfig.maxPlayerRedstoneMagic; 
+					if (manaLevelPercent <= 2) {
+						playerManaStorage.addMana(1);
+						Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
+								serverPlayer);
+					}
+				}
+				
+			}
+		}
+
+	}
+
+	@Override
 	public void onUsingTick(ItemStack stack, LivingEntity player, int count) {
 
 		if (player instanceof ServerPlayerEntity) {
@@ -387,7 +413,6 @@ public class RedstoneFocusItem extends ShieldItem {
 					: 0;
 			if (spellCastingStartTime != SPELL_NOT_CASTING) {
 				doPlayCastingTickSounds(serverPlayer, stack, spellCastingStartTime,preparedSpellNumber);
-				
 			}
 		}
 		super.onUsingTick(stack, player, count);

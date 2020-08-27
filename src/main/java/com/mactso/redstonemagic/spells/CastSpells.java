@@ -486,7 +486,6 @@ public class CastSpells {
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.WITCH); 
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.WHITE_ASH); 
 		}
-		MyConfig.dbgPrintln(1, "Remove Curse: remove one negative effect");
 
 		return curseRemoved;
 	}
@@ -692,9 +691,18 @@ public class CastSpells {
 		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell)) {
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
-			playerManaStorage.useMana(spellCost);
 			IChunk playerChunk = serverPlayer.world.getChunk(serverPlayer.getPosition());
-//			// TODO get chunk mana here and use 1 mana from chunk
+			IMagicStorage chunkManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			int chunkMana = chunkManaStorage.getManaStored();
+			int chunkManaUsed = 0;
+			int personalManaUsed = spellCost;
+			if (spellCost > 1) {
+				if (chunkManaStorage.useMana(1)) {
+					personalManaUsed = spellCost-1;
+				}
+			}
+			playerManaStorage.useMana(personalManaUsed);
+
 			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
 					serverPlayer);
 		} else {
