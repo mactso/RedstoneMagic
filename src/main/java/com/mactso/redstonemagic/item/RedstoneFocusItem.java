@@ -36,7 +36,11 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
@@ -53,29 +57,34 @@ public class RedstoneFocusItem extends ShieldItem {
 	public final static int NBT_NUMBER_FIELD = 99;
 	public final static long SPELL_NOT_CASTING = -1;
 
-	@OnlyIn(value=Dist.CLIENT)
+	@OnlyIn(value = Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
-		double d0 = 30;
+		double d0 = 30.0;
 		double d1 = d0 * d0;
 		Vector3d vector3d = clientPlayer.getEyePosition(1.0F);
 		Vector3d vector3d1 = clientPlayer.getLook(1.0F);
 		Vector3d vector3d2 = vector3d.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
 
 		AxisAlignedBB axisalignedbb = clientPlayer.getBoundingBox().expand(vector3d1.scale(d0)).grow(1.0D, 1.0D, 1.0D);
-		EntityRayTraceResult entityraytraceresult = ProjectileHelper.rayTraceEntities(clientPlayer, vector3d, vector3d2,
+		EntityRayTraceResult entityRayTraceResult = ProjectileHelper.rayTraceEntities(clientPlayer, vector3d, vector3d2,
 				axisalignedbb, (p_215312_0_) -> {
 					return !p_215312_0_.isSpectator() && p_215312_0_.canBeCollidedWith();
 				}, d1);
-		if (entityraytraceresult != null) {
-			Entity entity1 = entityraytraceresult.getEntity();
-			Vector3d vector3d3 = entityraytraceresult.getHitVec();
+		if (entityRayTraceResult != null) {
+			Entity entity1 = entityRayTraceResult.getEntity();
+			Vector3d vector3d3 = entityRayTraceResult.getHitVec();
 			if (entity1 instanceof LivingEntity) {
-				return (LivingEntity) entity1;
+				LivingEntity livingEntity = (LivingEntity) entity1;
+				if (livingEntity.canEntityBeSeen(clientPlayer)) {
+					return livingEntity;
+				}
 			}
 		}
 		return null;
 	}
- 
+
+
+	
 	public static LivingEntity target(PlayerEntity player) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.objectMouseOver.getType() == Type.ENTITY) {
@@ -92,7 +101,6 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-		// TODO Auto-generated method stub
 		CompoundNBT compoundnbt = stack.getOrCreateTag();
 		int spellNumberKey = compoundnbt != null && compoundnbt.contains("spellKeyNumber", NBT_NUMBER_FIELD)
 				? compoundnbt.getInt("spellKeyNumber")
@@ -105,24 +113,23 @@ public class RedstoneFocusItem extends ShieldItem {
 
 
 	private boolean canUseRedstoneFocusItem(PlayerEntity playerIn) {
+		
 		int baseWeaponDamage = 0;
 		boolean canUseRedstoneFocus = false;
 		ItemStack handItem = playerIn.getHeldItemMainhand();
 		if (handItem.getItem() instanceof RedstoneFocusItem) {
 			canUseRedstoneFocus = true;
+			return canUseRedstoneFocus;
 		}
-		if (handItem != null) {
-			Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND)
-					.get(Attributes.ATTACK_DAMAGE);
-			while ((d.iterator().hasNext()) && (baseWeaponDamage == 0)) {
-				baseWeaponDamage = (int) d.iterator().next().getAmount();
-				if (baseWeaponDamage > 1) {
-					canUseRedstoneFocus = true;
-				}
-			}
-		} else {
-			canUseRedstoneFocus = true;
-		}
+		Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
+        for (AttributeModifier attr : d)
+        {
+            baseWeaponDamage = (int) attr.getAmount();
+            if (baseWeaponDamage >= 1) {
+                canUseRedstoneFocus = true;
+                break;
+            }
+        }
 		return canUseRedstoneFocus;
 	}
 
@@ -290,6 +297,9 @@ public class RedstoneFocusItem extends ShieldItem {
 			//client side NBT will be overwritten.
 			RedstoneMagicGuiEvent.spellBeingCast = "";
 			RedstoneMagicGuiEvent.timerCastingSpell = 0;
+			CompoundNBT compoundnbt = stack.getOrCreateTag();	
+			compoundnbt.putLong("spellCastingStartTime", SPELL_NOT_CASTING);
+			
 			PlayerEntity clientPlayer = (PlayerEntity) entityLiving;
 			if ((canUseRedstoneFocusItem(clientPlayer)) && 
 			   (!(clientPlayer.isSneaking()))) {
@@ -302,11 +312,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				if (stack == offStack) {
 					handIndex = 2;
 				}
-				CompoundNBT compoundnbt = stack.getOrCreateTag();
-				long spellCastingStartTime = compoundnbt != null
-						&& compoundnbt.contains("spellCastingStartTime", NBT_NUMBER_FIELD)
-								? compoundnbt.getLong("spellCastingStartTime")
-								: 0;
+
 				SoundEvent soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO; // "failure"
 				// casting a spell
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);

@@ -35,7 +35,7 @@ public class SpellManager {
 				 "1,RM.HEAL,Scarlet Heal,2,B",
 				 "2,RM.DOT,Sepsis,2,O",
 				 "3,RM.SDOT,Crimson Cloud,3,O",
-				 "4,RM.RESI,Redstone Shield,1,B",
+				 "4,RM.RESI,Ruby Shield,1,B",
 				 "5,RM.TELE,Cardinal Call,1,S",
 				 "6,RM.BUFF,Ancient Blessings,2,B",
 				 "7,RM.RCRS,Remove Curse,2,B"

@@ -1,13 +1,8 @@
 package com.mactso.redstonemagic.client.gui;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IngameGui;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.particle.FireworkParticle.Overlay;
-import net.minecraftforge.api.distmarker.*;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import java.awt.Color;
+
+import org.lwjgl.opengl.GL11;
 
 import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.MyConfig;
@@ -15,33 +10,27 @@ import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.RedstoneFocusItem;
-import com.mactso.redstonemagic.mana.CapabilityMagic;
-import com.mactso.redstonemagic.mana.IMagicStorage;
-import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import java.awt.Color;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.IngameGui;
-import org.lwjgl.opengl.GL11;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 //https://github.com/KurodaAkira/RPG-Hud/tree/MC-Forge-1.16.1/src/main/java/net/spellcraftgaming/rpghud
 //https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
 @OnlyIn(value=Dist.CLIENT)
@@ -85,7 +74,6 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		personalMana = getCurrentPlayerRedstoneMana();
 		
 		boolean hasNoFocusItem = true;
-
 		if (mc.player.inventory.offHandInventory.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
 			hasNoFocusItem = false;
 		} else {
@@ -96,13 +84,30 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 				};
 			}
 		}
-		//				mc.player.inventory.mainInventory.get(p_get_1_) 
-		int debugv = 1;
-
-
 		if (hasNoFocusItem) {
 			return;
-		}				
+		}
+
+		if (spellPrepared.equals("")) {
+			ItemStack focusStack = null;
+			if (mc.player.inventory.getCurrentItem().getItem() == ModItems.REDSTONE_FOCUS_ITEM)  {
+				focusStack = mc.player.inventory.getCurrentItem();
+			}
+			if (mc.player.inventory.offHandInventory.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
+				focusStack = mc.player.inventory.offHandInventory.get(0);
+			}
+			if (focusStack != null) {
+				CompoundNBT compoundnbt = focusStack.getOrCreateTag();
+				int spellNumberKey = compoundnbt != null && compoundnbt.contains("spellKeyNumber", RedstoneFocusItem.NBT_NUMBER_FIELD)
+						? compoundnbt.getInt("spellKeyNumber")
+						: 0;
+				SpellManager.RedstoneMagicSpellItem spell = SpellManager
+						.getRedstoneMagicSpellItem(Integer.toString(spellNumberKey));
+				spellPrepared = spell.getSpellComment();
+			}
+		}
+
+				
 		mc.getTextureManager().bindTexture(bar);
 		RenderSystem.pushMatrix();
 		long netSpellCastingTime = 0;
@@ -119,11 +124,11 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			flashCycle = 1;
 		}
 		cycle = cycle + cycleDirection;
-		if (cycle>0.7) {
-			cycleDirection =-0.004f;
+		if (cycle>0.9) {
+			cycleDirection =-0.005f;
 		}
-		if (cycle<0.4) {
-			cycleDirection = 0.004f;
+		if (cycle<0.3) {
+			cycleDirection = 0.005f;
 		}
 		RenderSystem.pushTextureAttributes();
 		RenderSystem.enableAlphaTest();
@@ -134,22 +139,25 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int displayScaledWidth = 128;
 		int displayScaledHeight = 128;
 		int displayLeftPosX = (manaWidth/2)-11; // confirmed location on screen.
-		int displayTopPosY = (int) (manaHeight * 0.75f); // confirmed location on screen.
-		int lastSpellPreparedTopPosY = (int) (manaHeight * 0.05f); // confirmed location on screen.
-
-		if (manaHeight > 500) {
-			displayTopPosY = (int) (manaHeight * 0.85f);
+		int displayTopPosY = (int) (manaHeight * 0.65f); // confirmed location on screen.
+		if (manaHeight > 300) {
+			displayTopPosY = (int) (manaHeight * 0.75f);
 		}
+		int lastSpellPreparedTopPosY = (int) (manaHeight * 0.05f); // confirmed location on screen.
 
 		float blueChannel = 1.0f;
 		if (personalMana < 0) {
 			personalMana = 0;
 		}
+		
+		int manaPercent = (100 * personalMana ) / MyConfig.maxPlayerRedstoneMagic;
+		String manaPercentString = Integer.toString(manaPercent);
+		
 		if (personalMana < 10) {
 			blueChannel = 0.0f;
 		}
-		RenderSystem.color4f(1.0F, 1.0F, blueChannel, 0.65f);
-		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY, 0.0f, 0.0f, 23, 23, displayScaledWidth, displayScaledHeight);
+		RenderSystem.color4f(1.0F, 1.0F, blueChannel, 0.9f + cycle/10.0f);
+		Screen.blit(event.getMatrixStack(), displayLeftPosX+2, displayTopPosY, 0.0f, 0.0f, 23, 22, displayScaledWidth, displayScaledHeight);
 		int colorValue6 = ((int)(personalMana+5)/5) * 5;
 		if (colorValue6 >0) colorValue6 += 80;
 		float redChannel = (float)(colorValue6/256.0); 
@@ -157,7 +165,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			redChannel = 0.0f;
 		}
 		RenderSystem.color4f(redChannel, 1.0F, blueChannel, cycle + 0.05f);
-		Screen.blit(event.getMatrixStack(), displayLeftPosX, displayTopPosY+2, 0.5f, 23.0f, 23, 23, displayScaledWidth, displayScaledHeight);
+		Screen.blit(event.getMatrixStack(), displayLeftPosX+2, displayTopPosY+2, 0.5f, 23.0f, 23, 22, displayScaledWidth, displayScaledHeight);
 		RenderSystem.popAttributes();
 		RenderSystem.popMatrix();
 
@@ -168,11 +176,14 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		String castingSpellString = ""; // xxxxxxxx
 		if (netSpellCastingTime >0) castingSpellString = castingTimeString.substring (0,(int)(netSpellCastingTime*2)+1);
 		int spellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellPrepared())  / 2) + 1;
-		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2) + 1;
-		int spellCastTimeStartY = displayTopPosY + fontRender.FONT_HEIGHT;
+		int spellManaPercentStartX = (width/2) - (fontRender.getStringWidth(manaPercentString)  / 2) +1;
+		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2);
+		int spellCastTimeStartY = displayTopPosY + fontRender.FONT_HEIGHT -1;
 		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
 		int spellBeingCastStartY = displayTopPosY - fontRender.FONT_HEIGHT*3;
 		int redChannelr = 30 + (int) (netSpellCastingTime * 30);
+		int spellManaPercentStartY = spellBeingCastStartY;
+
 		Color color = new Color(redChannelr + 90, 160-redChannelr , 100);
 		String spellBeingCast = "";
 		if (netSpellCastingTime > 0) spellBeingCast = RedstoneMagicGuiEvent.getSpellBeingCast();
@@ -184,9 +195,9 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		}
 
-		Color colourBlack = new Color(0, 0, 0);
+		Color colourBlack = new Color(0, 0, 0, 160);
 
-		Color colourPrepared = new Color(230, 80, 100);
+		Color colourPrepared = new Color(230, 80, 100, 200);
 		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(spellPrepared)  / 2) + 1;
 		
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
@@ -195,16 +206,21 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		if (!(spellBeingCast.equals(""))) {
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
-			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, colourBlack.getRGB());
-			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX, (float)spellCastTimeStartY, color.getRGB());
+			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+2, (float)spellCastTimeStartY+2, colourBlack.getRGB());
+			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, color.getRGB());
 			timerDisplayPreparedSpell = 0;
+		} else {
+			if ((manaPercent >3) && (manaPercent<97 )) {
+				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+2, (float)spellCastTimeStartY+1, colourBlack.getRGB());
+				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, color.getRGB());
+			}
 		}
 		
 		if (timerDisplayPreparedSpell > 0) {
 			timerDisplayPreparedSpell--;
 			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
 			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
-		}
+		} 
 		
 		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
 		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
