@@ -1,0 +1,12 @@
+{
+	"item.redstonemagic.redstone_focus" : "Redfish",
+	"redstonemagic.nuke" : "Redstone Bolt",
+	"redstonemagic.heal" : "Scarlet Heal",
+	"redstonemagic.dot"  : "Sepsis",
+	"redstonemagic.sdot" : "Crimson Cloud",
+	"redstonemagic.resi" : "Ruby Shield",
+	"redstonemagic.tele" : "Glorius Recall",
+	"redstonemagic.buff" : "Ancient Blessings",
+	"redstonemagic.rcrs" : "Cleanse",
+	"redstonemagic.fizz" : "Your spell fizzled.  Cast Slower."
+}

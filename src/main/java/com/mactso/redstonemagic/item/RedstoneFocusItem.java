@@ -48,7 +48,9 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -120,7 +122,12 @@ public class RedstoneFocusItem extends ShieldItem {
 		
 		int baseWeaponDamage = 0;
 		boolean canUseRedstoneFocus = false;
+		
 		ItemStack handItem = playerIn.getHeldItemMainhand();
+		if (handItem.getUseDuration() == 0) {
+			canUseRedstoneFocus = true;
+		}
+		
 		if (handItem.getItem() instanceof RedstoneFocusItem) {
 			canUseRedstoneFocus = true;
 			return canUseRedstoneFocus;
@@ -134,6 +141,7 @@ public class RedstoneFocusItem extends ShieldItem {
                 break;
             }
         }
+        
 		return canUseRedstoneFocus;
 	}
 
@@ -324,12 +332,13 @@ public class RedstoneFocusItem extends ShieldItem {
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 
 				int minimumCastingTime = 1;
-				if (spell.getSpellTranslationKey().equals("RM.TELE")) {
+				if (spell.getSpellTranslationKey().equals("redstonemagic.tele")) {
 					minimumCastingTime = 4;
 				}
 				if (netSpellCastingTime < minimumCastingTime) {
 					// spell fizzle too fast
-					MyConfig.sendChat(clientPlayer, "Your spell fizzled.  Cast it longer.",
+					TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
+					MyConfig.sendChat(clientPlayer, msg.getString(),
 							Color.func_240744_a_(TextFormatting.RED));
 					clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
 							0.3f);

@@ -12,7 +12,6 @@ public class SpellManager {
 	public final static String SPELL_TARGET_SELF = "S";
 	public final static String SPELL_TARGET_OTHER = "O";
 	public final static String SPELL_TARGET_BOTH = "B";
-	
 	public static Hashtable<String, RedstoneMagicSpellItem> redstoneMagicSpellItemHashtable = new Hashtable<>();
 	
 	public static RedstoneMagicSpellItem getRedstoneMagicSpellItem(String spellNumberKey) {
@@ -31,14 +30,14 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, BaseCost, Target Type (B,O,S)
 		final String[] defaultSpellValues = 
-				{"0,RM.NUKE,Redstone Bolt,1,O",
-				 "1,RM.HEAL,Scarlet Heal,2,B",
-				 "2,RM.DOT,Sepsis,2,O",
-				 "3,RM.SDOT,Crimson Cloud,3,O",
-				 "4,RM.RESI,Ruby Shield,1,B",
-				 "5,RM.TELE,Cardinal Call,1,S",
-				 "6,RM.BUFF,Ancient Blessings,2,B",
-				 "7,RM.RCRS,Remove Curse,2,B"
+				{"0,redstonemagic.nuke,Redstone Bolt,1,O",
+				 "1,redstonemagic.heal,Scarlet Heal,2,B",
+				 "2,redstonemagic.dot,Sepsis,2,O",
+				 "3,redstonemagic.sdot,Crimson Cloud,3,O",
+				 "4,redstonemagic.resi,Ruby Shield,1,B",
+				 "5,redstonemagic.tele,Recall,1,B",
+				 "6,redstonemagic.buff,Ancient Blessings,2,B",
+				 "7,redstonemagic.rcrs,Remove Curse,2,B"
 				 };
 		
 		List <String> dTL6464 = new ArrayList<>();

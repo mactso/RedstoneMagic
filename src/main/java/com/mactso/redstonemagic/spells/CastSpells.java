@@ -1,6 +1,7 @@
 package com.mactso.redstonemagic.spells;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
@@ -18,6 +19,11 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.CatEntity;
+import net.minecraft.entity.passive.ParrotEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.passive.horse.AbstractHorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -34,6 +40,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -92,35 +99,35 @@ public class CastSpells {
 //		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
 
 //***
-		if (spell.getSpellTranslationKey().equals("RM.NUKE")) { // red bolt
+		if (spell.getSpellTranslationKey().equals("redstonemagic.nuke")) { // red bolt
 			return doSpellNuke(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
 		}
 //***
-		if (spellTranslationKey.equals(("RM.DOT"))) { // sepsis
+		if (spellTranslationKey.equals(("redstonemagic.dot"))) { // sepsis
 			return doSpellDoT(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
 		}
 //***
-		if (spellTranslationKey.equals(("RM.SDOT"))) { // crimson cloud
+		if (spellTranslationKey.equals(("redstonemagic.sdot"))) { // crimson cloud
 			return doSpellSnareDot(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
 		}
 //***
-		if (spellTranslationKey.equals("RM.BUFF")) { // multi-buff
+		if (spellTranslationKey.equals("redstonemagic.buff")) { // multi-buff
 			return doSpellMultiBuff(serverPlayer, targetEntity, spellTime, serverWorld);
 		}
 //***
-		if (spellTranslationKey.equals("RM.HEAL")) { // Crimson Heal
+		if (spellTranslationKey.equals("redstonemagic.heal")) { // Crimson Heal
 			return doSpellHeal(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
 		}
 //***
-		if (spellTranslationKey.equals("RM.RESI")) { // Resistance
+		if (spellTranslationKey.equals("redstonemagic.resi")) { // Resistance
 			return doSpellResistance(serverPlayer, targetEntity, spellTime, serverWorld);
 		}
 //***
-		if (spellTranslationKey.equals("RM.RCRS")) { // remove curse
+		if (spellTranslationKey.equals("redstonemagic.rcrs")) { // remove curse
 			return doSpellRemoveCurse(serverPlayer, targetEntity, spellTime, serverWorld);
 		}
 //***
-		if (spellTranslationKey.equals("RM.TELE")) { // Cardinal Call
+		if (spellTranslationKey.equals("redstonemagic.tele")) { // Cardinal Call
 			return doSpellTeleport(serverPlayer, targetEntity, spellTime, serverWorld);
 		}		
 		return false;
@@ -158,7 +165,7 @@ public class CastSpells {
 		
 		if ((targetEntity instanceof PlayerEntity) && (!(damaged))) {
 			return false;  // PVP hack til I find server settings.  Basically if a player and not damaged by nuke, then don't apply DoT to them.
-		}		
+		}
 
 		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.POISON);
 		if (ei != null) {
@@ -211,6 +218,7 @@ public class CastSpells {
 				return false;
 			}
 		}
+		// @TODO add code to remove revenge if animal healed close to max health.
 		if ((isHealable(targetEntity))) {
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ASH);
 			targetEntity.heal((float) damage);
@@ -366,15 +374,26 @@ public class CastSpells {
 		return (serverWorld.getBlockState(p).getBlock() == Blocks.WATER) && (serverWorld.getBlockState(p.up()).getBlock() == Blocks.WATER);
 	}
 
-	private static boolean doSpellNuke(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellCost,
+	private static boolean doSpellNuke(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			DamageSource myDamageSource, ServerWorld serverWorld, int weaponDamage) {
 
-		float damage = targetEntity.getHealth() / 10;
-		if (damage == 0) damage = 2.0f;
-		damage = damage * spellCost;
+		// can't nuke pets that are not made at you.  But they can block casting at a target.
+		if ((targetEntity instanceof TameableEntity)) {
+			TameableEntity t = (TameableEntity) targetEntity;
+			if (t.isTamed()) {
+				if ((t.getRevengeTarget() != (LivingEntity) serverPlayer)) {
+					return false;
+				}
+			}
+		}
+		
+		float damage = targetEntity.getHealth() * 0.4f;
+		damage = damage * spellTime / 4;
 		if (damage > BOSS_MOB_LIMIT) damage = BOSS_MOB_LIMIT;
-		if (weaponDamage > damage)damage = (float) (weaponDamage - 1);
-
+		if (damage > weaponDamage * 2) damage = weaponDamage * 2-1;
+		if (weaponDamage > damage) damage = weaponDamage - 1;
+		if (spellTime == 4) weaponDamage = weaponDamage + 1;
+		
 		if (hasFalderal(serverPlayer, FIRE_CHARGE_STACK)) {
 			if (!(targetEntity.isImmuneToFire())) {
 				LivingEntity lE = (LivingEntity) targetEntity;
@@ -389,7 +408,7 @@ public class CastSpells {
 				serverWorld.playSound(null, targetEntity.getPosition(),SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.2f, 0.4f);
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.SOUL_FIRE_FLAME);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int)damage, RedstoneParticleData.REDSTONE_DUST); 
-				serverSpawnMagicalParticles(targetEntity, serverWorld, (int)spellCost, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
+				serverSpawnMagicalParticles(targetEntity, serverWorld, (int)spellTime, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int)damage, ParticleTypes.DAMAGE_INDICATOR); 
 				return true;
 			} else {
@@ -406,7 +425,7 @@ public class CastSpells {
 					SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.2f, 0.4f);
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, RedstoneParticleData.REDSTONE_DUST);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int)damage, RedstoneParticleData.REDSTONE_DUST); 
-			serverSpawnMagicalParticles(targetEntity, serverWorld, spellCost, RedstoneParticleData.REDSTONE_DUST); 
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST); 
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int)damage, ParticleTypes.DAMAGE_INDICATOR); 
 			return true;
 		}
@@ -591,24 +610,39 @@ public class CastSpells {
 
 	private static boolean doSpellTeleport(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			ServerWorld serverWorld) {
-		if (spellTime < 4) {
-			MyConfig.sendChat(serverPlayer,"Cast Longer to Teleport.",Color.func_240744_a_(TextFormatting.YELLOW));
-			return false;
-		}
-		if (targetEntity.world.func_234923_W_() != World.field_234918_g_) {
+
+		if (serverPlayer.world.func_234923_W_() != World.field_234918_g_) {
 			MyConfig.sendChat(serverPlayer,"You can only teleport in the Overworld.",Color.func_240744_a_(TextFormatting.YELLOW));
 			return false;
 		}
+		
+		boolean teleportPetOrHorse = false;
+		if (targetEntity instanceof TameableEntity) {
+			TameableEntity p = (TameableEntity) targetEntity;
+			if (p.isTamed()) {
+				if (p.getOwner() == serverPlayer) {
+					teleportPetOrHorse = true;
+				}
+			}
+		}
+		if (targetEntity instanceof AbstractHorseEntity) {
+			AbstractHorseEntity p = (AbstractHorseEntity) targetEntity;
+			if (p.isTame()) {
+				if (p.getOwnerUniqueId().equals(serverPlayer.getUniqueID())) {
+					teleportPetOrHorse = true;
+				}
+			}
+		}
+		
 		// TODO Check for configurable reagent.
-		float headPitch = targetEntity.rotationPitch;
-		float headYaw = targetEntity.rotationYaw;
+		float headPitch = serverPlayer.rotationPitch;
+		float headYaw = serverPlayer.rotationYaw;
 		// default - teleport to worldspawn.
-		int wX = targetEntity.world.getWorldInfo().getSpawnX();
-		int wY = targetEntity.world.getWorldInfo().getSpawnY();
-		int wZ = targetEntity.world.getWorldInfo().getSpawnZ();
+		int wX = serverPlayer.world.getWorldInfo().getSpawnX();
+		int wY = serverPlayer.world.getWorldInfo().getSpawnY();
+		int wZ = serverPlayer.world.getWorldInfo().getSpawnZ();
 
-		ServerPlayerEntity serverTargetPlayer = (ServerPlayerEntity) targetEntity;
-		BlockPos personalSpawnPos = serverTargetPlayer.func_241140_K_();
+		BlockPos personalSpawnPos = serverPlayer.func_241140_K_();
 		float pitch = 0.4f;
 		float soundVolume = 0.8f;
 		if (headPitch > 0) { // looking down- teleport to personal spawn instead.
@@ -620,13 +654,34 @@ public class CastSpells {
 		}
 
 		ChunkPos chunkPos = new ChunkPos(new BlockPos (wX,wY,wZ));
-
-		serverWorld.getChunkProvider().registerTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverTargetPlayer.getEntityId());
-		targetEntity.world.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_PORTAL_TRAVEL,
-				SoundCategory.AMBIENT, soundVolume, pitch);
 		serverSpawnMagicalParticles(serverPlayer, serverWorld, 2, ParticleTypes.POOF);
-		serverTargetPlayer.teleport(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
+
+		if (teleportPetOrHorse) {
+
+			serverSpawnMagicalParticles(targetEntity, serverWorld, 2, ParticleTypes.POOF);
+
+			SoundEvent petSound = SoundEvents.BLOCK_PORTAL_TRAVEL;
+			if (targetEntity instanceof WolfEntity) {
+				petSound = SoundEvents.ENTITY_WOLF_HOWL;
+			} else if (targetEntity instanceof AbstractHorseEntity){
+				petSound = SoundEvents.ENTITY_HORSE_ANGRY;
+			} else if (targetEntity instanceof CatEntity){
+				petSound = SoundEvents.ENTITY_CAT_PURREOW;
+			}
+			serverPlayer.world.playSound(null, targetEntity.getPosition(), petSound,
+					SoundCategory.AMBIENT, soundVolume/2, pitch);
+			targetEntity.setPosition((double)wX, (double)wY, (double)wZ);
+
+		} else {
+			serverWorld.getChunkProvider().registerTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverPlayer.getEntityId());
+			serverPlayer.world.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_PORTAL_TRAVEL,
+					SoundCategory.AMBIENT, soundVolume, pitch);
+			serverSpawnMagicalParticles(serverPlayer, serverWorld, 2, ParticleTypes.POOF);
+			serverPlayer.teleport(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
+		}
+		
 		return true;
+		
 	}
 
 	public static void drawSpellBeam (ServerPlayerEntity serverPlayer, ServerWorld serverWorld, Entity targetEntity, IParticleData spellParticleType) {

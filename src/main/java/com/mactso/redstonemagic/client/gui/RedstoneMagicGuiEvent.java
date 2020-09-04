@@ -2,6 +2,7 @@ package com.mactso.redstonemagic.client.gui;
 
 import java.awt.Color;
 
+
 import org.lwjgl.opengl.GL11;
 
 import com.mactso.redstonemagic.Main;
@@ -24,6 +25,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -31,6 +34,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
 //https://github.com/KurodaAkira/RPG-Hud/tree/MC-Forge-1.16.1/src/main/java/net/spellcraftgaming/rpghud
 //https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
 @OnlyIn(value=Dist.CLIENT)
@@ -241,7 +245,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		if ((preparedSpellNumber >=0) &&
 		    (preparedSpellNumber <=7)) { 
 			RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
-			spellPrepared = spell.getSpellComment();
+			TextComponent msg = new TranslationTextComponent(spell.getSpellTranslationKey());
+			spellPrepared = msg.getString();
 			timerDisplayPreparedSpell = 80;
 			timerCastingSpell = 0;
 			spellBeingCast = "";
@@ -252,7 +257,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		if ((castingSpellNumber >=0) &&
 			    (castingSpellNumber <=7)) { 
 				RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(castingSpellNumber));
-				spellBeingCast = spell.getSpellComment();
+				TextComponent msg = new TranslationTextComponent(spell.getSpellTranslationKey());
+				spellBeingCast= msg.getString();
 				timerDisplayPreparedSpell = 0;
 				timerCastingSpell = RedstoneMagicGuiEvent.mc.world.getGameTime();
 			}		
