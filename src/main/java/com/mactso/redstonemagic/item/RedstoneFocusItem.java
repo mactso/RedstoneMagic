@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
+import com.mactso.redstonemagic.config.ModExclusionListDataManager;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
@@ -27,6 +28,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.UseAction;
@@ -126,6 +128,12 @@ public class RedstoneFocusItem extends ShieldItem {
 		ItemStack handItem = playerIn.getHeldItemMainhand();
 		if (handItem.getUseDuration() == 0) {
 			canUseRedstoneFocus = true;
+		}
+		// replace this with a list later but hard coded for now.
+		String modName= handItem.getItem().getRegistryName().getNamespace();
+		if (ModExclusionListDataManager.getModExclusionListItem(modName) != null) {
+			canUseRedstoneFocus = false;
+			return canUseRedstoneFocus;
 		}
 		
 		if (handItem.getItem() instanceof RedstoneFocusItem) {
@@ -395,7 +403,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
 				if (manaLevel < 20) {
-					int manaLevelPercent = (100 * manaLevel) / MyConfig.maxPlayerRedstoneMagic; 
+					int manaLevelPercent = (100 * manaLevel) / MyConfig.getMaxPlayerRedstoneMagic(); 
 					if (manaLevelPercent <= 2) {
 						playerManaStorage.addMana(1);
 						Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),

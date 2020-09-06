@@ -154,7 +154,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			personalMana = 0;
 		}
 		
-		int manaPercent = (100 * personalMana ) / MyConfig.maxPlayerRedstoneMagic;
+		int manaPercent = (100 * personalMana ) / MyConfig.getMaxPlayerRedstoneMagic();
 		String manaPercentString = Integer.toString(manaPercent);
 		
 		if (personalMana < 10) {

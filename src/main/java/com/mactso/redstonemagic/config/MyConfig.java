@@ -13,6 +13,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -23,51 +24,69 @@ import net.minecraftforge.fml.config.ModConfig;
 public class MyConfig
 {
 	private static final Logger LOGGER = LogManager.getLogger();
-	public static final Server SERVER;
-	public static final ForgeConfigSpec SERVER_SPEC;
+	public static final Common COMMON;
+	public static final ForgeConfigSpec COMMON_SPEC;
 	public static long castTime = 0;
 
 
 	
 	static
 	{
-		final Pair<Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Server::new);
-		SERVER_SPEC = specPair.getRight();
-		SERVER = specPair.getLeft();
+		final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
+		COMMON_SPEC = specPair.getRight();
+		COMMON = specPair.getLeft();
 	}
 
-	public static int debugLevel;
-	public static int maxChunkRedstoneMagic;
-	public static int maxPlayerRedstoneMagic;
+
+
+	private static int debugLevel;
+	private static int maxChunkRedstoneMagic;
+	private static int maxPlayerRedstoneMagic;
+	public static String[]  defaultModExclusionList;
+	public static String    defaultModExclusionList6464;
+
+	
 	
 	@SubscribeEvent
 	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent)
 	{
-		if (configEvent.getConfig().getSpec() == MyConfig.SERVER_SPEC)
+		if (configEvent.getConfig().getSpec() == MyConfig.COMMON_SPEC)
 		{
 			bakeConfig();
+			ModExclusionListDataManager.excludedModsListInit();
 		}
+	}
+
+	public static void pushValues() {
+		COMMON.defaultModExclusionListActual.set(ModExclusionListDataManager.getExcludedModsListHashAsString());
 	}
 
 	public static void bakeConfig()
 	{
-		debugLevel = SERVER.debugLevel.get();
-		maxChunkRedstoneMagic = SERVER.maxChunkRedstoneMagic.get();
-		maxPlayerRedstoneMagic = SERVER.maxPlayerRedstoneMagic.get();
+		debugLevel = COMMON.debugLevel.get();
+		maxChunkRedstoneMagic = COMMON.maxChunkRedstoneMagic.get();
+		maxPlayerRedstoneMagic = COMMON.maxPlayerRedstoneMagic.get();
+		defaultModExclusionList6464 = COMMON.defaultModExclusionListActual.get() ;
 		SpellManager.redstoneMagicSpellInit();
 
 	}
 
 
-	public static class Server
+	public static class Common
 	{
 
 		public final IntValue debugLevel;
 		public final IntValue maxChunkRedstoneMagic;
 		public final IntValue maxPlayerRedstoneMagic;
 
+		// blocks walls can be built on
+		public final ConfigValue<String> defaultModExclusionListActual;
+		public final String defaultModExclusionList6464 = 
+				  "customquests;"
+				+ "simplybackpacks;"
+				;
 		
-		public Server(ForgeConfigSpec.Builder builder)
+		public Common(ForgeConfigSpec.Builder builder)
 		{
 			builder.push("Redstone Magic Control Values");
 
@@ -87,6 +106,13 @@ public class MyConfig
 					.defineInRange("maxPlayerRedstoneMagic", () -> 396, 0, 511);
 			builder.pop();
 			
+			builder.push ("Regrowth Wall Foundations 6464");
+			
+			defaultModExclusionListActual = builder
+					.comment("Mod Exclusion List String 6464")
+					.translation(Main.MODID + ".config" + "defaultModExclusionListActual")
+					.define("defaultModExclusionListActual", defaultModExclusionList6464);
+			builder.pop();	
 		}
 	}
 
@@ -104,40 +130,29 @@ public class MyConfig
 		}
 	}
 	
-//	public static  long getCastTime () {
-//		return castTime;
-//	}
-//
-//	public static void setCastTime (long newCastTime) {
-//		castTime = newCastTime;
-//	}
-//	public static void setCurrentPlayerRedstoneMana(int newPlayerRedstoneMana) {
-//		currentPlayerRedstoneMana = newPlayerRedstoneMana;
-// 	}
-//	public static int getCurrentPlayerRedstoneMana() {
-//		return currentPlayerRedstoneMana;
-//	}
+	public static int getDebugLevel() {
+		return debugLevel;
+	}
 
-//	public static void setCurrentChunkRedstoneMana(int newChunkRedstoneMana) {
-//		currentChunkRedstoneMana = newChunkRedstoneMana;
-// 	}
-//	public static int getCurrentChunkRedstoneMana() {
-//		return currentChunkRedstoneMana;
-//	}
-	
-//	public static void setSpellBeingCast(String newSpellBeingCast) {
-//		spellBeingCast = newSpellBeingCast;
-// 	}
-//	public static String getSpellBeingCast() {
-//		return spellBeingCast;
-//	}
+	public static void setDebugLevel(int debugLevel) {
+		MyConfig.debugLevel = debugLevel;
+	}
 
-//	public static void setSpellPrepared(String newSpellPrepared) {
-//		spellPrepared = newSpellPrepared;
-// 	}
-//	public static String getSpellPrepared() {
-//		return spellPrepared;
-//	}
+	public static int getMaxChunkRedstoneMagic() {
+		return maxChunkRedstoneMagic;
+	}
+
+	public static void setMaxChunkRedstoneMagic(int maxChunkRedstoneMagic) {
+		MyConfig.maxChunkRedstoneMagic = maxChunkRedstoneMagic;
+	}
+
+	public static int getMaxPlayerRedstoneMagic() {
+		return maxPlayerRedstoneMagic;
+	}
+
+	public static void setMaxPlayerRedstoneMagic(int maxPlayerRedstoneMagic) {
+		MyConfig.maxPlayerRedstoneMagic = maxPlayerRedstoneMagic;
+	}
 	
 	// support for any color chattext
 	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {

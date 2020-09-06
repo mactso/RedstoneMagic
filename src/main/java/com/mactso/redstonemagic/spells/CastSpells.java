@@ -645,6 +645,9 @@ public class CastSpells {
 		BlockPos personalSpawnPos = serverPlayer.func_241140_K_();
 		float pitch = 0.4f;
 		float soundVolume = 0.8f;
+		if ((headPitch == -90.0) || (headPitch == 90)) {
+			return false;
+		}
 		if (headPitch > 0) { // looking down- teleport to personal spawn instead.
 			wX = personalSpawnPos.getX();
 			wY = personalSpawnPos.getY()+ 1;
@@ -666,7 +669,7 @@ public class CastSpells {
 			} else if (targetEntity instanceof AbstractHorseEntity){
 				petSound = SoundEvents.ENTITY_HORSE_ANGRY;
 			} else if (targetEntity instanceof CatEntity){
-				petSound = SoundEvents.ENTITY_CAT_PURREOW;
+				petSound = SoundEvents.ENTITY_CAT_AMBIENT;
 			}
 			serverPlayer.world.playSound(null, targetEntity.getPosition(), petSound,
 					SoundCategory.AMBIENT, soundVolume/2, pitch);

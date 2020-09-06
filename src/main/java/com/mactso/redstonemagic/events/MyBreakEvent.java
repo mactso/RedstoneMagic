@@ -68,7 +68,7 @@ public class MyBreakEvent {
 			Chunk chunk = (Chunk) ichunk;
 			cap = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {
-				if (cap.getManaStored() + redstoneMagicIncrease <= MyConfig.maxChunkRedstoneMagic) {
+				if (cap.getManaStored() + redstoneMagicIncrease <= MyConfig.getMaxChunkRedstoneMagic()) {
 					cap.addMana(redstoneMagicIncrease);
 					chunkMana = cap.getManaStored();
 					manaChanged = true;
