@@ -1,4 +1,6 @@
 {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/redstone-magic",
-        "1.16.1-latest": "1.108.0.7"
+        "promos": {
+	        "1.16.1-latest": "1.108.0.11"
+        }
 }
