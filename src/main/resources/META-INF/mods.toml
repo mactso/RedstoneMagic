@@ -1,11 +1,10 @@
 modLoader="javafml"
 loaderVersion="[32,)"
-license="MIT License"
 [[mods]]
 modId="redstonemagic"
 version="${file.jarVersion}"
 displayName="Redstone Magic"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/redstone-magic"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/villagers-respawn"
 updateJSONURL="https://github.com/mactso/RedstoneMagic/raw/master/update.json"
 logoFile="logo.png"
 authors="MacTso, Lupicus"
