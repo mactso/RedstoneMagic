@@ -8,5 +8,11 @@
 	"redstonemagic.tele": "グロリアスリコール",
 	"redstonemagic.buff": "古代の祝福",
 	"redstonemagic.rcrs": "清める",
-	"redstonemagic.fizz": "あなたの呪文は消えた。"
+	"redstonemagic.fizz": "あなたの呪文は消えた。",
+	"redstonemagic.oom"  : "魔法の力は残っていない",
+	"item.redstonemagic.redstonemagic_chestplate": "レッドストーンマジカルボディアーマー",
+	"item.redstonemagic.redstonemagic_boots": "レッドストーンマジカルフットアーマー",
+	"item.redstonemagic.redstonemagic_leggings": "レッドストーンマジカルアーマーパンツ",
+	"item.redstonemagic.redstonemagic_helmet": "「レッドストーンマジカルヘッドアーマー」"
+	
 }

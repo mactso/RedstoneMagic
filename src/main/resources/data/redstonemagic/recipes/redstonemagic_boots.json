@@ -2,11 +2,32 @@
   "type": "redstonemagic:crafting_shapeless",
   "ingredients": [
     {
+      "item": "minecraft:diamond_block"
+    },
+    {
       "item": "minecraft:netherite_boots"
     },
     {
-      "item": "minecraft:clay_ball"
-    }
+      "item": "minecraft:diamond_block"
+    },
+    {
+      "item": "minecraft:redstone_ore"
+    },
+    {
+      "item": "minecraft:redstone_ore"
+    },
+    {
+      "item": "minecraft:redstone_ore"
+    },
+    {
+      "item": "minecraft:redstone_block"
+    },
+    {
+      "item": "minecraft:netherite_ingot"
+    },
+    {
+      "item": "minecraft:redstone_block"
+    }    
   ],
   "result": {
     "item": "redstonemagic:redstonemagic_boots"

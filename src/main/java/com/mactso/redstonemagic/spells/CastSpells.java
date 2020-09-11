@@ -13,6 +13,8 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -88,27 +90,37 @@ public class CastSpells {
 	  	
 	  	int baseWeaponDamage = 0;
 
+
+	  	
+
 		ItemStack handItem = serverPlayer.getHeldItemMainhand();
-		Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
+		float damageModifierForCreature = 0.1f;
+        if (targetEntity instanceof LivingEntity) {
+            damageModifierForCreature = EnchantmentHelper.getModifierForCreature(serverPlayer.getHeldItemMainhand(), ((LivingEntity)targetEntity).getCreatureAttribute());
+         } else {
+            damageModifierForCreature = EnchantmentHelper.getModifierForCreature(serverPlayer.getHeldItemMainhand(), CreatureAttribute.UNDEFINED);
+         }
+  	
+	  	Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
         for (AttributeModifier attr : d)
         {
             baseWeaponDamage = (int) attr.getAmount();
         }
-		int weaponDamage = baseWeaponDamage ;
+		float weaponDamage = baseWeaponDamage;
 		if (spellTime > 4) spellTime = 4;
 //		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
 
 //***
 		if (spell.getSpellTranslationKey().equals("redstonemagic.nuke")) { // red bolt
-			return doSpellNuke(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
+			return doSpellNuke(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature);
 		}
 //***
 		if (spellTranslationKey.equals(("redstonemagic.dot"))) { // sepsis
-			return doSpellDoT(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
+			return doSpellDoT(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature);
 		}
 //***
 		if (spellTranslationKey.equals(("redstonemagic.sdot"))) { // crimson cloud
-			return doSpellSnareDot(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
+			return doSpellSnareDot(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature);
 		}
 //***
 		if (spellTranslationKey.equals("redstonemagic.buff")) { // multi-buff
@@ -116,7 +128,7 @@ public class CastSpells {
 		}
 //***
 		if (spellTranslationKey.equals("redstonemagic.heal")) { // Crimson Heal
-			return doSpellHeal(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage);
+			return doSpellHeal(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature);
 		}
 //***
 		if (spellTranslationKey.equals("redstonemagic.resi")) { // Resistance
@@ -134,7 +146,7 @@ public class CastSpells {
 	}
 	
 	private static boolean doSpellDoT(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			DamageSource myDamageSource, ServerWorld serverWorld, int weaponDamage) {
+			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
 
 		int secondsDuration = 4 * spellTime; // spellTime = # half seconds
 		int nukeDamage = spellTime - 2; // 1,1,1,2
@@ -145,8 +157,9 @@ public class CastSpells {
 		int totalDamage = (int) (targetEntity.getMaxHealth() * 0.7);
 		int currentHealth = (int) targetEntity.getHealth();
 		if (totalDamage > BOSS_MOB_LIMIT) totalDamage = BOSS_MOB_LIMIT;
-		if (weaponDamage > totalDamage) totalDamage = weaponDamage-1;
-		if (totalDamage > weaponDamage * 2) totalDamage = (weaponDamage * 2) - 1;
+		weaponDamage = weaponDamage + damageModifierForCreature;
+		if (weaponDamage > totalDamage) totalDamage = (int) weaponDamage-1;
+		if (totalDamage > weaponDamage * 2) totalDamage = (int) (weaponDamage * 2) - 1;
 		int dotDamageToDeal = totalDamage - 1; // nuke damage bonus for full 2 seconds.
 		if (totalDamage<4) totalDamage = 4;
 		totalDamage = ((totalDamage+1) * spellTime)/4;
@@ -192,7 +205,7 @@ public class CastSpells {
 	}
 
 	private static boolean doSpellHeal(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			DamageSource myDamageSource, ServerWorld serverWorld, int weaponDamage) {
+			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
 
 		int damage = (int) targetEntity.getHealth() / 10;
 		if (damage < 2)	damage = 2;
@@ -201,8 +214,9 @@ public class CastSpells {
 
 			if (damage > BOSS_MOB_LIMIT)
 				damage = BOSS_MOB_LIMIT;
+			weaponDamage = weaponDamage + damageModifierForCreature;
 			if (weaponDamage > damage)
-				damage = weaponDamage - 1;
+				damage = (int) ( weaponDamage - 1.0f);
 
 			if (targetEntity.attackEntityFrom(myDamageSource, damage)) {
 				serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
@@ -375,7 +389,7 @@ public class CastSpells {
 	}
 
 	private static boolean doSpellNuke(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			DamageSource myDamageSource, ServerWorld serverWorld, int weaponDamage) {
+			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
 
 		// can't nuke pets that are not made at you.  But they can block casting at a target.
 		if ((targetEntity instanceof TameableEntity)) {
@@ -387,12 +401,13 @@ public class CastSpells {
 			}
 		}
 		
-		float damage = targetEntity.getHealth() * 0.4f;
+		float damage = targetEntity.getMaxHealth() * 0.4f;
 		damage = damage * spellTime / 4;
 		if (damage > BOSS_MOB_LIMIT) damage = BOSS_MOB_LIMIT;
 		if (damage > weaponDamage * 2) damage = weaponDamage * 2-1;
 		if (weaponDamage > damage) damage = weaponDamage - 1;
-		if (spellTime == 4) weaponDamage = weaponDamage + 1;
+		if (spellTime == 4) damage = weaponDamage + 1;
+		damage = damage + damageModifierForCreature;
 		
 		if (hasFalderal(serverPlayer, FIRE_CHARGE_STACK)) {
 			if (!(targetEntity.isImmuneToFire())) {
@@ -541,7 +556,7 @@ public class CastSpells {
 	}
 
 	private static boolean doSpellSnareDot(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			DamageSource myDamageSource, ServerWorld serverWorld, int weaponDamage) {
+			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
 
 		int secondsDuration = 4 * spellTime; // spellTime = # half seconds
 		int nukeDamage = spellTime - 2; // 1,1,1,2
@@ -552,8 +567,9 @@ public class CastSpells {
 		int totalDamage = (int) (targetEntity.getMaxHealth() * 0.6);
 		int currentHealth = (int) targetEntity.getHealth();
 		if (totalDamage > BOSS_MOB_LIMIT) totalDamage = BOSS_MOB_LIMIT;
-		if (weaponDamage > totalDamage) totalDamage = weaponDamage-1;
-		if (totalDamage > weaponDamage * 2) totalDamage = (weaponDamage * 2) - 1;
+		weaponDamage = weaponDamage + damageModifierForCreature;
+		if (weaponDamage > totalDamage) totalDamage = (int) (weaponDamage-1.0f);
+		if (totalDamage > weaponDamage * 2) totalDamage = (int) ((weaponDamage * 2) - 1.0f);
 		int dotDamageToDeal = totalDamage - 1; // nuke damage bonus for full 2 seconds.
 		if (totalDamage<4) totalDamage = 4;
 		totalDamage = ((totalDamage+1) * spellTime)/4;
@@ -689,7 +705,7 @@ public class CastSpells {
 
 	public static void drawSpellBeam (ServerPlayerEntity serverPlayer, ServerWorld serverWorld, Entity targetEntity, IParticleData spellParticleType) {
 		Vector3d vector3d = serverPlayer.getEyePosition(1.0F);
-		Vector3d vectorFocus = vector3d.subtract(0.0,0.4,0.0);
+		Vector3d vectorFocus = vector3d.subtract(0.0,0.2,0.0);
 		Vector3d vector3d1 = serverPlayer.getLook(1.0F);
 		vector3d.subtract(0.0,0.4,0.0);
 		Vector3d target3d = targetEntity.getEyePosition(1.0F);
@@ -731,7 +747,14 @@ public class CastSpells {
 		}
 		int debug = 1;
 		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
-		int spellCost = spell.getSpellBaseCost() * spellTime;
+		if (spellTime > 6) {
+			spellTime = 6;
+		}
+		int spellCost = 1 + spell.getSpellBaseCost() * spellTime;
+		
+		if (MyConfig.getDebugLevel() > 0) {
+			System.out.println(spellNumber +": SpellCost: " + spellCost + ".");
+		}
 		if (spellCost > playerManaStorage.getManaStored()) {
 			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
 					SoundCategory.AMBIENT, 0.7f, 0.8f);
@@ -740,12 +763,14 @@ public class CastSpells {
 			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO,
 					SoundCategory.BLOCKS, 0.8f, 0.4f);
 			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getServerWorld(), 2, ParticleTypes.POOF);
-			MyConfig.sendChat(serverPlayer, "You are out of mana.",
+			MyConfig.sendChat(serverPlayer, "You do not have enough mana.",
 					Color.func_240744_a_(TextFormatting.RED));
 			return;
 		}
 
 		total_calls = total_calls + 1;
+		if (spellTime > 4) spellTime = 4;
+
 		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell)) {
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);

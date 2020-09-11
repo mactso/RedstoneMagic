@@ -5,8 +5,13 @@
 	"redstonemagic.dot": "Sepsis",
 	"redstonemagic.sdot": "Purpurrote Wolke",
 	"redstonemagic.resi": "Rubinschild",
-	"redstonemagic.tele": "Glorius Rückruf",
+	"redstonemagic.tele": "Erstaunliche Rückkehr",
 	"redstonemagic.buff": "Alter Segen",
 	"redstonemagic.rcrs": "Reinigen",
-	"redstonemagic.fizz": "Dein Zauber zischte. "
+	"redstonemagic.fizz": "Dein Zauber zischte. ",
+	"redstonemagic.oom"  : "Aus magischer Kraft..",
+	"item.redstonemagic.redstonemagic_chestplate": "Roterstein Magischer Brustplatte",
+	"item.redstonemagic.redstonemagic_boots": "Roterstein Magischer Stiefel",
+	"item.redstonemagic.redstonemagic_leggings": "Roterstein Magischer Beinschienen",
+	"item.redstonemagic.redstonemagic_helmet": "Roterstein Magischer Gamaschen"
 }

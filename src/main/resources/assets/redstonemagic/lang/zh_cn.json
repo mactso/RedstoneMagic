@@ -5,8 +5,13 @@
 	"redstonemagic.dot": "败血症",
 	"redstonemagic.sdot": "深红云",
 	"redstonemagic.resi": "红宝石盾牌",
-	"redstonemagic.tele": "Glorius召回",
+	"redstonemagic.tele": "惊人的回报",
 	"redstonemagic.buff": "远古的祝福",
 	"redstonemagic.rcrs": "洁净",
-	"redstonemagic.fizz": "你的咒语失败了。"
+	"redstonemagic.fizz": "你的咒语失败了。",
+	"redstonemagic.oom" : "法力不足以施放咒语...",
+	"item.redstonemagic.redstonemagic_chestplate" : "红石魔术胸甲",
+	"item.redstonemagic.redstonemagic_boots" : "红石魔术靴",
+	"item.redstonemagic.redstonemagic_leggings" : "红石魔术护腿",
+	"item.redstonemagic.redstonemagic_helmut" : "红石魔术头盔"
 }

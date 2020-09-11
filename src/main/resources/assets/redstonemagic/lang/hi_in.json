@@ -8,5 +8,10 @@
 	"redstonemagic.tele": "ग्लोरियस रिकॉल",
 	"redstonemagic.buff": "प्राचीन आशीर्वाद",
 	"redstonemagic.rcrs": "शुद्ध",
-	"redstonemagic.fizz": "आपका मंत्र फूट पड़ा। "
+	"redstonemagic.fizz": "आपका मंत्र फूट पड़ा। ",
+	"redstonemagic.oom" : "जादुई शक्ति से बाहर",
+	"item.redstonemagic.redstonemagic_chestplate": "रेडस्टोन मैजिक ब्रेस्टप्लेट",
+	"item.redstonemagic.redstonemagic_boots": "रेडस्टोन मैजिक बूट्स",
+	"item.redstonemagic.redstonemagic_leggings": "रेडस्टोन मैजिक लेगिंग्स",
+	"item.redstonemagic.redstonemagic_helmet": "रेडस्टोन मैजिक हेलमेट"
 }

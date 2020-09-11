@@ -5,6 +5,7 @@ import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.RedstoneOreBlock;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.IArmorMaterial;
@@ -13,6 +14,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item.Properties;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModItems 
@@ -36,5 +39,11 @@ public class ModItems
 		forgeRegistry.register(REDSTONE_FOCUS_ITEM );
 		forgeRegistry.registerAll(REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
 	}
-	
+	@OnlyIn(Dist.CLIENT)
+	public static void register(ItemColors itemColors)
+	{
+		itemColors.register((itemstack, index) -> {
+        	return index > 0 ? -1 : ((IDyeableArmorItem)itemstack.getItem()).getColor(itemstack);
+        }, REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
+	}	
 }

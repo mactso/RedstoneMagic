@@ -403,7 +403,9 @@ public class RedstoneFocusItem extends ShieldItem {
 				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
 				if (manaLevel < 20) {
-					int manaLevelPercent = (100 * manaLevel) / MyConfig.getMaxPlayerRedstoneMagic(); 
+					int maxMana = MyConfig.getMaxPlayerRedstoneMagic();
+					if (maxMana < 1 ) maxMana = 300;
+					int manaLevelPercent = (100 * manaLevel) / maxMana; 
 					if (manaLevelPercent <= 2) {
 						playerManaStorage.addMana(1);
 						Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),

@@ -8,5 +8,10 @@
 	"redstonemagic.tele": "Глориус Напомним",
 	"redstonemagic.buff": "Древние благословения",
 	"redstonemagic.rcrs": "Очистить",
-	"redstonemagic.fizz": "Твое заклинание рассыпалось. "
+	"redstonemagic.fizz": "Твое заклинание рассыпалось. ",
+	"redstonemagic.oom" : "У тебя не осталось магической силы",
+	"item.redstonemagic.redstonemagic_chestplate": "Магический нагрудник из красного камня",
+	"item.redstonemagic.redstonemagic_boots": "Magical Redstone Armored Boots",
+	"item.redstonemagic.redstonemagic_leggings": "Волшебные поножи из красного камня",
+	"item.redstonemagic.redstonemagic_helmet": "Волшебный шлем из красного камня"	
 }

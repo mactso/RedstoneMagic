@@ -27,7 +27,7 @@ public class MyConfig
 	public static final Common COMMON;
 	public static final ForgeConfigSpec COMMON_SPEC;
 	public static long castTime = 0;
-
+	public static final int NO_CHUNK_MANA_UPDATE = -1;
 
 	
 	static

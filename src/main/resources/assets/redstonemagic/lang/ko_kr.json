@@ -8,5 +8,10 @@
 	"redstonemagic.tele": "글로리 우스 리콜",
 	"redstonemagic.buff": "고대의 축복",
 	"redstonemagic.rcrs": "씻어 깨끗이 하다",
-	"redstonemagic.fizz": "당신의 주문이 흐트러졌습니다. "
+	"redstonemagic.fizz": "당신의 주문이 흐트러졌습니다. ",
+	"redstonemagic.oom"  : "남은 마법의 힘이 없습니다",
+	"item.redstonemagic.redstonemagic_chestplate": "레드 스톤 매직 바디 아머",
+	"item.redstonemagic.redstonemagic_boots": "레드 스톤 매지컬 풋 아머",
+	"item.redstonemagic.redstonemagic_leggings": "레드 스톤 매직 아머 팬츠",
+	"item.redstonemagic.redstonemagic_helmet": "레드 스톤 매지컬 헤드 아머"
 }

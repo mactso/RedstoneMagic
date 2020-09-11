@@ -2,7 +2,6 @@ package com.mactso.redstonemagic.client.gui;
 
 import java.awt.Color;
 
-
 import org.lwjgl.opengl.GL11;
 
 import com.mactso.redstonemagic.Main;
@@ -222,7 +221,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, color.getRGB());
 			timerDisplayPreparedSpell = 0;
 		} else {
-			if ((manaPercent >3) && (manaPercent<97 )) {
+			if ((manaPercent >2) && (manaPercent<96 )) {
 				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+2, (float)spellCastTimeStartY+1, colourBlack.getRGB());
 				Color colourPercent = new Color(230, 160, 30, 190);
 				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, colourPercent.getRGB());

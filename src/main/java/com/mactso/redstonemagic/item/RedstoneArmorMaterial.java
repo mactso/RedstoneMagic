@@ -19,34 +19,35 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 		clone = inClone;
 		materialName = materialPrefix;
 	}
+	
+//  FYI stats of Netherite (for when I do possible diamond suit).
 //  NETHERITE("netherite", 37, new int[]{3, 6, 8, 3}, 15, SoundEvents.ITEM_ARMOR_EQUIP_NETHERITE, 3.0F, 0.1F, () -> {
 //  return Ingredient.fromItems(Items.NETHERITE_INGOT);
 //  });
-	private static final int[] MAX_DAMAGE_ARRAY = new int[] { 3, 6, 8, 3 };
 
 	@Override
 	public int getDurability(EquipmentSlotType slotIn) {
-		return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * 37;
+		return clone.getDurability(slotIn);
 	}
 
 	@Override
 	public int getDamageReductionAmount(EquipmentSlotType slotIn) {
-		return MAX_DAMAGE_ARRAY[slotIn.getIndex()];
+		return clone.getDamageReductionAmount(slotIn);
 	}
 
 	@Override
 	public int getEnchantability() {
-		return 23;
+		return clone.getEnchantability();
 	}
 
 	@Override
 	public SoundEvent getSoundEvent() {
-		return SoundEvents.ITEM_ARMOR_EQUIP_NETHERITE;
+		return clone.getSoundEvent();
 	}
 
 	@Override
 	public Ingredient getRepairMaterial() {
-		return Ingredient.fromItems(Items.NETHERITE_INGOT);
+		return clone.getRepairMaterial();
 	}
 
 	@Override
@@ -56,7 +57,7 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	@Override
 	public float getToughness() {
-		return 3f;
+		return clone.getToughness();
 	}
 
 	// func_230304_f_,getKnockbackResistance,2,Gets the percentage of knockback resistance provided by armor of the material. 

@@ -33,10 +33,16 @@ public class MagicStorage implements IMagicStorage
 		this.manaStored += amount;
 		if (object instanceof ServerPlayerEntity) {
 			max = MyConfig.getMaxPlayerRedstoneMagic();
+			if (max==0) {
+				max = 256;
+			}
 			objectType = "Player";
 		} else 
 		if (object instanceof Chunk ){
 			max = MyConfig.getMaxChunkRedstoneMagic();
+			if (max==0) {
+				max = 25600;
+			}
 			objectType = "Chunk";
 		}
 

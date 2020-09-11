@@ -1,12 +1,18 @@
 {
 	"item.redstonemagic.redstone_focus": "Rød fisk",
-	"redstonemagic.nuke": "Redstone Bolt",
-	"redstonemagic.heal": "Scarlet Heal",
+	"redstonemagic.nuke": "Rød Lyn",
+	"redstonemagic.heal": "Scarlet Helbrede",
 	"redstonemagic.dot": "Sepsis",
 	"redstonemagic.sdot": "Crimson Cloud",
-	"redstonemagic.resi": "Ruby Shield",
-	"redstonemagic.tele": "Glorius husker",
+	"redstonemagic.resi": "Rubin Skjold",
+	"redstonemagic.tele": "Strålende retur",
 	"redstonemagic.buff": "Gamle velsignelser",
 	"redstonemagic.rcrs": "Rens",
-	"redstonemagic.fizz": "Fortryllelsen din mislyktes."
+	"redstonemagic.fizz": "Fortryllelsen din mislyktes.",
+	"redstonemagic.oom"  : "Du har ingen magisk kraft igjen.",
+	"item.redstonemagic.redstonemagic_chestplate": "Rød Stein Magiske Brystplate",
+	"item.redstonemagic.redstonemagic_boots": "Røde Steiner Magiske Panserstøvler",
+	"item.redstonemagic.redstonemagic_leggings": "Røde Stein Magiske Pansrede Bukser",
+	"item.redstonemagic.redstonemagic_helmet": "Rød Stein Magisk Hjelm"
+	
 }

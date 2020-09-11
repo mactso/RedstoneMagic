@@ -30,14 +30,14 @@ public class SpellManager {
 	public static void redstoneMagicSpellInit() {
 		// Key, Translation Key, English Comment, BaseCost, Target Type (B,O,S)
 		final String[] defaultSpellValues = 
-				{"0,redstonemagic.nuke,Redstone Bolt,1,O",
+				{"0,redstonemagic.nuke,Redstone Bolt,2,O",
 				 "1,redstonemagic.heal,Scarlet Heal,2,B",
 				 "2,redstonemagic.dot,Sepsis,2,O",
 				 "3,redstonemagic.sdot,Crimson Cloud,3,O",
 				 "4,redstonemagic.resi,Ruby Shield,1,B",
-				 "5,redstonemagic.tele,Recall,1,B",
+				 "5,redstonemagic.tele,Recall,3,B",
 				 "6,redstonemagic.buff,Ancient Blessings,2,B",
-				 "7,redstonemagic.rcrs,Remove Curse,2,B"
+				 "7,redstonemagic.rcrs,Remove Curse,1,B"
 				 };
 		
 		List <String> dTL6464 = new ArrayList<>();

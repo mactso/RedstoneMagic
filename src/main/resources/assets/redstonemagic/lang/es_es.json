@@ -8,5 +8,11 @@
 	"redstonemagic.tele": "Recuerdo de Glorius",
 	"redstonemagic.buff": "Bendiciones antiguas",
 	"redstonemagic.rcrs": "Limpiar",
-	"redstonemagic.fizz": "Tu hechizo fracasó. "
+	"redstonemagic.fizz": "Tu hechizo fracasó. ",
+	"redstonemagic.oom"  : "No queda ningún poder mágico.",
+	"item.redstonemagic.redstonemagic_chestplate": "Armadura mágica de piedra roja",
+	"item.redstonemagic.redstonemagic_boots": "Armadura de Pie mágica de roja",
+	"item.redstonemagic.redstonemagic_leggings": "Pantalones de Armadura mágica de roja",
+	"item.redstonemagic.redstonemagic_helmet": "Armadura de Cabeza mágica de roja"
+	
 }

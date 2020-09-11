@@ -8,5 +8,10 @@
 	"redstonemagic.tele": "Glorius เรียกคืน",
 	"redstonemagic.buff": "พรโบราณ",
 	"redstonemagic.rcrs": "ทำความสะอาด",
-	"redstonemagic.fizz": "มนต์สะกดของคุณมอดลง "
+	"redstonemagic.fizz": "ความลุ่มหลงของคุณล้มเหลว",
+	"redstonemagic.oom"  : "คุณไม่มีพลังเวทย์มนต์เหลืออยู่",
+	"item.redstonemagic.redstonemagic_chestplate": "เสื้อเกราะเมจิกเรดร็อค",
+	"item.redstonemagic.redstonemagic_boots": "รองเท้าหุ้มเกราะเวทมนตร์หินแดง",
+	"item.redstonemagic.redstonemagic_leggings": "กางเกงหุ้มเกราะเวทหินแดง",
+	"item.redstonemagic.redstonemagic_helmet": "หมวกเกราะเวทมนตร์เรดร็อค"	
 }
