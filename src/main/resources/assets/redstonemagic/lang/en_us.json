@@ -8,5 +8,9 @@
 	"redstonemagic.tele" : "Glorius Recall",
 	"redstonemagic.buff" : "Ancient Blessings",
 	"redstonemagic.rcrs" : "Cleanse",
-	"redstonemagic.fizz" : "Your spell fizzled.  Cast Slower."
+	"redstonemagic.fizz" : "Your spell fizzled.  Cast Slower.",
+	"item.redstonemagic.rm_chestplate": "Redstone Magic Chestplate",
+	"item.redstonemagic.rm_boots": "Redstone Magic Boots",
+	"item.redstonemagic.rm_leggings": "Redstone Magic Leggings",
+	"item.redstonemagic.rm_helmet": "Redstone Magic Helmet"
 }

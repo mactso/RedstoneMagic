@@ -1,0 +1,7 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "redstonemagic:item/redstonemagic_leggings",
+        "layer1": "redstonemagic:item/redstonemagic_leggings_overlay"
+    }
+}

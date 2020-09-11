@@ -16,5 +16,9 @@ public class Register
 	    		SyncClientGuiPacket::writePacketData,
 	    		SyncClientGuiPacket::readPacketData,
 	    		SyncClientGuiPacket::processSyncClientGuiPacket);
+	    Network.registerMessage(RedstoneMagicArmorPacket.class,
+	    		RedstoneMagicArmorPacket::writePacketData,
+	    		RedstoneMagicArmorPacket::readPacketData,
+	    		RedstoneMagicArmorPacket::processPacket);
 	}
 }

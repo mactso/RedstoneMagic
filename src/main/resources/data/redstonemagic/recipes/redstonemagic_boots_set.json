@@ -1,0 +1,18 @@
+{
+  "type": "redstonemagic:crafting_shapeless",
+  "operation": "set_color",
+  "ingredients": [
+    {
+      "item": "redstonemagic:redstonemagic_boots"
+    },
+    {
+      "tag": "forge:mushrooms"
+    },
+    {
+      "tag": "redstonemagic:true_dyes"
+    }
+  ],
+  "result": {
+    "item": "redstonemagic:redstonemagic_boots"
+  }
+}
