@@ -58,11 +58,11 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 				if (!itemstack.isEmpty()) {
 					if (itemstack.isDamageable() && itemstack.getMaxDamage() == ret.getMaxDamage()) {
 						ret.setDamage(itemstack.getDamage());
-						ret.setRepairCost(1);
+						ret.setRepairCost(itemstack.getRepairCost());
 						ret.setDisplayName(itemstack.getDisplayName());
-//						if (itemstack.hasTag()) {
-//							ret.setTag(itemstack.getTag().copy());
-//						}
+						if (itemstack.hasTag()) {
+							ret.setTag(itemstack.getTag().copy());
+						}
 						break;
 					}
 				}

@@ -155,12 +155,12 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		
 		int percentHelper = MyConfig.getMaxPlayerRedstoneMagic();
 		if (percentHelper == 0) {
-			percentHelper = 256;
+			percentHelper = 300;
 		}
 		int manaPercent = (100 * personalMana ) / percentHelper;
 		String manaPercentString = Integer.toString(manaPercent);
 		
-		if (personalMana < 10) {
+		if (personalMana < 12) {
 			blueChannel = 0.0f;
 		}
 		RenderSystem.color4f(1.0F, 1.0F, blueChannel, 0.9f + cycle/10.0f);
@@ -188,17 +188,16 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int spellCastTimeStartY = displayManaBarTopPosY + fontRender.FONT_HEIGHT -1;
 		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
 		int spellBeingCastStartY = displayManaBarTopPosY - fontRender.FONT_HEIGHT*3;
-		int redChannelr = 30 + (int) (netSpellCastingTime * 30);
+		long colorTime = netSpellCastingTime;
+		if (colorTime < 0) colorTime = 0;
+		if (colorTime > 4) colorTime = 4;
+		int redChannelr = 120 + (int) (colorTime * 30); // 120 to 240
 		int spellManaPercentStartY = displayManaBarTopPosY;
-
-		redChannelr = redChannelr + 90;
-		int greenChannelg = 160 - redChannelr;
-		if (redChannelr > 255) redChannelr = 255;
-		if (greenChannelg < 0) greenChannelg = 0;
+		int greenChannelg = 240 - redChannelr;
 		Color color = new Color(redChannelr, greenChannelg, 100);
 		String spellBeingCast = "";
 		if (netSpellCastingTime > 0) spellBeingCast = RedstoneMagicGuiEvent.getSpellBeingCast();
-		if (netSpellCastingTime == 4) {
+		if (netSpellCastingTime >3) {
 			color = new Color(250, 40 , 40);
 			if (flashCycle >10) {
 				color = new Color(250, 150 , 150);
