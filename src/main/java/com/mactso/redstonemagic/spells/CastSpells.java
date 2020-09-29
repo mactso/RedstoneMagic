@@ -29,6 +29,7 @@ import net.minecraft.entity.passive.horse.AbstractHorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
@@ -71,6 +72,7 @@ public class CastSpells {
 	static final ItemStack PUFFERFISH_STACK = new ItemStack (Items.PUFFERFISH);
 	static final ItemStack GOLDEN_CARROT_STACK = new ItemStack (Items.GOLDEN_CARROT);
 	static final ItemStack FIRE_CHARGE_STACK = new ItemStack (Items.FIRE_CHARGE);
+	static final ItemStack REDSTONE_STACK = new ItemStack (Items.REDSTONE);
 	static int total_calls = 0; 
 	
 
@@ -207,7 +209,7 @@ public class CastSpells {
 	private static boolean doSpellHeal(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
 
-		int damage = (int) targetEntity.getHealth() / 10;
+		int damage = (int) targetEntity.getMaxHealth() / 10;
 		if (damage < 2)	damage = 2;
 		damage = damage * spellTime;
 		if (targetEntity.isEntityUndead()) {
@@ -409,6 +411,8 @@ public class CastSpells {
 		if (spellTime == 4) damage = weaponDamage + 1;
 		damage = damage + damageModifierForCreature;
 		
+		if (useReagent(serverPlayer, REDSTONE_STACK)) damage = damage + 1;
+		int debugz = 3;
 		if (hasFalderal(serverPlayer, FIRE_CHARGE_STACK)) {
 			if (!(targetEntity.isImmuneToFire())) {
 				LivingEntity lE = (LivingEntity) targetEntity;
@@ -448,13 +452,32 @@ public class CastSpells {
 	}
 
 	public static boolean hasFalderal (ServerPlayerEntity serverPlayer, ItemStack falderalStack) {
-		int slot = serverPlayer.inventory.findSlotMatchingUnusedItem(falderalStack);
-		if ((slot >0 ) && (slot< 8)) {
+		int slot = findHotBarSlotWithItemType (serverPlayer, falderalStack);
+		if ((slot >0 ) && (slot< 9)) {
+			return true;
+		}
+		return false;	
+	}
+
+	public static boolean useReagent (ServerPlayerEntity serverPlayer, ItemStack reagentStack) {
+		int slot = findHotBarSlotWithItemType (serverPlayer, reagentStack);
+		if ((slot >0 ) && (slot< 9)) {
+			serverPlayer.inventory.getStackInSlot(slot).shrink(2);
 			return true;
 		}
 		return false;	
 	}
 	
+	private static int findHotBarSlotWithItemType (ServerPlayerEntity serverPlayer, ItemStack stack) {
+	    for(int i = 0; i < 9; ++i) {
+	    	Item sI = serverPlayer.inventory.getStackInSlot(i).getItem();
+	    	Item stackI = stack.getItem();
+	        if(serverPlayer.inventory.getStackInSlot(i).getItem() == stack.getItem()) {
+	        	return i;
+	        }
+	    }		
+		return -1;
+	}
 	
 	private static boolean doSpellRemoveCurse(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			ServerWorld serverWorld) {

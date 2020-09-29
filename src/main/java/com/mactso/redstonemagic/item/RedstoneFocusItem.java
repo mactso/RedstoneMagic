@@ -18,6 +18,7 @@ import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.spells.CastSpells;
 import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 
+import net.minecraft.block.LadderBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -30,7 +31,9 @@ import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.ShieldItem;
+import net.minecraft.item.ShovelItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
@@ -63,7 +66,6 @@ public class RedstoneFocusItem extends ShieldItem {
 	public final static int NBT_NUMBER_FIELD = 99;
 	public final static long SPELL_NOT_CASTING = -1;
 	static final int NO_CHUNK_MANA_UPDATE = -1;
-	
 
 	@OnlyIn(value = Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
@@ -129,6 +131,13 @@ public class RedstoneFocusItem extends ShieldItem {
 		if (handItem.getUseDuration() == 0) {
 			canUseRedstoneFocus = true;
 		}
+		
+		if ((handItem.getItem() == Items.LADDER) ||
+			(handItem.getItem() instanceof ShovelItem)) {
+			canUseRedstoneFocus = false;
+			return canUseRedstoneFocus;
+		}
+		
 		// replace this with a list later but hard coded for now.
 		String modName= handItem.getItem().getRegistryName().getNamespace();
 		if (ModExclusionListDataManager.getModExclusionListItem(modName) != null) {
@@ -396,9 +405,9 @@ public class RedstoneFocusItem extends ShieldItem {
 	@Override
 	public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
-		if(entityIn instanceof ServerPlayerEntity) {
+
+		if ((entityIn instanceof ServerPlayerEntity)) {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityIn;
- 
 			if ((int) (worldIn.getGameTime())%300 == 0) { // every 15 seconds.
 				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
@@ -414,6 +423,35 @@ public class RedstoneFocusItem extends ShieldItem {
 				}
 				
 			}
+		} else { // client side - update gui.
+			PlayerEntity p = (PlayerEntity) entityIn;
+
+			if ((long) (worldIn.getGameTime())%5 == 0) {
+
+				ItemStack mainHand = p.getHeldItemMainhand();
+				if (mainHand.getItem() instanceof RedstoneFocusItem) {
+					CompoundNBT compoundnbt = mainHand.getOrCreateTag();
+					int preparedSpellNumber = compoundnbt != null && compoundnbt.contains("preparedSpellNumber", NBT_NUMBER_FIELD)
+						? compoundnbt.getInt("preparedSpellNumber")
+						: 0;
+						if (MyConfig.getDebugLevel() > 1) {
+							System.out.println("main hand prepared spell:");
+						}
+					RedstoneMagicGuiEvent.setPreparedSpellNumber(preparedSpellNumber);
+//					Network.sendToClient(new SyncClientGuiPacket(preparedSpellNumber,-1), serverPlayer);
+
+				} else {
+					ItemStack offHand = p.getHeldItemOffhand();
+					CompoundNBT compoundnbt = offHand.getOrCreateTag();
+					int preparedSpellNumber = compoundnbt != null && compoundnbt.contains("preparedSpellNumber", NBT_NUMBER_FIELD)
+						? compoundnbt.getInt("preparedSpellNumber")
+						: 0;
+					RedstoneMagicGuiEvent.setPreparedSpellNumber(preparedSpellNumber);
+//					Network.sendToClient(new SyncClientGuiPacket(preparedSpellNumber,-1), serverPlayer);
+
+				}
+			}
+
 		}
 
 	}

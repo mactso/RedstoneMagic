@@ -64,6 +64,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		super(mc);
 		RedstoneMagicGuiEvent.mc = mc;
 	}
+	
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent(priority = EventPriority.LOWEST)
@@ -244,12 +245,15 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	}
 
 	public static void setPreparedSpellNumber (int preparedSpellNumber) {
+		String currentlyPreparedSpell = spellPrepared;
 		if ((preparedSpellNumber >=0) &&
 		    (preparedSpellNumber <=7)) { 
 			RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 			TextComponent msg = new TranslationTextComponent(spell.getSpellTranslationKey());
 			spellPrepared = msg.getString();
-			timerDisplayPreparedSpell = 80;
+			if (!(spellPrepared.equals(spellPrepared))) {
+				timerDisplayPreparedSpell = 80;
+			}
 			timerCastingSpell = 0;
 			spellBeingCast = "";
 		}

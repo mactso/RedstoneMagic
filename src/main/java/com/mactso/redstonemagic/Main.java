@@ -12,6 +12,7 @@ import com.mactso.redstonemagic.events.OnPlayerLoggedIn;
 import com.mactso.redstonemagic.events.OnServerPlayerEvent;
 import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.crafting.RedstoneMagicRecipe;
+import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.network.Register;
 
 import net.minecraft.block.Block;
@@ -23,6 +24,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -34,7 +36,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 @Mod("redstonemagic")
-public class Main {
+public class Main {	
 	    public static Main instance;
 	    public static final String MODID = "redstonemagic"; 
 	    public static final String PREFIX_GUI = MODID +":"+"textures/gui/";
@@ -74,6 +76,7 @@ public class Main {
 			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerCloned());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerLoggedIn());
+			CapabilityMagic.register();
 		}   
 
 	    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)

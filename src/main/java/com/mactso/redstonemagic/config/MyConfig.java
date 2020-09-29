@@ -79,7 +79,7 @@ public class MyConfig
 		public final IntValue maxChunkRedstoneMagic;
 		public final IntValue maxPlayerRedstoneMagic;
 
-		// blocks walls can be built on
+		// items that block use of redstonefocus.
 		public final ConfigValue<String> defaultModExclusionListActual;
 		public final String defaultModExclusionList6464 = 
 				  "customquests;"
