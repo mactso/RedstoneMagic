@@ -26,10 +26,10 @@ public class ModItems
 	public static final Item REDSTONE_FOCUS_ITEM	
 	 = new RedstoneFocusItem(new Properties().group(ItemGroup.REDSTONE).maxDamage(484)).setRegistryName("redstone_focus");
 	private static final IArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.NETHERITE,"redstonemagic");
-	private static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.HEAD, new Properties().group(ItemGroup.COMBAT), "redstonemagic_helmet");
-	private static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.CHEST, new Properties().group(ItemGroup.COMBAT), "redstonemagic_chestplate");
-	private static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.LEGS, new Properties().group(ItemGroup.COMBAT), "redstonemagic_leggings");
-	private static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.FEET, new Properties().group(ItemGroup.COMBAT), "redstonemagic_boots");
+	private static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.HEAD, new Properties().group(ItemGroup.COMBAT).isBurnable(), "redstonemagic_helmet");
+	private static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.CHEST, new Properties().group(ItemGroup.COMBAT).isBurnable(), "redstonemagic_chestplate");
+	private static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.LEGS, new Properties().group(ItemGroup.COMBAT).isBurnable(), "redstonemagic_leggings");
+	private static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.FEET, new Properties().group(ItemGroup.COMBAT).isBurnable(), "redstonemagic_boots");
 
 //	public static final Item REDSTONE_POWER_BLOCK = new BlockItem(ModBlocks.REDSTONE_POWER_BLOCK, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_power_block");
 

@@ -318,7 +318,7 @@ public class CastSpells {
 				if (targetEntity.getAir() < targetEntity.getMaxAir()) targetEntity.setAir(targetEntity.getAir()+1);
 				int falderalBoost = 0;
 				if (hasFalderal(serverPlayer, new ItemStack (Items.PUFFERFISH))) {
-					falderalBoost = 8;
+					falderalBoost = THIRTY_SECONDS/2;
 				}
 				int secondsDuration = (spellTime * (THIRTY_SECONDS+falderalBoost));
 				int effectIntensity = 1;
@@ -351,9 +351,9 @@ public class CastSpells {
 							SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 					int falderalBoost = 0;
 					if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
-						falderalBoost = 8;
+						falderalBoost = THIRTY_SECONDS/2;
 					}
-					int secondsDuration = (spellTime * (THIRTY_SECONDS+falderalBoost));
+					int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));
 					int effectIntensity = 1;
 					targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
 					return true;

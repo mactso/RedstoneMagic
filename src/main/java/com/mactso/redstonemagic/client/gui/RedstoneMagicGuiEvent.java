@@ -51,6 +51,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	private static String castingTimeString = "*********************";
 	private static ItemStack REDSTONE_FOCUS_STACK = new ItemStack (ModItems.REDSTONE_FOCUS_ITEM);
 	private static int timerDisplayPreparedSpell = 40;
+	public static int fizzleSpamLimiter = 120;
 	public static long timerCastingSpell = 0;
 	public static String spellBeingCast = "";
 	public static String spellPrepared = "";
@@ -77,6 +78,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		personalMana = getCurrentPlayerRedstoneMana();
 		
+		fizzleSpamLimiter = fizzleSpamLimiter - 1;
+	
 		boolean hasNoFocusItem = true;
 		if (mc.player.inventory.offHandInventory.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
 			hasNoFocusItem = false;
@@ -227,7 +230,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, colourPercent.getRGB());
 			}
 		}
-		
+
 		if (timerDisplayPreparedSpell > 0) {
 			timerDisplayPreparedSpell--;
 			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
@@ -300,4 +303,13 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	public static int getCurrentChunkRedstoneMana() {
 		return currentChunkRedstoneMana;
 	}
+	
+	public static int getFizzleSpamLimiter() {
+		return fizzleSpamLimiter;
+	}
+
+	public static void setFizzleSpamLimiter(int fizzleSpamLimiter) {
+		RedstoneMagicGuiEvent.fizzleSpamLimiter = fizzleSpamLimiter;
+	}
+
 }

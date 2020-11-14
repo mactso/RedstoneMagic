@@ -43,72 +43,90 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 	public void onArmorTick(ItemStack stack, World world, PlayerEntity player) {
 
 		if ((player instanceof ServerPlayerEntity)) {
-
-			if (stack.getItem().getTranslationKey().equals("item.redstonemagic.redstonemagic_chestplate")) {
-				if ((world.getGameTime())%20 == 0) // check suit bonus once per second. 
-				{
-					Iterable<ItemStack> playerArmorSet = player.getArmorInventoryList();
-					Iterator<ItemStack> i = playerArmorSet.iterator();
-					boolean suitBonus = true;
-					while (i.hasNext()) {
-						ItemStack armorpiece = i.next();
-						String s = armorpiece.getItem().getRegistryName().getNamespace().toString();
-						if (!(s.equals("redstonemagic"))) {
-							suitBonus = false;
-						}
-					}
-					if (suitBonus) {
-						if ((world.getGameTime()) % 300 == 0) {
-
-							IMagicStorage cap = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
-							if (cap != null) {
-								if (MyConfig.getDebugLevel() > 1) {
-									System.out.println("Redstone Magic: "+player.getName().getString() +" ("+ cap.getManaStored()+") Full Suit Mana Regen");
-								}
-								int maxMana = MyConfig.getMaxPlayerRedstoneMagic()/5;
-								if (maxMana == 0) {
-									maxMana = 60;
-								}
-								if (cap.getManaStored() < maxMana ) {
-									cap.addMana(2); // checks for max capacity internally based on object type.
-									Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
-											(ServerPlayerEntity) player);			}						
-										
-								}
-						}
-						EffectInstance ei = player.getActivePotionEffect(Effects.RESISTANCE);
-						int effectDuration = 160; // 8 seconds
-						int effectIntensity = 0;
-						boolean refreshSuitBonus = false;
-						if (ei == null) {
-							refreshSuitBonus = true;
-						}
-						if (ei != null) {
-							int durationLeft = ei.getDuration();
-							if (ei.getAmplifier() > effectIntensity) {
-								if (durationLeft <= 10) {
-									player.removeActivePotionEffect(Effects.RESISTANCE);
-									refreshSuitBonus = true;
-								}
-							}
-						}
-						if (refreshSuitBonus) {
-							if (MyConfig.getDebugLevel() > 1) {
-								System.out.println("Redstone Magic: "+player.getName().getString()+" Applying Suit Resistance Bonus");
-							}
-							
-							player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
-						}
-
-					}
-					
-				}
-				
-			}
-				
+			checkRedstoneArmorSuitBonus(stack, world, player);
 		}
 		super.onArmorTick(stack, world, player);
 	}
+
+	private void checkRedstoneArmorSuitBonus(ItemStack stack, World world, PlayerEntity player) {
+
+		// only check suit bonus once per second
+		if (world.getGameTime() % 20 == 0) {
+			int suitBonus = 0;
+			if (stack.getItem().getTranslationKey().contains("redstonemagic")) {
+				Iterable<ItemStack> playerArmorSet = player.getArmorInventoryList();
+				Iterator<ItemStack> i = playerArmorSet.iterator();
+				while (i.hasNext()) {
+					ItemStack armorpiece = i.next();
+					if (armorpiece.getItem().getRegistryName().getNamespace().toString().equals("redstonemagic")) {
+						suitBonus += 1;
+					}
+				}
+				applyRedstoneArmorManaRegeneration(world, player, suitBonus);
+				if (suitBonus == 4) {
+					applyRedstoneArmorSuitBonusResistance(player);
+				} 
+
+			}
+
+		}
+
+	}
+
+	private void applyRedstoneArmorSuitBonusResistance(PlayerEntity player) {
+
+		boolean refreshSuitBonus = true;
+		int effectDuration = 160; // 8 seconds
+		int effectIntensity = 0;
+		EffectInstance ei = player.getActivePotionEffect(Effects.RESISTANCE);
+		if (ei != null) {
+			if (ei.getAmplifier() > effectIntensity) {
+				if (ei.getDuration() <= 15) {
+					player.removeActivePotionEffect(Effects.RESISTANCE);
+				} else {
+					refreshSuitBonus = false;
+				}
+			}
+		}
+		if (refreshSuitBonus) {
+			if (MyConfig.getDebugLevel() > 1) {
+				System.out
+						.println("Redstone Magic: " + player.getName().getString() + " Applying Suit Resistance Bonus");
+			}
+			player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
+		}
+
+	}
+
+	private void applyRedstoneArmorManaRegeneration(World world, PlayerEntity player, int suitBonus) {
+		final int DEFAULT_MINIMUM_MANA = 60;
+		final int MANA_REGEN_PERIOD = 300; // 300 ticks... 15 seconds
+
+		if (world.getGameTime() % MANA_REGEN_PERIOD == 0) {
+			
+			IMagicStorage cap = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			if (cap != null) {
+				float maxBonusRegenTotal = (MyConfig.getMaxPlayerRedstoneMagic() * 0.01f) * (4 + suitBonus);
+				if (suitBonus == 4) 
+					maxBonusRegenTotal = (int) (0.20f * MyConfig.getMaxPlayerRedstoneMagic());
+				
+				if (maxBonusRegenTotal == 0)
+					maxBonusRegenTotal = DEFAULT_MINIMUM_MANA + suitBonus * 4;
+
+				float manaRegenRate = MyConfig.getMaxPlayerRedstoneMagic() * 0.005f;
+				if (manaRegenRate < 2) {
+					manaRegenRate = 2;
+				}
+				if (cap.getManaStored() < maxBonusRegenTotal) {
+					cap.addMana((int)manaRegenRate);
+					Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
+							(ServerPlayerEntity) player);
+				}
+			}
+		}
+	}
+
+
 	@Override
 	public boolean hasEffect(ItemStack stack) {
 		CompoundNBT compoundnbt = stack.getChildTag("display");

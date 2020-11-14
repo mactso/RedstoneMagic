@@ -2,6 +2,7 @@ package com.mactso.redstonemagic.item;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Vector;
 import java.util.function.Consumer;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
@@ -18,6 +19,9 @@ import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.spells.CastSpells;
 import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.LadderBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
@@ -37,7 +41,9 @@ import net.minecraft.item.ShovelItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -48,7 +54,12 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceContext.BlockMode;
+import net.minecraft.util.math.RayTraceContext.FluidMode;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.math.shapes.VoxelShapeCube;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.ITextComponent;
@@ -57,6 +68,7 @@ import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.feature.structure.RuinedPortalPiece.Location;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -93,7 +105,39 @@ public class RedstoneFocusItem extends ShieldItem {
 		return null;
 	}
 
+	@OnlyIn(value = Dist.CLIENT)
+	public static BlockPos doLookForDistantBlock(PlayerEntity clientPlayer) {
+		double d0 = 30.0;
+		double d1 = d0 * d0;
+		Vector3d vector3d = clientPlayer.getEyePosition(1.0F);
+		Vector3d vector3d1 = clientPlayer.getLook(1.0F);
+		Vector3d vector3d2 = vector3d.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
 
+		World world = clientPlayer.getEntityWorld();
+
+		
+		RayTraceContext r1 = new RayTraceContext(vector3d, vector3d2, BlockMode.COLLIDER, FluidMode.NONE, clientPlayer);
+		Vector3d hitPosition = world.rayTraceBlocks(r1).getHitVec();
+
+		Vector3d eyePos = clientPlayer.getEyePosition(0);
+		Vector3d lookVector = clientPlayer.getLookVec().scale(30.0D);
+
+		RayTraceContext r2 = new RayTraceContext(eyePos, lookVector, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, clientPlayer);
+		Vector3d hitPosition2 = world.rayTraceBlocks(r2).getHitVec();
+
+		BlockPos p = null;
+	
+		
+		if (hitPosition2 != null) {
+			p = new BlockPos (hitPosition.getX(), hitPosition.getY(), hitPosition.getZ());
+		}
+		System.out.println(" " + p.getX() + " " + p.getY() + " " + p.getZ());
+		Direction d = clientPlayer.getHorizontalFacing();
+		d = d.getOpposite();
+// server world command		world.setBlockState(p, Blocks.WALL_TORCH.getDefaultState().with(BlockStateProperties.FACING, d));
+		return p;
+
+	}
 	
 	public static LivingEntity target(PlayerEntity player) {
 		Minecraft mc = Minecraft.getInstance();
@@ -352,23 +396,32 @@ public class RedstoneFocusItem extends ShieldItem {
 				if (spell.getSpellTranslationKey().equals("redstonemagic.tele")) {
 					minimumCastingTime = 4;
 				}
+
 				if (netSpellCastingTime < minimumCastingTime) {
-					// spell fizzle too fast
-					TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
-					MyConfig.sendChat(clientPlayer, msg.getString(),
-							Color.func_240744_a_(TextFormatting.RED));
-					clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
-							0.3f);
+					if (RedstoneMagicGuiEvent.getFizzleSpamLimiter() < 0 ) {
+						RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
+						TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
+						MyConfig.sendChat(clientPlayer, msg.getString(),
+								Color.func_240744_a_(TextFormatting.RED));
+						clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
+								0.3f);
+					}
 				} else {
 
 					float volume = 0.4f + (0.1f * netSpellCastingTime);
 					float pitch = 0.3f;
 
 					Entity targetEntity = null;
+					BlockPos targetPos = null;
 					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_OTHER)) {
 						targetEntity = doLookForDistantTarget(clientPlayer);
-						if (targetEntity != null)
+						
+						if (targetEntity != null) {
 							soundEvent = SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH;
+						} else {
+								targetPos = doLookForDistantBlock(clientPlayer);
+								Block b = clientPlayer.getEntityWorld().getBlockState(targetPos).getBlock();
+						}
 					}
 
 					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_BOTH)) {

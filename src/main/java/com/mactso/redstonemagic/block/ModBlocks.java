@@ -26,7 +26,7 @@ public class ModBlocks
 	@OnlyIn(Dist.CLIENT)
 	public static void setRenderLayer()
 	{
-//		RenderTypeLookup.setRenderLayer(REDSTONE_PIPE_BLOCK, RenderType.getCutout());
+//	RenderTypeLookup.setRenderLayer(REDSTONE_MAGIC_PYLON_MINOR, RenderType.getEntitySolid(locationIn));
 	}
 
 	@OnlyIn(Dist.CLIENT)
