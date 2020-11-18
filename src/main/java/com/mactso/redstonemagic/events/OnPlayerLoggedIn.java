@@ -7,7 +7,6 @@ import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class OnPlayerLoggedIn {

@@ -4,15 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mactso.redstonemagic.Main;
-import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.BossInfo;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -126,7 +123,7 @@ public class MyConfig
 	}
 	public static void dbgPrintln(PlayerEntity p, String dbgMsg, int dbgLevel) {
 		if (dbgLevel <= debugLevel ) {
-			sendChat (p, dbgMsg, Color.func_240744_a_(TextFormatting.YELLOW));
+			sendChat (p, dbgMsg, Color.fromTextFormatting((TextFormatting.YELLOW)));
 		}
 	}
 	

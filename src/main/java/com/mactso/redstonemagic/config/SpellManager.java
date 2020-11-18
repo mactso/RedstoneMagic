@@ -5,9 +5,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
-
 public class SpellManager {
 	public final static String SPELL_TARGET_SELF = "S";
 	public final static String SPELL_TARGET_OTHER = "O";

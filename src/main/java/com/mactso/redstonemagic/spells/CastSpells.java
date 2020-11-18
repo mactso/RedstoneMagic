@@ -1,7 +1,6 @@
 package com.mactso.redstonemagic.spells;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
@@ -22,7 +21,6 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.passive.ParrotEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.passive.horse.AbstractHorseEntity;
@@ -50,8 +48,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
@@ -328,8 +324,8 @@ public class CastSpells {
 		}
 		
 		World w = (World) serverWorld;
-		RegistryKey rK = w.func_234922_V_();
-		ResourceLocation rL1 = rK.func_240901_a_();
+		RegistryKey<World> rK = w.getDimensionKey();
+		ResourceLocation rL1 = rK.getLocation();
 		ResourceLocation rl2 = rK.getRegistryName();
 		if ((rL1.getPath().equals("the_nether")) || (rL1.getPath().equals("the_end"))) {
 		  // don't give night vision in the nether or the end.
@@ -484,7 +480,7 @@ public class CastSpells {
 		serverWorld.playSound(null, serverPlayer.getPosition(),
 				SoundEvents.ENTITY_DOLPHIN_SWIM, SoundCategory.AMBIENT, 0.6f, 0.25f);
 		if (!(serverPlayer.inventory.hasItemStack(MILK_STACK))) {
-			MyConfig.sendChat(serverPlayer, "You have no milk in your inventory.", Color.func_240744_a_(TextFormatting.DARK_RED));
+			MyConfig.sendChat(serverPlayer, "You have no milk in your inventory.", Color.fromTextFormatting(TextFormatting.DARK_RED));
 			serverWorld.playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.8f, 0.1f);	
 			return false;
@@ -650,8 +646,8 @@ public class CastSpells {
 	private static boolean doSpellTeleport(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			ServerWorld serverWorld) {
 
-		if (serverPlayer.world.func_234923_W_() != World.field_234918_g_) {
-			MyConfig.sendChat(serverPlayer,"You can only teleport in the Overworld.",Color.func_240744_a_(TextFormatting.YELLOW));
+		if (serverPlayer.world.getDimensionKey() != World.OVERWORLD) {
+			MyConfig.sendChat(serverPlayer,"You can only teleport in the Overworld.",Color.fromTextFormatting((TextFormatting.YELLOW)));
 			return false;
 		}
 		
@@ -765,7 +761,7 @@ public class CastSpells {
 		IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (playerManaStorage == null) {
 			MyConfig.sendChat(serverPlayer, "Impossible Error: You do not have a mana pool.",
-					Color.func_240744_a_(TextFormatting.YELLOW));
+					Color.fromTextFormatting((TextFormatting.YELLOW)));
 			return;
 		}
 		int debug = 1;
@@ -787,7 +783,7 @@ public class CastSpells {
 					SoundCategory.BLOCKS, 0.8f, 0.4f);
 			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getServerWorld(), 2, ParticleTypes.POOF);
 			MyConfig.sendChat(serverPlayer, "You do not have enough mana.",
-					Color.func_240744_a_(TextFormatting.RED));
+					Color.fromTextFormatting((TextFormatting.RED)));
 			return;
 		}
 

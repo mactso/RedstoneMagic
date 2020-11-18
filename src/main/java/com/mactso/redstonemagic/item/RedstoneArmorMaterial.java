@@ -5,10 +5,8 @@ import com.mactso.redstonemagic.Main;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.IArmorMaterial;
-import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
 
 public class RedstoneArmorMaterial implements IArmorMaterial {
 

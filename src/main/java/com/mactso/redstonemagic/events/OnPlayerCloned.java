@@ -7,7 +7,6 @@ import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class OnPlayerCloned {

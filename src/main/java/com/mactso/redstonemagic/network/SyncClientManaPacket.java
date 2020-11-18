@@ -1,7 +1,7 @@
 package com.mactso.redstonemagic.network;
 
 import java.util.function.Supplier;
-import com.mactso.redstonemagic.Main;
+
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 
 import net.minecraft.network.PacketBuffer;

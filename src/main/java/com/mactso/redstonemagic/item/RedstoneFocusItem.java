@@ -2,7 +2,6 @@ package com.mactso.redstonemagic.item;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Vector;
 import java.util.function.Consumer;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
@@ -16,13 +15,8 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
-import com.mactso.redstonemagic.spells.CastSpells;
-import com.mactso.redstonemagic.util.helpers.KeyboardHelper;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LadderBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -33,15 +27,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -50,16 +41,11 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceContext.BlockMode;
 import net.minecraft.util.math.RayTraceContext.FluidMode;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
-import net.minecraft.util.math.shapes.VoxelShapeCube;
-import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.ITextComponent;
@@ -68,7 +54,6 @@ import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.structure.RuinedPortalPiece.Location;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -402,7 +387,7 @@ public class RedstoneFocusItem extends ShieldItem {
 						RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
 						TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
 						MyConfig.sendChat(clientPlayer, msg.getString(),
-								Color.func_240744_a_(TextFormatting.RED));
+								Color.fromTextFormatting((TextFormatting.RED)));
 						clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent, SoundCategory.AMBIENT, 0.7f,
 								0.3f);
 					}
