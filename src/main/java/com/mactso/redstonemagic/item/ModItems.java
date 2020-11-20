@@ -18,6 +18,11 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModItems 
 {
 
+	public static final Item REDSTONE_MAGIC_GATHERER
+	 = new BlockItem(ModBlocks.REDSTONE_MAGIC_GATHERER, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("gatherer");
+	public static final Item TEST_BLOCK2
+	 = new BlockItem(ModBlocks.TEST_BLOCK2, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("test_block2");
+
 	public static final Item REDSTONE_MAGIC_PYLON_MINOR 
 	 = new BlockItem(ModBlocks.REDSTONE_MAGIC_PYLON_MINOR, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_magic_pylon_minor");
 	public static final Item REDSTONE_FOCUS_ITEM	
@@ -34,6 +39,8 @@ public class ModItems
 	{
 		forgeRegistry.register(REDSTONE_MAGIC_PYLON_MINOR );
 		forgeRegistry.register(REDSTONE_FOCUS_ITEM );
+		forgeRegistry.register(REDSTONE_MAGIC_GATHERER);	
+		forgeRegistry.register(TEST_BLOCK2);	
 		forgeRegistry.registerAll(REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
 	}
 	@OnlyIn(Dist.CLIENT)

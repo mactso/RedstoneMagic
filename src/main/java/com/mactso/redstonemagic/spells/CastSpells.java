@@ -69,6 +69,7 @@ public class CastSpells {
 	static final ItemStack GOLDEN_CARROT_STACK = new ItemStack (Items.GOLDEN_CARROT);
 	static final ItemStack FIRE_CHARGE_STACK = new ItemStack (Items.FIRE_CHARGE);
 	static final ItemStack REDSTONE_STACK = new ItemStack (Items.REDSTONE);
+	static final ItemStack MAGMA_CREAM_STACK = new ItemStack (Items.MAGMA_CREAM);
 	static int total_calls = 0; 
 	
 
@@ -234,6 +235,12 @@ public class CastSpells {
 		if ((isHealable(targetEntity))) {
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ASH);
 			targetEntity.heal((float) damage);
+			if(targetEntity instanceof WolfEntity) {
+				WolfEntity wE = (WolfEntity) targetEntity;
+				if (wE.getRevengeTarget() instanceof PlayerEntity) {
+					wE.setRevengeTarget(null);
+				}
+			}
 			serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_BEACON_ACTIVATE,
 					SoundCategory.AMBIENT, 0.2f, 0.8f);
 			serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE,
@@ -277,7 +284,7 @@ public class CastSpells {
 		if (hasFalderal(serverPlayer, FEATHER_STACK)) {
 			EffectInstance ei = targetEntity.getActivePotionEffect(Effects.SLOW_FALLING);
 			if (ei != null) {
-				if ((ei.getDuration() < 10) ) {
+				if ((ei.getDuration() < 20) ) {
 					targetEntity.removeActivePotionEffect(Effects.SLOW_FALLING);
 					ei = null;
 				}
@@ -298,7 +305,7 @@ public class CastSpells {
 		}
 		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.WATER_BREATHING);
 		if (ei != null) {
-			if ((ei.getDuration() < 10) ) {
+			if ((ei.getDuration() < 40) ) {
 				targetEntity.removeActivePotionEffect(Effects.WATER_BREATHING);
 				ei = null;
 			}
@@ -324,55 +331,61 @@ public class CastSpells {
 		}
 		
 		World w = (World) serverWorld;
-		RegistryKey<World> rK = w.getDimensionKey();
-		ResourceLocation rL1 = rK.getLocation();
-		ResourceLocation rl2 = rK.getRegistryName();
-		if ((rL1.getPath().equals("the_nether")) || (rL1.getPath().equals("the_end"))) {
-		  // don't give night vision in the nether or the end.
-		  // @TODO add a configurable list.
-		} else { // .equals("overworld")
+		if (serverWorld.getLight(pos) <= 8 ) {
 			ei = targetEntity.getActivePotionEffect(Effects.NIGHT_VISION);
 			if (ei != null) {
-				if ((ei.getDuration() < 10) ) {
+				if ((ei.getDuration() < 20) ) {
 					targetEntity.removeActivePotionEffect(Effects.NIGHT_VISION);
 					ei = null;
 				}
-			}			
-			if (ei == null) {
-				if (serverWorld.getLight(pos) <= 8 ) {
-					drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.END_ROD);		
-					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
-					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
-					serverWorld.playSound(null, targetEntity.getPosition(),
-							SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
-					int falderalBoost = 0;
-					if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
-						falderalBoost = THIRTY_SECONDS/2;
-					}
-					int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));
-					int effectIntensity = 1;
-					targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
-					return true;
+			}	
+			if (ei==null) {
+				RegistryKey<World> rK = w.getDimensionKey();
+				ResourceLocation rL1 = rK.getLocation();
+				ResourceLocation rl2 = rK.getRegistryName();
+				boolean castNightVision = true;
+				if ((rL1.getPath().equals("the_nether")) || (rL1.getPath().equals("the_end"))) {
+					castNightVision = false;
 				}
+				if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
+					castNightVision = true;
+				}
+				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.END_ROD);		
+				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
+				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
+				serverWorld.playSound(null, targetEntity.getPosition(),
+						SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				int falderalBoost = 0;
+				if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
+					falderalBoost = THIRTY_SECONDS/2;
+				}
+				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));
+				int effectIntensity = 1;
+				targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
+				return true;
+
 			}
-			
 		}
-		
+
+
 		ei = targetEntity.getActivePotionEffect(Effects.FIRE_RESISTANCE);
 		if (ei != null) {
-			if ((ei.getDuration() < 10) ) {
+			if ((ei.getDuration() < 40) ) {
 				targetEntity.removeActivePotionEffect(Effects.FIRE_RESISTANCE);
 				ei = null;
 			}
 		}			
 		if (ei == null) {
-			if (targetEntity.isBurning()) {
+			if ((targetEntity.isBurning()) || (hasFalderal(serverPlayer, MAGMA_CREAM_STACK))) {
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
 				serverWorld.playSound(null, targetEntity.getPosition(),
 						SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.9f, 0.25f);
-				
-				int secondsDuration = (spellTime * THIRTY_SECONDS);
+				int falderalBoost = 0;
+				if (hasFalderal(serverPlayer, MAGMA_CREAM_STACK)) {
+					falderalBoost = THIRTY_SECONDS/2;
+				}
+				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));				
 				int effectIntensity = 1;
 				targetEntity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, secondsDuration, effectIntensity, true, true));
 				return true;

@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.network;
 
+import net.minecraftforge.fml.network.PacketDistributor;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -9,6 +10,7 @@ import com.mactso.redstonemagic.Main;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.NetworkDirection;
@@ -45,4 +47,10 @@ public class Network
 	{
 		INSTANCE.sendTo(msg, player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
 	}
+
+	public static <MSG> void sendToTarget(PacketDistributor.PacketTarget target, MSG msg)
+	{
+		INSTANCE.send(target, msg);
+	}
+
 }

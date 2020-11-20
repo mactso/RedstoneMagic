@@ -1,4 +1,4 @@
-mtllib test_block.mtl
+mtllib gatherer.mtl
 usemtl temp
 v 0.0 0.0 0.0
 v 1.0 0.0 0.0

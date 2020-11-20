@@ -14,11 +14,15 @@ import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.crafting.RedstoneMagicRecipe;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.network.Register;
+import com.mactso.redstonemagic.sounds.ModSounds;
+import com.mactso.redstonemagic.tileentity.ModTileEntities;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -82,9 +86,14 @@ public class Main {
 	    public static class ModEvents
 	    {
 
-
+	        @SubscribeEvent
+	        public static void onSoundRegistry(final RegistryEvent.Register<SoundEvent> event)
+	        {
+	        	ModSounds.register(event.getRegistry());
+	        }
+	        
 		    @SubscribeEvent
-		    public void onBlocksRegistry(final RegistryEvent.Register<Block> event)
+		    public static void onBlocksRegistry(final RegistryEvent.Register<Block> event)
 		    {
 				System.out.println("RedStoneMagic: Register Blocks");
 		    	ModBlocks.register(event.getRegistry());
@@ -111,6 +120,13 @@ public class Main {
 				System.out.println("RedStoneMagic: Registering Shapeless Recipe");
 	        	event.getRegistry().register(RedstoneMagicRecipe.CRAFTING_REDSTONEMAGIC);
 	        }
+	        
+		    @SubscribeEvent
+		    public static void onTileEntitiesRegistry(final RegistryEvent.Register<TileEntityType<?>> event)
+		    {
+		        ModTileEntities.register(event.getRegistry());
+		    }
+		    
 
 	    }
 

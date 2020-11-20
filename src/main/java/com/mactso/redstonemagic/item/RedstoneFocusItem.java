@@ -15,9 +15,11 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
 import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
+import com.mactso.redstonemagic.sounds.ModSounds;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.TickableSound;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -251,26 +253,26 @@ public class RedstoneFocusItem extends ShieldItem {
 		if (soundModifier < 0.8f) {
 			if ( castingDuration %3 == 0) {
 				if (preparedSpellNumber == 0) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.ENTITY_CAT_HISS, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_NUKE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 1) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.ENTITY_FOX_AMBIENT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_HEAL, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 2) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_DOT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 3) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_SDOT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 4) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_RESI, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 5) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_FLUTE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_TELE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 6) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_WOOL_PLACE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_BUFF, SoundCategory.WEATHER, 0.3f + soundModifier, 0.3f + soundModifier);
 				} else if (preparedSpellNumber == 7) {
-					doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_NOTE_BLOCK_FLUTE, SoundCategory.WEATHER, 0.3f + soundModifier, 0.0f + soundModifier);
+					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_RCRS, SoundCategory.WEATHER, 0.3f + soundModifier, 0.0f + soundModifier);
 				} 
 			}
 		} else {
 			if ( castingDuration %20 == 0) {
-				doPlayTickSpellSound(serverPlayer, serverWorld, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.BLOCKS, 0.3f, 0.14f);
+				doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.SPELL_RESONATES, SoundCategory.BLOCKS, 0.3f, 0.14f);
 			}
 		}
 			
@@ -281,17 +283,17 @@ public class RedstoneFocusItem extends ShieldItem {
 	}
 
 
-	
+	@Override
 	public int getItemEnchantability() {
 		return 1;
 	}
 
-
+	@Override
 	public UseAction getUseAction(ItemStack stack) {
 		return UseAction.BLOCK;
 	}
 
-	
+	@Override
 	public int getUseDuration(ItemStack stack) {
 		return 72000;
 	}

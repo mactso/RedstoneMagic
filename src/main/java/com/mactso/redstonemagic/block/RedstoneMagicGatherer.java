@@ -2,11 +2,18 @@ package com.mactso.redstonemagic.block;
 
 import java.util.Random;
 
+import com.mactso.redstonemagic.tileentity.RedstoneMagicGathererTileEntity;
+import com.mactso.redstonemagic.tileentity.RedstoneMagicPylonMinorTileEntity;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ContainerBlock;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -14,11 +21,13 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-public class TestBlock extends Block
+public class RedstoneMagicGatherer extends ContainerBlock
 {
 	static int incr = 3;
 	static long lastTime = 0;
+
 	public static final IntegerProperty POWER = BlockStateProperties.LEVEL_0_15;
+	
 
 	private static VoxelShape SHAPE = VoxelShapes.or(
 			VoxelShapes.create(0, 0, 0, 1, 0.25, 1),
@@ -26,11 +35,26 @@ public class TestBlock extends Block
 			VoxelShapes.create(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
 			VoxelShapes.create(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
-	public TestBlock(Properties properties) {
+	@Override
+	public TileEntity createNewTileEntity(IBlockReader worldIn) {
+		return new RedstoneMagicGathererTileEntity();
+	}
+
+	@Override
+	public BlockRenderType getRenderType(BlockState state) {
+	      return BlockRenderType.MODEL;
+	}	
+	
+	public RedstoneMagicGatherer(Properties properties) {
 		super(properties);
 		setDefaultState(stateContainer.getBaseState().with(POWER, Integer.valueOf(0)));
 	}
 
+//	public static int getLightLevel(BlockState b) {
+////TODO get from tile entity
+//		return lightlevel;
+//	}
+	
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 		return SHAPE;

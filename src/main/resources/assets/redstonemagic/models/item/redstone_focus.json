@@ -47,7 +47,7 @@
             "predicate": {
                 "blocking": 1
             },
-            "model": "item/redstone_focus_blocking"
+            "model": "redstonemagic:item/redstone_focus_blocking"
         }
     ]
 }

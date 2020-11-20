@@ -1,5 +1,7 @@
 package com.mactso.redstonemagic.block;
 
+import com.mactso.redstonemagic.tileentity.RedstoneMagicGathererTileEntity;
+
 import net.minecraft.block.AbstractBlock.Properties;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -12,13 +14,23 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModBlocks
 {
 	public static final Block REDSTONE_MAGIC_PYLON_MINOR= new RedstoneMagicPylonMinor(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.WOOD)).setRegistryName("redstone_magic_pylon_minor");
+	public static final Block REDSTONE_MAGIC_GATHERER = new RedstoneMagicGatherer(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.WOOD)
+			.setLightLevel((state) -> {
+			    return 9;
+			 }))
+			.setRegistryName("gatherer");
+	public static final Block TEST_BLOCK2 = new RedstoneMagicGatherer(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.WOOD)).setRegistryName("test_block2");
 //	public static final Block REDSTONE_POWER_BLOCK = new RedstonePowerBlock(Properties.create(Material.IRON).hardnessAndResistance(5.0F, 6.0F).sound(SoundType.METAL)).setRegistryName("redstone_power_block");
+
+	//	public static final Block REDSTONE_POWER_BLOCK = new RedstonePowerBlock(Properties.create(Material.IRON).hardnessAndResistance(5.0F, 6.0F).sound(SoundType.METAL)).setRegistryName("redstone_power_block");
 //	public static final Block REDSTONE_ENERGY_BLOCK = new RedstoneEnergyBlock(Properties.create(Material.ROCK).hardnessAndResistance(3.5F)).setRegistryName("redstone_energy_block");
 
 	public static void register(IForgeRegistry<Block> forgeRegistry	)
 	{
 		forgeRegistry.register(REDSTONE_MAGIC_PYLON_MINOR);
-
+		forgeRegistry.register(REDSTONE_MAGIC_GATHERER);
+		forgeRegistry.register(TEST_BLOCK2);
+		
 	}
 
 	@OnlyIn(Dist.CLIENT)

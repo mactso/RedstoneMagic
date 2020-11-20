@@ -1,0 +1,119 @@
+{
+  "redstonemagic.nuke": {
+    "subtitle": "subtitles.redstonemagic.nuke",
+    "sounds": [
+      {
+        "name": "mob/cat/hiss1",
+        "volume": 0.4
+      },
+      {
+        "name": "mob/cat/hiss2",
+        "volume": 0.4
+      },
+      {
+        "name": "mob/cat/hiss3",
+        "volume": 0.4
+      }
+    ]
+  },
+  "redstonemagic.heal": {
+    "subtitle": "subtitles.redstonemagic.heal",
+    "sounds": [
+      {
+        "name": "mob/fox/idle1",
+        "volume": 0.8
+      },
+      {
+        "name": "mob/fox/idle2",
+        "volume": 1
+      },
+      {
+        "name": "mob/fox/idle3",
+        "volume": 1
+      },
+      {
+        "name": "mob/fox/idle4",
+        "volume": 1
+      },
+      {
+        "name": "mob/fox/idle5",
+        "volume": 1
+      },
+      {
+        "name": "mob/fox/idle6",
+        "volume": 1
+      }
+    ]
+  },
+  "redstonemagic.dot": {
+    "subtitle": "subtitles.redstonemagic.dot",
+    "sounds": [
+      "random/fizz"
+    ]
+  },
+  "redstonemagic.sdot": {
+    "subtitle": "subtitles.redstonemagic.sdot",
+    "sounds": [
+      "note/snare"
+    ]
+  },
+  "redstonemagic.resi": {
+    "subtitle": "subtitles.redstonemagic.resi",
+    "sounds": [
+      "step/stone1"
+    ]
+  },
+  "redstonemagic.tele": {
+    "subtitle": "subtitles.redstonemagic.tele",
+    "sounds": [
+      "note/flute"
+    ]
+  },
+  "redstonemagic.buff": {
+    "subtitle": "subtitles.redstonemagic.buff",
+    "sounds": [
+      "step/cloth1",
+      "step/cloth2",
+      "step/cloth3",
+      "step/cloth4"
+    ]
+  },
+  "redstonemagic.rcrs": {
+    "subtitle": "subtitles.redstonemagic.rcrs",
+    "sounds": [
+      "mob/evocation_illager/cast1",
+      "mob/evocation_illager/cast2"
+    ]
+  },
+  "spell.resonates": {
+    "subtitle": "subtitles.spell.resonates",
+    "sounds": [
+      {
+        "name": "block/bell/resonate",
+        "volume": 1,
+        "pitch": 1
+      },
+      {
+        "name": "block/bell/resonate",
+        "volume": 1,
+        "pitch": 0.9
+      },
+      {
+        "name": "block/bell/resonate",
+        "volume": 1,
+        "pitch": 0.85
+      }
+    ]
+  },
+  "gatherer.hums": {
+    "subtitle": "subtitles.gatherer.hums",
+    "sounds": [
+      {
+        "name": "block/bell/resonate",
+        "volume": 0.55,
+        "pitch": 0.45
+      }
+    ]
+  }       
+}
+  

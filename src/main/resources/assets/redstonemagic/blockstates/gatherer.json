@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "redstonemagic:block/test_block" }
+    "": { "model": "redstonemagic:block/gatherer" }
   }
 }

@@ -1,35 +1,86 @@
 package com.mactso.redstonemagic.block;
 
-import net.minecraft.block.Block;
+import com.mactso.redstonemagic.tileentity.RedstoneMagicPylonMinorTileEntity;
 
-public class RedstoneMagicPylonMinor extends Block
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ContainerBlock;
+import net.minecraft.block.DaylightDetectorBlock;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.AxeItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.ShovelItem;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+
+public class RedstoneMagicPylonMinor extends ContainerBlock
 {
 //	public static final IntegerProperty POWER = BlockStateProperties.POWER_0_15;
-
+	protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
+	   
 	public RedstoneMagicPylonMinor(Properties properties) {
 		super(properties);
 //		this.setDefaultState(
 //				this.stateContainer.getBaseState()
 //				.with(POWER, Integer.valueOf(4)));
 	}
+	
+	@Override
+	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+	     return SHAPE;
+	}
+	@Override
+	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
+			Hand handIn, BlockRayTraceResult result) {
 
-//	@Override
-//	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
-//			Hand handIn, BlockRayTraceResult result) {
-//		if (!player.abilities.allowEdit) {
-//			return ActionResultType.PASS;
-//		} else {
-//			int i = state.get(POWER);
-//			if (player.isSneaking()) {
-//				i = (i > 0) ? i - 1 : 15; 
-//			}
-//			else {
-//				i = (i < 15) ? i + 1 : 0;
-//			}
-//			worldIn.setBlockState(pos, state.with(POWER, Integer.valueOf(i)), 3);
-//			return ActionResultType.SUCCESS;
-//		}
-//	}
+		DaylightDetectorBlock d;
+		if (!player.abilities.allowEdit) {
+			return ActionResultType.PASS;
+		} else {
+			if ((worldIn instanceof ServerWorld)) {
+				TileEntity r = worldIn.getTileEntity(pos);
+				if (r instanceof RedstoneMagicPylonMinorTileEntity) {
+					((RedstoneMagicPylonMinorTileEntity) r).setCounter(1);
+				}
+
+				ItemStack handItem = player.getHeldItem(handIn);
+				if (handItem.getItem() instanceof ShovelItem) {
+
+				}
+				if (handItem.getItem() instanceof PickaxeItem) {
+					
+				}
+				if (handItem.getItem() instanceof AxeItem) {
+					
+				}
+				
+			}
+				
+
+			return ActionResultType.SUCCESS;
+		}
+	}
+
+	@Override
+	public BlockRenderType getRenderType(BlockState state) {
+		      return BlockRenderType.MODEL;
+	}	
+	
+	
+	@Override
+	public TileEntity createNewTileEntity(IBlockReader worldIn) {
+		return new RedstoneMagicPylonMinorTileEntity();
+	}
 //
 //	@Override
 //	public boolean canProvidePower(BlockState state) {

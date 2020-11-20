@@ -1,7 +1,9 @@
 {
+	
     "__comment": "Model generated using MrCrayfish's Model Creator (https://mrcrayfish.com/tools?id=mc)",
+    "parent": "block/block",
     "textures": {
-        "redstone_pylon": "redstonemagic:block/redstone_pylon",
+        "rmpm": "redstonemagic:block/redstone_magic_pylon_minor",
         "redstone_block": "minecraft:block/redstone_block"
     },
     "display": {
@@ -42,10 +44,10 @@
             "from": [ 0, 0, 0 ], 
             "to": [ 16, 2, 16 ], 
             "faces": {
-                "north": { "texture": "#redstone_pylon", "uv": [ 0, 0, 16, 2 ] },
-                "east": { "texture": "#redstone_pylon", "uv": [ 0, 0, 16, 2 ] },
-                "south": { "texture": "#redstone_pylon", "uv": [ 0, 0, 16, 2 ] },
-                "west": { "texture": "#redstone_pylon", "uv": [ 0, 0, 16, 2 ] },
+                "north": { "texture": "#rmpm", "uv": [ 0, 0, 16, 2 ] },
+                "east": { "texture": "#rmpm", "uv": [ 0, 0, 16, 2 ] },
+                "south": { "texture": "#rmpm", "uv": [ 0, 0, 16, 2 ] },
+                "west": { "texture": "#rmpm", "uv": [ 0, 0, 16, 2 ] },
                 "up": { "texture": "#redstone_block", "uv": [ 0, 0, 16, 16 ] },
                 "down": { "texture": "#redstone_block", "uv": [ 0, 0, 16, 16 ] }
             }
@@ -55,10 +57,10 @@
             "from": [ 2, 2, 2 ], 
             "to": [ 14, 4, 14 ], 
             "faces": {
-                "north": { "texture": "#redstone_pylon", "uv": [ 0, 0, 12, 2 ] },
-                "east": { "texture": "#redstone_pylon", "uv": [ 0, 0, 12, 2 ] },
-                "south": { "texture": "#redstone_pylon", "uv": [ 0, 0, 12, 2 ] },
-                "west": { "texture": "#redstone_pylon", "uv": [ 0, 0, 12, 2 ] },
+                "north": { "texture": "#rmpm", "uv": [ 0, 0, 12, 2 ] },
+                "east": { "texture": "#rmpm", "uv": [ 0, 0, 12, 2 ] },
+                "south": { "texture": "#rmpm", "uv": [ 0, 0, 12, 2 ] },
+                "west": { "texture": "#rmpm", "uv": [ 0, 0, 12, 2 ] },
                 "up": { "texture": "#redstone_block", "uv": [ 0, 0, 12, 12 ] }
             }
         },
@@ -67,10 +69,10 @@
             "from": [ 4, 4, 4 ], 
             "to": [ 12, 6, 12 ], 
             "faces": {
-                "north": { "texture": "#redstone_pylon", "uv": [ 0, 0, 8, 2 ] },
-                "east": { "texture": "#redstone_pylon", "uv": [ 0, 0, 8, 2 ] },
-                "south": { "texture": "#redstone_pylon", "uv": [ 0, 0, 8, 2 ] },
-                "west": { "texture": "#redstone_pylon", "uv": [ 0, 0, 8, 2 ] },
+                "north": { "texture": "#rmpm", "uv": [ 0, 0, 8, 2 ] },
+                "east": { "texture": "#rmpm", "uv": [ 0, 0, 8, 2 ] },
+                "south": { "texture": "#rmpm", "uv": [ 0, 0, 8, 2 ] },
+                "west": { "texture": "#rmpm", "uv": [ 0, 0, 8, 2 ] },
                 "up": { "texture": "#redstone_block", "uv": [ 0, 0, 8, 8 ] }
             }
         },
@@ -79,11 +81,11 @@
             "from": [ 6, 6, 6 ], 
             "to": [ 10, 8, 10 ], 
             "faces": {
-                "north": { "texture": "#redstone_pylon", "uv": [ 0, 0, 4, 2 ] },
-                "east": { "texture": "#redstone_pylon", "uv": [ 0, 0, 4, 2 ] },
-                "south": { "texture": "#redstone_pylon", "uv": [ 0, 0, 4, 2 ] },
-                "west": { "texture": "#redstone_pylon", "uv": [ 0, 0, 4, 2 ] },
-                "up": { "texture": "#redstone_block", "uv": [ 0, 0, 4, 4 ] }
+                "north": { "texture": "#rmpm", "uv": [ 0, 0, 4, 2 ] },
+                "east": { "texture": "#rmpm", "uv": [ 0, 0, 4, 2 ] },
+                "south": { "texture": "#rmpm", "uv": [ 0, 0, 4, 2 ] },
+                "west": { "texture": "#rmpm", "uv": [ 0, 0, 4, 2 ] },
+                "up": { "texture": 	"#redstone_block", "uv": [ 0, 0, 4, 4 ] }
             }
         }
     ]
