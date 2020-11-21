@@ -6,7 +6,6 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
 import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
@@ -44,7 +43,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	static final int RITUAL_LOGGING = 93;
 	static final int RITUAL_LIGHTING = 94;
 	static final int RITUAL_WARMUP_TIME = 100; // 5 seconds
-
+ 
 	String spellTranslationKey;
 	String spellComment;
 	int spellBaseCost;
@@ -59,7 +58,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	long cursorRitualX = 0;
 	long cursorRitualY = 0;
 	long cursorRitualZ = 0;
-	long minRitualX = 0;
+	long minRitualX = 0; 
 	long minRitualY = 0;
 	long minRitualZ = 0;
 	long maxRitualX = 0;
@@ -223,9 +222,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			mustPayChunkCost = true;
 		}
 		if (BlockTags.LOGS.contains(world.getBlockState(cursorPos).getBlock())) {
-			world.destroyBlock(cursorPos, false);
 			mustPayChunkCost = true;
 			ItemStack blockItemStack = new ItemStack(world.getBlockState(cursorPos).getBlock());
+			world.destroyBlock(cursorPos, false);
 			IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
 			if (chestInv != null) {
 				HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, blockItemStack, null);
@@ -236,7 +235,6 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private void processMiningRitual(BlockPos cursorPos) {
 
 		if (isMinable(cursorPos)) {
-			world.destroyBlock(cursorPos, false);
 			mustPayChunkCost = true;
 			ItemStack blockItemStack;
 
@@ -247,6 +245,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			} else {
 				blockItemStack = new ItemStack(world.getBlockState(cursorPos).getBlock());
 			}
+			world.destroyBlock(cursorPos, false);
 
 			IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
 			if (chestInv != null) {
@@ -350,11 +349,14 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					if (doMineGalleries) {
 						noValidRitualBlockFound = false;
 						if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
-							world.playSound(null, cursorPos, SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.BLOCKS, 0.5f, 0.2f);
+							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 						}
 					}
 				} else if ((currentRitual == RITUAL_LOGGING) && (isLoggable(cursorPos))){
 					noValidRitualBlockFound = false;
+					if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
+						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					}
 				} else { // not mining, lighting, or logging
 					if (!(tBS.getBlock() instanceof AirBlock)) {
 						noValidRitualBlockFound = false;

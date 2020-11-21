@@ -2,6 +2,7 @@ package com.mactso.redstonemagic.spells;
 
 import java.util.Collection;
 
+import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.config.SpellManager;
 import com.mactso.redstonemagic.config.SpellManager.RedstoneMagicSpellItem;
@@ -51,7 +52,6 @@ import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.TicketType;
 public class CastSpells {
@@ -72,11 +72,12 @@ public class CastSpells {
 	static final ItemStack FIRE_CHARGE_STACK = new ItemStack (Items.FIRE_CHARGE);
 	static final ItemStack REDSTONE_STACK = new ItemStack (Items.REDSTONE);
 	static final ItemStack MAGMA_CREAM_STACK = new ItemStack (Items.MAGMA_CREAM);
+	static final ItemStack GLOWSTONE_DUST_STACK = new ItemStack (Items.GLOWSTONE_DUST);
 	static int total_calls = 0; 
 	
 
 	private static boolean castSpellAtTarget(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			RedstoneMagicSpellItem spell) {
+			RedstoneMagicSpellItem spell, BlockPos targetPos) {
 		
 		String spellTranslationKey = spell.getSpellTranslationKey();
 		String spellTargetType = spell.getSpellTargetType();
@@ -129,7 +130,7 @@ public class CastSpells {
 		}
 //***
 		if (spellTranslationKey.equals("redstonemagic.heal")) { // Crimson Heal
-			return doSpellHeal(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature);
+			return doSpellHeal(serverPlayer, targetEntity, spellTime, myDamageSource, serverWorld, weaponDamage, damageModifierForCreature, targetPos);
 		}
 //***
 		if (spellTranslationKey.equals("redstonemagic.resi")) { // Resistance
@@ -206,7 +207,7 @@ public class CastSpells {
 	}
 
 	private static boolean doSpellHeal(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
-			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature) {
+			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForCreature, BlockPos targetPos) {
 
 		int damage = (int) targetEntity.getMaxHealth() / 10;
 		if (damage < 2)	damage = 2;
@@ -251,15 +252,23 @@ public class CastSpells {
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.HEART);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
 			return true;
-		} else {
+		}
+		else if (hasFalderal(serverPlayer, GLOWSTONE_DUST_STACK)) {
+			if (targetPos != null) {
+				serverWorld.setBlockState(targetPos, ModBlocks.LIGHT_SPELL.getDefaultState());
+				serverSpawnMagicalParticles(targetPos, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
+			}
+			return true;
+		}
+		else {
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.POOF);
 			return false;
 
 		}
 
 	}
-	
-	
+
+
 	private static boolean isHealable (LivingEntity entity) {
 		if (entity.getHealth() >= entity.getMaxHealth()) {
 			return false;
@@ -481,8 +490,6 @@ public class CastSpells {
 	
 	private static int findHotBarSlotWithItemType (ServerPlayerEntity serverPlayer, ItemStack stack) {
 	    for(int i = 0; i < 9; ++i) {
-	    	Item sI = serverPlayer.inventory.getStackInSlot(i).getItem();
-	    	Item stackI = stack.getItem();
 	        if(serverPlayer.inventory.getStackInSlot(i).getItem() == stack.getItem()) {
 	        	return i;
 	        }
@@ -760,7 +767,7 @@ public class CastSpells {
 
 	// server dist
 	public static void processSpellOnServer(int spellNumber, LivingEntity targetEntity, ServerPlayerEntity serverPlayer,
-			int spellTime, int handIndex) {
+			int spellTime, int handIndex, int targetPosX, int targetPosY, int targetPosZ) {
 
 		ItemStack correctRedstoneFocusStack = serverPlayer.getHeldItemMainhand();
 		if (handIndex == 2) {
@@ -779,7 +786,7 @@ public class CastSpells {
 					Color.fromTextFormatting((TextFormatting.YELLOW)));
 			return;
 		}
-		int debug = 1;
+
 		RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(spellNumber));
 		if (spellTime > 6) {
 			spellTime = 6;
@@ -804,8 +811,13 @@ public class CastSpells {
 
 		total_calls = total_calls + 1;
 		if (spellTime > 4) spellTime = 4;
-
-		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell)) {
+		
+		BlockPos targetPos = null;
+		if (targetPosY != -99999 ) {
+			targetPos = new BlockPos (targetPosX, targetPosY, targetPosZ);
+		}
+		
+		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell, targetPos)) {
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
 			Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
@@ -837,9 +849,19 @@ public class CastSpells {
           double yOffset = 0.3D;
           double zOffset = 0.75D;
           particleCount *= 3;
-          serverWorld.spawnParticle(particleType, entity.getPosX(), entity.getPosY()+(double)entity.getEyeHeight(), entity.getPosZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);                
-  		  int debug = 2;
+          serverWorld.spawnParticle(particleType, entity.getPosX(), entity.getPosY()+(double)entity.getEyeHeight(), entity.getPosZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
     }
+	
+	private static void serverSpawnMagicalParticles(BlockPos targetPos, ServerWorld serverWorld, int particleCount,
+			IParticleData particleType) {
+        double xOffset = 0.5D;
+        double yOffset = 0.5D;
+        double zOffset = 0.5D;
+        particleCount *= 3;
+        serverWorld.spawnParticle(particleType, targetPos.getX(), targetPos.getY(), targetPos.getZ(), particleCount, xOffset, yOffset, zOffset, -0.14D);
+		
+	}
+
 	
     public static void serverSpawnMagicalParticles(Vector3d bV3D, ServerWorld serverWorld, int particleCount, IParticleData particleType) {
 
@@ -850,8 +872,7 @@ public class CastSpells {
 //        double yOffset = 0.15D ;
 //        double zOffset = 0.25D ;
         particleCount *= 2;
-        serverWorld.spawnParticle(particleType, bV3D.getX(), bV3D.getY(), bV3D.getZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);                
-		  int debug = 2;
+        serverWorld.spawnParticle(particleType, bV3D.getX(), bV3D.getY(), bV3D.getZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
   }
 
 

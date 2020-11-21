@@ -3,9 +3,11 @@ package com.mactso.redstonemagic.block;
 import com.mactso.redstonemagic.tileentity.GathererTileEntity;
 
 import net.minecraft.block.AbstractBlock.Properties;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,15 +22,15 @@ public class ModBlocks
 			 }))
 			.setRegistryName("gatherer");
 	public static final Block TEST_BLOCK2 = new Gatherer(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.WOOD)).setRegistryName("test_block2");
-//	public static final Block REDSTONE_POWER_BLOCK = new RedstonePowerBlock(Properties.create(Material.IRON).hardnessAndResistance(5.0F, 6.0F).sound(SoundType.METAL)).setRegistryName("redstone_power_block");
-
-	//	public static final Block REDSTONE_POWER_BLOCK = new RedstonePowerBlock(Properties.create(Material.IRON).hardnessAndResistance(5.0F, 6.0F).sound(SoundType.METAL)).setRegistryName("redstone_power_block");
-//	public static final Block REDSTONE_ENERGY_BLOCK = new RedstoneEnergyBlock(Properties.create(Material.ROCK).hardnessAndResistance(3.5F)).setRegistryName("redstone_energy_block");
+	public static final Block LIGHT_SPELL = new LightSpell(Properties.create(Material.GLASS, MaterialColor.LIGHT_GRAY).doesNotBlockMovement().noDrops().zeroHardnessAndResistance().sound(SoundType.LANTERN).notSolid().setLightLevel((state) -> {
+			    return 14;
+			 })).setRegistryName("light_spell");
 
 	public static void register(IForgeRegistry<Block> forgeRegistry	)
 	{
 		forgeRegistry.register(RITUAL_PYLON);
 		forgeRegistry.register(GATHERER);
+		forgeRegistry.register(LIGHT_SPELL);
 		forgeRegistry.register(TEST_BLOCK2);
 		
 	}

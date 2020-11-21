@@ -17,6 +17,7 @@ import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.TickableSound;
@@ -94,6 +95,7 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	@OnlyIn(value = Dist.CLIENT)
 	public static BlockPos doLookForDistantBlock(PlayerEntity clientPlayer) {
+		
 		double d0 = 30.0;
 		double d1 = d0 * d0;
 		Vector3d vector3d = clientPlayer.getEyePosition(1.0F);
@@ -112,17 +114,24 @@ public class RedstoneFocusItem extends ShieldItem {
 		RayTraceContext r2 = new RayTraceContext(eyePos, lookVector, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, clientPlayer);
 		Vector3d hitPosition2 = world.rayTraceBlocks(r2).getHitVec();
 
-		BlockPos p = null;
+		BlockPos targetPos = null;
 	
 		
 		if (hitPosition2 != null) {
-			p = new BlockPos (hitPosition.getX(), hitPosition.getY(), hitPosition.getZ());
+			Vector3d vL = clientPlayer.getLook(1.0F);			
+			targetPos = new BlockPos (hitPosition.getX()-vL.getX(),
+					hitPosition.getY()-vL.getY(),
+					hitPosition.getZ()-vL.getZ());
+			Block b = world.getBlockState(targetPos).getBlock();
+			if (!(b instanceof AirBlock)) {
+				targetPos = null;
+			}
 		}
-		System.out.println(" " + p.getX() + " " + p.getY() + " " + p.getZ());
+//		System.out.println(" " + p.getX() + " " + p.getY() + " " + p.getZ());
 		Direction d = clientPlayer.getHorizontalFacing();
 		d = d.getOpposite();
 // server world command		world.setBlockState(p, Blocks.WALL_TORCH.getDefaultState().with(BlockStateProperties.FACING, d));
-		return p;
+		return targetPos;
 
 	}
 	
@@ -402,33 +411,38 @@ public class RedstoneFocusItem extends ShieldItem {
 					BlockPos targetPos = null;
 					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_OTHER)) {
 						targetEntity = doLookForDistantTarget(clientPlayer);
-						
 						if (targetEntity != null) {
 							soundEvent = SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH;
-						} else {
-								targetPos = doLookForDistantBlock(clientPlayer);
-								Block b = clientPlayer.getEntityWorld().getBlockState(targetPos).getBlock();
 						}
 					}
 
 					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_BOTH)) {
 						targetEntity = doLookForDistantTarget(clientPlayer);
-						if (targetEntity == null)
+						if (targetEntity == null) {
 							targetEntity = clientPlayer;
+						}
+						targetPos = doLookForDistantBlock(clientPlayer);
 						soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_CHIME;
 					}
 
 					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_SELF)) {
 						targetEntity = clientPlayer;
+						targetPos = targetEntity.getPosition();
 						soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_CHIME;
 					}
 
 					if (targetEntity != null) {
 						clientPlayer.world.playSound(null, targetEntity.getPosition(), soundEvent, SoundCategory.PLAYERS,
 								volume, pitch);
+						if (targetPos != null) {
 						Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber,targetEntity.getEntityId(),
-								(int) netSpellCastingTime, handIndex) );
-					} else {
+								(int) netSpellCastingTime, handIndex, targetPos.getX(), targetPos.getY(), targetPos.getZ()) );
+						} else
+						{
+							Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber,targetEntity.getEntityId(),
+									(int) netSpellCastingTime, handIndex, -1, -99999, -1) );
+						}
+						} else {
 						clientPlayer.world.playSound(null, clientPlayer.getPosition(), soundEvent, SoundCategory.PLAYERS,
 								volume, pitch);
 					}

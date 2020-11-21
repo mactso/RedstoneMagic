@@ -20,6 +20,8 @@ public class ModSounds {
 	public static final SoundEvent SPELL_FAILS = create("spell.fails");	
 	public static final SoundEvent GATHERER_HUMS = create("gatherer.hums");	
 	public static final SoundEvent RITUAL_PYLON_THRUMS = create("ritual.pylon.hums");	
+	public static final SoundEvent RED_SPIRIT_WORKS = create("red.spirit.works");	
+
 	private static SoundEvent create(String key)
 	{
 		ResourceLocation res = new ResourceLocation(Main.MODID, key);
@@ -42,5 +44,6 @@ public class ModSounds {
 		registry.register(SPELL_FAILS);
 		registry.register(GATHERER_HUMS);		
 		registry.register(RITUAL_PYLON_THRUMS);	
+		registry.register(RED_SPIRIT_WORKS);	
 	}
 }

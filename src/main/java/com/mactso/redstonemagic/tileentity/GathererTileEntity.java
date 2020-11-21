@@ -49,7 +49,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 
 			world.playSound(null, pos, ModSounds.GATHERER_HUMS,
 					SoundCategory.BLOCKS, humVolume, humPitch);
-			doGathererParticles(3);      
+			doGathererParticles(2);      
 			if (dayTime%6000 == 0L) {
 				processGatheredManaToChunks();
 			}
