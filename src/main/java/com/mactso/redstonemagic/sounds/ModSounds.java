@@ -17,7 +17,9 @@ public class ModSounds {
 	public static final SoundEvent REDSTONEMAGIC_BUFF = create("redstonemagic.buff");
 	public static final SoundEvent REDSTONEMAGIC_RCRS = create("redstonemagic.rcrs");
 	public static final SoundEvent SPELL_RESONATES = create("spell.resonates");	
+	public static final SoundEvent SPELL_FAILS = create("spell.fails");	
 	public static final SoundEvent GATHERER_HUMS = create("gatherer.hums");	
+	public static final SoundEvent RITUAL_PYLON_THRUMS = create("ritual.pylon.hums");	
 	private static SoundEvent create(String key)
 	{
 		ResourceLocation res = new ResourceLocation(Main.MODID, key);
@@ -37,6 +39,8 @@ public class ModSounds {
 		registry.register(REDSTONEMAGIC_BUFF);
 		registry.register(REDSTONEMAGIC_RCRS);
 		registry.register(SPELL_RESONATES);
+		registry.register(SPELL_FAILS);
 		registry.register(GATHERER_HUMS);		
+		registry.register(RITUAL_PYLON_THRUMS);	
 	}
 }

@@ -18,13 +18,13 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModItems 
 {
 
-	public static final Item REDSTONE_MAGIC_GATHERER
-	 = new BlockItem(ModBlocks.REDSTONE_MAGIC_GATHERER, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("gatherer");
+	public static final Item GATHERER
+	 = new BlockItem(ModBlocks.GATHERER, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("gatherer");
 	public static final Item TEST_BLOCK2
 	 = new BlockItem(ModBlocks.TEST_BLOCK2, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("test_block2");
 
-	public static final Item REDSTONE_MAGIC_PYLON_MINOR 
-	 = new BlockItem(ModBlocks.REDSTONE_MAGIC_PYLON_MINOR, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_magic_pylon_minor");
+	public static final Item RITUAL_PYLON 
+	 = new BlockItem(ModBlocks.RITUAL_PYLON, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("ritual_pylon");
 	public static final Item REDSTONE_FOCUS_ITEM	
 	 = new RedstoneFocusItem(new Properties().group(ItemGroup.REDSTONE).maxDamage(484)).setRegistryName("redstone_focus");
 	private static final IArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.NETHERITE,"redstonemagic");
@@ -37,9 +37,9 @@ public class ModItems
 
 	public static void register(IForgeRegistry<Item> forgeRegistry)
 	{
-		forgeRegistry.register(REDSTONE_MAGIC_PYLON_MINOR );
+		forgeRegistry.register(RITUAL_PYLON );
 		forgeRegistry.register(REDSTONE_FOCUS_ITEM );
-		forgeRegistry.register(REDSTONE_MAGIC_GATHERER);	
+		forgeRegistry.register(GATHERER);	
 		forgeRegistry.register(TEST_BLOCK2);	
 		forgeRegistry.registerAll(REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
 	}

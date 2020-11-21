@@ -10,6 +10,7 @@ import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
+import com.mactso.redstonemagic.sounds.ModSounds;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -49,6 +50,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.TicketType;
@@ -792,7 +794,7 @@ public class CastSpells {
 					SoundCategory.AMBIENT, 0.7f, 0.8f);
 			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
 					SoundCategory.NEUTRAL, 0.6f, 0.2f);
-			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO,
+			serverPlayer.world.playSound(null, serverPlayer.getPosition(), ModSounds.SPELL_FAILS,
 					SoundCategory.BLOCKS, 0.8f, 0.4f);
 			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getServerWorld(), 2, ParticleTypes.POOF);
 			MyConfig.sendChat(serverPlayer, "You do not have enough mana.",
@@ -806,8 +808,9 @@ public class CastSpells {
 		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell)) {
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
 					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
-			IChunk playerChunk = serverPlayer.world.getChunk(serverPlayer.getPosition());
-			IMagicStorage chunkManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
+			// possible bug here.  getting from player not chunk
+			IMagicStorage chunkManaStorage = playerChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			int chunkMana = chunkManaStorage.getManaStored();
 			int chunkManaUsed = 0;
 			int personalManaUsed = spellCost;
@@ -823,7 +826,7 @@ public class CastSpells {
 		} else {
 			drawSpellBeam(serverPlayer, serverPlayer.getServerWorld(), targetEntity, ParticleTypes.POOF);
 			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
-					SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO, SoundCategory.AMBIENT, 0.4f, 0.25f);
+					ModSounds.SPELL_FAILS, SoundCategory.AMBIENT, 0.4f, 0.25f);
 		}
 
 	}

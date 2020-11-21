@@ -372,7 +372,7 @@ public class RedstoneFocusItem extends ShieldItem {
 					handIndex = 2;
 				}
 
-				SoundEvent soundEvent = SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO; // "failure"
+				SoundEvent soundEvent = ModSounds.SPELL_FAILS; 
 				// casting a spell
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);
 

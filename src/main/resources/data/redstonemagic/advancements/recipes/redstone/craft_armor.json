@@ -2,12 +2,12 @@
 	"parent": "minecraft:recipes/root",
 	"requirements": [
 		[
-			"has_redstone_focus",
+			"has_made_focus",
 			"has_the_recipe"
 		]
 	],
 	"criteria": {
-		"has_redstone_focus": {
+		"has_made_focus": {
 			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
@@ -20,13 +20,16 @@
 		"has_the_recipe": {
 			"trigger": "minecraft:recipe_unlocked",
 			"conditions": {
-				"recipe": "redstonemagic:gatherer"
+				"recipe": "redstonemagic:ritual_pylons"
 			}
 		}
 	},
 	"rewards": {
 		"recipes": [
-			"redstonemagic:gatherer"
+			"redstonemagic:redstonemagic_chestplate",
+			"redstonemagic:redstonemagic_leggings",
+			"redstonemagic:redstonemagic_helmet",
+			"redstonemagic:redstonemagic_boots"
 		]
 	}
 }

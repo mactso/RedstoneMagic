@@ -1,6 +1,6 @@
 package com.mactso.redstonemagic.block;
 
-import com.mactso.redstonemagic.tileentity.RedstoneMagicPylonMinorTileEntity;
+import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -23,12 +23,12 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-public class RedstoneMagicPylonMinor extends ContainerBlock
+public class RitualPylon extends ContainerBlock
 {
 //	public static final IntegerProperty POWER = BlockStateProperties.POWER_0_15;
 	protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
 	   
-	public RedstoneMagicPylonMinor(Properties properties) {
+	public RitualPylon(Properties properties) {
 		super(properties);
 //		this.setDefaultState(
 //				this.stateContainer.getBaseState()
@@ -39,6 +39,7 @@ public class RedstoneMagicPylonMinor extends ContainerBlock
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 	     return SHAPE;
 	}
+	
 	@Override
 	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult result) {
@@ -49,19 +50,8 @@ public class RedstoneMagicPylonMinor extends ContainerBlock
 		} else {
 			if ((worldIn instanceof ServerWorld)) {
 				TileEntity r = worldIn.getTileEntity(pos);
-				if (r instanceof RedstoneMagicPylonMinorTileEntity) {
-					((RedstoneMagicPylonMinorTileEntity) r).setCounter(1);
-				}
-
-				ItemStack handItem = player.getHeldItem(handIn);
-				if (handItem.getItem() instanceof ShovelItem) {
-
-				}
-				if (handItem.getItem() instanceof PickaxeItem) {
-					
-				}
-				if (handItem.getItem() instanceof AxeItem) {
-					
+				if (r instanceof RitualPylonTileEntity) {
+					((RitualPylonTileEntity) r).changeRitual(player, handIn);
 				}
 				
 			}
@@ -79,7 +69,7 @@ public class RedstoneMagicPylonMinor extends ContainerBlock
 	
 	@Override
 	public TileEntity createNewTileEntity(IBlockReader worldIn) {
-		return new RedstoneMagicPylonMinorTileEntity();
+		return new RitualPylonTileEntity();
 	}
 //
 //	@Override

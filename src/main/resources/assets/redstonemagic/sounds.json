@@ -114,6 +114,22 @@
         "pitch": 0.45
       }
     ]
-  }       
+  },
+  "ritual.pylon.thrums": {
+    "subtitle": "subtitles.ritual.pylon.thrums",
+    "sounds": [
+      {
+        "name": "block/bell/resonate",
+        "volume": 0.6,
+        "pitch": 0.6
+      }
+    ]
+  },
+  "spell.fails": {
+    "sounds": [
+      "note/didgeridoo"
+    ],
+    "subtitle": "subtitles.spell.fails"
+  }      
 }
   

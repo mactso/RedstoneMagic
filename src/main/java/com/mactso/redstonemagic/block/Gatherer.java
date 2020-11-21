@@ -2,8 +2,8 @@ package com.mactso.redstonemagic.block;
 
 import java.util.Random;
 
-import com.mactso.redstonemagic.tileentity.RedstoneMagicGathererTileEntity;
-import com.mactso.redstonemagic.tileentity.RedstoneMagicPylonMinorTileEntity;
+import com.mactso.redstonemagic.tileentity.GathererTileEntity;
+import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -21,7 +21,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-public class RedstoneMagicGatherer extends ContainerBlock
+public class Gatherer extends ContainerBlock
 {
 	static int incr = 3;
 	static long lastTime = 0;
@@ -37,7 +37,7 @@ public class RedstoneMagicGatherer extends ContainerBlock
 
 	@Override
 	public TileEntity createNewTileEntity(IBlockReader worldIn) {
-		return new RedstoneMagicGathererTileEntity();
+		return new GathererTileEntity();
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class RedstoneMagicGatherer extends ContainerBlock
 	      return BlockRenderType.MODEL;
 	}	
 	
-	public RedstoneMagicGatherer(Properties properties) {
+	public Gatherer(Properties properties) {
 		super(properties);
 		setDefaultState(stateContainer.getBaseState().with(POWER, Integer.valueOf(0)));
 	}

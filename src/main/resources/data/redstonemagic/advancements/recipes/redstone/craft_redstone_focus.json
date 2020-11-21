@@ -1,10 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
-  "rewards": {
-    "recipes": [
-      "redstonemagic:redstone_focus"
+  "requirements": [
+    [
+      "has_redstone",
+      "has_the_recipe"
     ]
-  },
+  ],
   "criteria": {
     "has_redstone": {
       "trigger": "minecraft:inventory_changed",
@@ -23,10 +24,9 @@
       }
     }
   },
-  "requirements": [
-    [
-      "has_redstone",
-      "has_the_recipe"
+  "rewards": {
+    "recipes": [
+      "redstonemagic:redstone_focus"
     ]
-  ]
+  }
 }
