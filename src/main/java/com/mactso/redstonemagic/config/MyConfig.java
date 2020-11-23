@@ -1,4 +1,7 @@
 package com.mactso.redstonemagic.config;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -6,6 +9,9 @@ import org.apache.logging.log4j.Logger;
 import com.mactso.redstonemagic.Main;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.ServerPropertiesProvider;
+import net.minecraft.server.dedicated.ServerProperties;
+import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -36,7 +42,11 @@ public class MyConfig
 
 
 
+
+
 	private static int debugLevel;
+	private static int neverBreakTools;
+	private static boolean allowPvp = false;
 	private static int maxChunkRedstoneMagic;
 	private static int maxPlayerRedstoneMagic;
 	public static String[]  defaultModExclusionList;
@@ -61,11 +71,16 @@ public class MyConfig
 	public static void bakeConfig()
 	{
 		debugLevel = COMMON.debugLevel.get();
+		neverBreakTools = COMMON.neverBreakTools.get();
 		maxChunkRedstoneMagic = COMMON.maxChunkRedstoneMagic.get();
 		maxPlayerRedstoneMagic = COMMON.maxPlayerRedstoneMagic.get();
 		defaultModExclusionList6464 = COMMON.defaultModExclusionListActual.get() ;
 		SpellManager.redstoneMagicSpellInit();
-
+		DynamicRegistries.Impl dynamicregistries$impl = DynamicRegistries.func_239770_b_();
+		Path path = Paths.get("server.properties");
+        ServerPropertiesProvider serverpropertiesprovider = new ServerPropertiesProvider(dynamicregistries$impl, path);
+		ServerProperties serverproperties = serverpropertiesprovider.getProperties();
+		allowPvp = (serverproperties.allowPvp);
 	}
 
 
@@ -73,6 +88,7 @@ public class MyConfig
 	{
 
 		public final IntValue debugLevel;
+		public final IntValue neverBreakTools;
 		public final IntValue maxChunkRedstoneMagic;
 		public final IntValue maxPlayerRedstoneMagic;
 
@@ -91,7 +107,12 @@ public class MyConfig
 					.comment("Debug Level: 0 = Off, 1 = Log, 2 = Chat+Log")
 					.translation(Main.MODID + ".config." + "debugLevel")
 					.defineInRange("debugLevel", () -> 0, 0, 2);
-			
+
+			neverBreakTools = builder
+					.comment("NeverBreakTools: 0 = Off, 1-99 = % to break")
+					.translation(Main.MODID + ".config." + "neverBreakTools")
+					.defineInRange("neverBreakTools", () -> 0, 67, 100);
+						
 			maxChunkRedstoneMagic = builder
 					.comment("Max Chunk Redstone Magic Amount")
 					.translation(Main.MODID + ".config." + "maxChunkRedstoneMagic")
@@ -126,6 +147,10 @@ public class MyConfig
 			sendChat (p, dbgMsg, Color.fromTextFormatting((TextFormatting.YELLOW)));
 		}
 	}
+
+	public static boolean isAllowPvp() {
+		return allowPvp;
+	}
 	
 	public static int getDebugLevel() {
 		return debugLevel;
@@ -135,6 +160,10 @@ public class MyConfig
 		MyConfig.debugLevel = debugLevel;
 	}
 
+	public static int getNeverBreakTools() {
+		return neverBreakTools;
+	}
+	
 	public static int getMaxChunkRedstoneMagic() {
 		return maxChunkRedstoneMagic;
 	}

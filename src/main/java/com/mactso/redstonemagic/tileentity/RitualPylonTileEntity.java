@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.tileentity;
 
+import com.electronwill.nightconfig.core.conversion.ForceBreakdown;
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
@@ -79,7 +80,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	long maxRitualZ = 0;
 	int maxHeight = 0;
 
-	int mine[] = { 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1 };
+	int mine[] = {1,0,0,1, 0,0,0,1,1,0,0,0, 1,0,0,1 };
 
 	public RitualPylonTileEntity() {
 		super(ModTileEntities.RITUAL_PYLON);
@@ -100,19 +101,26 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		int newMaxHeight = 0;
 		Item newRitualItem = handItemStack.getItem();
 		int newRitualSpeed = 20;
+		boolean damageItem = false;
+		boolean useItem = false;
+
 		if (newRitualItem instanceof HoeItem) {
+			damageItem = true;
 			newRitual = RITUAL_FARMING;
 			newMaxHeight = 0;
 			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 		} else if (newRitualItem instanceof PickaxeItem) {
+			damageItem = true;
 			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_MINING;
 			newMaxHeight = 3;
 		} else if (newRitualItem instanceof AxeItem) {
+			damageItem = true;
 			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_LOGGING;
 			newMaxHeight = 7;
 		} else if ((newRitualItem == Items.TORCH) || (newRitualItem == Items.LANTERN))  {
+			useItem = true;
 			newRitualSpeed = 50;
 			newRitual = RITUAL_LIGHTING;
 			newMaxHeight = 0;
@@ -122,6 +130,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 		}
 
+		
+		
 		if (!(IsRitualRunning())) {
 			if (newRitual == RITUAL_NONE) {
 				world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
@@ -151,16 +161,28 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 			chunkManaStorage.useMana(RITUAL_CHUNK_COST);
 
+			if (damageItem) {
+				int itemDamage = handItemStack.getMaxDamage() - handItemStack.getDamage() ;
+				if (itemDamage > 64) {
+					itemDamage = 64;
+				}
+				if (world.rand.nextFloat() * 100 < MyConfig.getNeverBreakTools()) {
+					itemDamage = itemDamage / 2;
+				}
+				handItemStack.attemptDamageItem(itemDamage, world.rand, null);
+			}
+			if (useItem) {
+				handItemStack.setCount(handItemStack.getCount()-1);
+			}
+
 			ritualSpeed = newRitualSpeed+3;
 			if (ritualSpeed < 8) ritualSpeed = 8;
 			currentRitual = newRitual;
 			mustPayChunkCost = false;
 			world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.BLOCKS, 0.5f, 0.2f);
 			maxHeight = newMaxHeight;
-			cursorRitualX = minRitualX = pos.getX();
+			calculateRitualArea();			
 			cursorRitualY = minRitualY = pos.getY();
-			cursorRitualZ = minRitualZ = pos.getZ();
-			maxRitualX = minRitualX + 15;
 			maxRitualY = minRitualY + maxHeight;
 			maxRitualZ = minRitualZ + 15;
 			timeRitualWarmup = 40;
@@ -172,6 +194,61 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	}
 
+	public void calculateRitualArea() {
+
+		BlockPos eastPos = null;
+		BlockPos westPos = null;
+
+		for(int i = 1;i<16;i++) {
+			if (world.getBlockState(pos.east(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+				cursorRitualX = minRitualX = pos.east(i).getX()-15;
+				eastPos = pos.east(i);
+			} else {
+				break;
+			}
+		}
+		if (eastPos== null) {
+			for(int i = 1;i<16;i++) {
+				if (world.getBlockState(pos.west(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+					cursorRitualX = minRitualX = pos.west(i).getX();
+					westPos = pos.west(i+1);
+				} else {
+					break;
+				}
+			}
+		}
+		if (eastPos == null && westPos == null) {
+			cursorRitualX = minRitualX =  world.getChunk(pos).getPos().getXStart();
+		}
+		maxRitualX = minRitualX + 15;
+		
+		BlockPos southPos = null;
+		BlockPos northPos = null;
+		
+		for(int i = 1;i<16;i++) {
+			if (world.getBlockState(pos.south(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+				cursorRitualZ = minRitualZ = pos.south(i).getZ()-15;
+				southPos = pos.south(i);
+			} else {
+				break;
+			}
+		}
+		if (southPos== null) {
+			for(int i = 1;i<16;i++) {
+				if (world.getBlockState(pos.north(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+					cursorRitualZ = minRitualZ = pos.north(i).getZ();
+					northPos = pos.north(i+1);
+				} else {
+					break;
+				}
+			}
+		}
+		if (southPos == null && northPos == null) {
+			cursorRitualZ = minRitualZ =  world.getChunk(pos).getPos().getZStart();
+		}
+		maxRitualZ = minRitualZ + 15;		
+	}
+	
 	public void createNonBasicParticle(BlockPos pos, int particleCount, IParticleData particleType) {
 		double xOffset = 0.5D;
 		double yOffset = 0.25D;
@@ -343,7 +420,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			float humVolume = (float) (0.05 + (0.04 * Math.sin((double) dayTime)));
 			float humPitch = (float) (0.7 + (0.3 * Math.sin((double) dayTime)));
 
-			world.playSound(null, pos, ModSounds.RITUAL_PYLON_THRUMS, SoundCategory.BLOCKS, humVolume, humPitch);
+			world.playSound(null, pos, ModSounds.RITUAL_PYLON_THRUMS, SoundCategory.BLOCKS, humVolume/3, humPitch);
 			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) this.pos.getX(),
 					(double) this.pos.getY() + 0.35D, 0.5D + (double) this.pos.getZ(), 3, 0.0D, 0.1D, 0.0D, -0.04D);
 
@@ -367,6 +444,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						}
 						Chunk chunk = (Chunk) world.getChunk(pos);
 						IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
+						int x = chunkManaStorage.getManaStored();
 						if (!(chunkManaStorage.useMana(12))) {
 							world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 							world.playSound(null, pos, SoundEvents.ENTITY_ENDERMITE_DEATH, SoundCategory.BLOCKS, 0.5f,
@@ -396,7 +474,17 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						}
 				}
 				else if ((currentRitual == RITUAL_MINING) && (isMinable(cursorPos))) {
-					doMineGalleries = (mine[(int) (cursorRitualX - minRitualX)] + mine[(int) (cursorRitualZ - minRitualZ)]) > 0;
+
+					int x = Math.abs((cursorPos.getX())%16);
+					if (cursorPos.getX() < 0) {
+						x = 15 - x;
+					}
+					int z = Math.abs((cursorPos.getZ())%16);
+					if (cursorPos.getZ() < 0) {
+						z = 15 - z;
+					}
+
+					doMineGalleries = (mine[x] + mine[z]) > 0;
 					if (doMineGalleries) {
 						noValidRitualBlockFound = false;
 						if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
@@ -417,22 +505,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 			if (currentRitual == RITUAL_FARMING) {
 				processFarmingRitual(cursorPos);
-			} else {
-				if (currentRitual == RITUAL_MINING) {
-					if (doMineGalleries) {
-						processMiningRitual(cursorPos);
-					}
-				} else {
-					if (currentRitual == RITUAL_LOGGING) {
-						processLoggingRitual(cursorPos);
-					} else {
-						if (currentRitual == RITUAL_LIGHTING) {
-							processLightingRitual(cursorPos);
-						}
-
-					}
+			} else if (currentRitual == RITUAL_MINING) {
+				if (doMineGalleries) {
+					processMiningRitual(cursorPos);
 				}
+			} else if (currentRitual == RITUAL_LOGGING) {
+				processLoggingRitual(cursorPos);
+			} else if (currentRitual == RITUAL_LIGHTING) {
+				processLightingRitual(cursorPos);
 			}
+			
 		}
 
 	}
