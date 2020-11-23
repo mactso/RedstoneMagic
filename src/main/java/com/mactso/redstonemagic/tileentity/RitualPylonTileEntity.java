@@ -1,22 +1,31 @@
 package com.mactso.redstonemagic.tileentity;
 
+import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.sounds.ModSounds;
+import com.mojang.datafixers.types.templates.Tag.TagType;
 
 import net.minecraft.block.AirBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
 import net.minecraft.block.GrassBlock;
+import net.minecraft.command.impl.SeedCommand;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.AxeItem;
+import net.minecraft.item.BlockNamedItem;
 import net.minecraft.item.HoeItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.PickaxeItem;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;
@@ -28,6 +37,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
@@ -43,7 +53,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	static final int RITUAL_LOGGING = 93;
 	static final int RITUAL_LIGHTING = 94;
 	static final int RITUAL_WARMUP_TIME = 100; // 5 seconds
- 
+	static final ItemStack GLOWSTONE_STACK = new ItemStack(Items.GLOWSTONE, 1);
+
+
 	String spellTranslationKey;
 	String spellComment;
 	int spellBaseCost;
@@ -51,6 +63,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	int particleCount = 0;
 	boolean mustPayChunkCost = false;
 
+	int ritualSpeed = 0;
 	int timeRitualWarmup = 0;
 	int timeRitualCooldown = 0;
 	int currentRitual = RITUAL_NONE;
@@ -58,7 +71,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	long cursorRitualX = 0;
 	long cursorRitualY = 0;
 	long cursorRitualZ = 0;
-	long minRitualX = 0; 
+	long minRitualX = 0;
 	long minRitualY = 0;
 	long minRitualZ = 0;
 	long maxRitualX = 0;
@@ -85,19 +98,28 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		ItemStack handItemStack = player.getHeldItem(handIn);
 		int newRitual = RITUAL_NONE;
 		int newMaxHeight = 0;
-		if (handItemStack.getItem() instanceof HoeItem) {
+		Item newRitualItem = handItemStack.getItem();
+		int newRitualSpeed = 20;
+		if (newRitualItem instanceof HoeItem) {
 			newRitual = RITUAL_FARMING;
 			newMaxHeight = 0;
-		} else if (handItemStack.getItem() instanceof PickaxeItem) {
+			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
+		} else if (newRitualItem instanceof PickaxeItem) {
+			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_MINING;
-			harvestItemStack = handItemStack;
 			newMaxHeight = 3;
-		} else if (handItemStack.getItem() instanceof AxeItem) {
+		} else if (newRitualItem instanceof AxeItem) {
+			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_LOGGING;
 			newMaxHeight = 7;
-		} else if (handItemStack.getItem() == Items.COAL_BLOCK) {
+		} else if ((newRitualItem == Items.TORCH) || (newRitualItem == Items.LANTERN))  {
+			newRitualSpeed = 50;
 			newRitual = RITUAL_LIGHTING;
 			newMaxHeight = 0;
+			if (newRitualItem == Items.LANTERN) {
+				newMaxHeight = 1;
+				newRitualSpeed = 30;
+			}
 		}
 
 		if (!(IsRitualRunning())) {
@@ -129,6 +151,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 			chunkManaStorage.useMana(RITUAL_CHUNK_COST);
 
+			ritualSpeed = newRitualSpeed+3;
+			if (ritualSpeed < 8) ritualSpeed = 8;
 			currentRitual = newRitual;
 			mustPayChunkCost = false;
 			world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.BLOCKS, 0.5f, 0.2f);
@@ -157,25 +181,20 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private boolean isLightable(BlockPos cursorPos) {
-		return (world.getBlockState(cursorPos).getBlock() instanceof AirBlock) &&
-			(world.getBlockState(cursorPos.down()).isSolid()) &&
-			(world.getLight(cursorPos) <= 8);
+		return (world.getBlockState(cursorPos).getBlock() instanceof AirBlock)
+				&& (world.getLight(cursorPos) <= 8);
 	}
 
 	private boolean isMinable(BlockPos cursorPos) {
 		BlockState bS = world.getBlockState(cursorPos);
-		return (bS.getBlock() == Blocks.NETHERRACK) ||
-			(Tags.Blocks.STONE.contains(bS.getBlock())) ||
-			(Tags.Blocks.DIRT.contains(bS.getBlock())) ||
-			(Tags.Blocks.GRAVEL.contains(bS.getBlock()) || 
-			(Tags.Blocks.SAND.contains(bS.getBlock())));
+		return (bS.getBlock() == Blocks.NETHERRACK) || (Tags.Blocks.STONE.contains(bS.getBlock()))
+				|| (Tags.Blocks.DIRT.contains(bS.getBlock()))
+				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock())));
 	}
-	
+
 	private boolean isLoggable(BlockPos cursorPos) {
 		BlockState bS = world.getBlockState(cursorPos);
-		if (BlockTags.LEAVES.contains(bS.getBlock()) ||
-			BlockTags.LOGS.contains(bS.getBlock())
-		   ) {
+		if (BlockTags.LEAVES.contains(bS.getBlock()) || BlockTags.LOGS.contains(bS.getBlock())) {
 			System.out.println(cursorPos.toString() + ", " + bS.getBlock().getRegistryName().toString());
 			return true;
 		}
@@ -196,61 +215,83 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private void processFarmingRitual(BlockPos cursorPos) {
-		if (world.getBlockState(cursorPos).getBlock() instanceof CropsBlock) {
-			world.destroyBlock(cursorPos, false);
-			mustPayChunkCost = true;
-			ItemStack blockItemStack = new ItemStack(world.getBlockState(cursorPos).getBlock());
-			IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
-			if (chestInv != null) {
-				HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, blockItemStack, null);
+		BlockState tBS = world.getBlockState(cursorPos);
+		Block tBlock = tBS.getBlock();
+		if (tBlock instanceof CropsBlock) {
+			CropsBlock c = (CropsBlock) tBlock;
+			if (c.isMaxAge(tBS)) {
+				world.playSound(null, cursorPos, SoundEvents.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5f, 0.2f);
+				BlockState bC = c.getDefaultState().with(c.getAgeProperty(), Integer.valueOf(0));
+				world.setBlockState(cursorPos, bC);
+				mustPayChunkCost = true;
+				
+		        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
+		        {
+		        	if (dropsStack.getItem() instanceof BlockNamedItem) {
+		        		dropsStack.setCount(1);  // take seeds for replanting.
+		        	}
+		        	IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+					if (chestInv != null) {
+						HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+					}
+		        }
+
 			}
 		}
 	}
 
+	public LootContext.Builder doGetLootBuilder(BlockPos cursorPos) {
+		LootContext.Builder builder = (new LootContext.Builder((ServerWorld) world)).withRandom(world.rand)
+		        .withParameter(LootParameters.field_237457_g_, Vector3d.copyCentered(cursorPos))
+		        .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
+		        .withNullableParameter(LootParameters.THIS_ENTITY, null)
+		        .withNullableParameter(LootParameters.BLOCK_ENTITY, this);
+		return builder;
+	}
+
+	   
 	private void processLightingRitual(BlockPos cursorPos) {
 		if (isLightable(cursorPos)) {
-			world.setBlockState(cursorPos, Blocks.TORCH.getDefaultState());
+			world.setBlockState(cursorPos, ModBlocks.LIGHT_SPELL.getDefaultState());
 			world.playSound(null, cursorPos, SoundEvents.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 0.5f, 0.2f);
 			mustPayChunkCost = true;
 		}
 	}
 
 	private void processLoggingRitual(BlockPos cursorPos) {
-
-		if (BlockTags.LEAVES.contains(world.getBlockState(cursorPos).getBlock())) {
+		BlockState tBS = world.getBlockState(cursorPos);
+		Block tBlock = tBS.getBlock();
+		if (BlockTags.LEAVES.contains(tBlock)) {
 			world.destroyBlock(cursorPos, true);
 			mustPayChunkCost = true;
 		}
 		if (BlockTags.LOGS.contains(world.getBlockState(cursorPos).getBlock())) {
 			mustPayChunkCost = true;
-			ItemStack blockItemStack = new ItemStack(world.getBlockState(cursorPos).getBlock());
 			world.destroyBlock(cursorPos, false);
-			IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
-			if (chestInv != null) {
-				HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, blockItemStack, null);
-			}
+			
+	        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
+	        {
+				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				if (chestInv != null) {
+					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+				}
+	        }
 		}
 	}
 
 	private void processMiningRitual(BlockPos cursorPos) {
-
+		BlockState tBS = world.getBlockState(cursorPos);
+		Block tBlock = tBS.getBlock();
 		if (isMinable(cursorPos)) {
 			mustPayChunkCost = true;
-			ItemStack blockItemStack;
-
-			if (world.getBlockState(cursorPos).getBlock() == Blocks.STONE) {
-				blockItemStack = new ItemStack(Blocks.COBBLESTONE);
-			} else if (world.getBlockState(cursorPos).getBlock() instanceof GrassBlock) {
-				blockItemStack = new ItemStack(Blocks.DIRT);
-			} else {
-				blockItemStack = new ItemStack(world.getBlockState(cursorPos).getBlock());
-			}
 			world.destroyBlock(cursorPos, false);
-
-			IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
-			if (chestInv != null) {
-				HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, blockItemStack, null);
-			}
+	        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
+	        {
+				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				if (chestInv != null) {
+					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+				}
+	        }
 		}
 	}
 
@@ -290,7 +331,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			return;
 		}
 
-		if (this.world.getGameTime() % 10L != 0L) {
+		long speed = ritualSpeed;
+		if (speed < 8) speed = 8L;
+		if (this.world.getGameTime() % speed != 0L) {
 			return;
 		}
 
@@ -307,7 +350,6 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			BlockPos cursorPos = new BlockPos(cursorRitualX, cursorRitualY, cursorRitualZ);
 			BlockState tBS = world.getBlockState(cursorPos);
 			boolean noValidRitualBlockFound = true;
-			ItemStack stack = new ItemStack(Items.GLOWSTONE, 1);
 			boolean doMineGalleries = false;
 
 			while (noValidRitualBlockFound) {
@@ -340,11 +382,20 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						0.5D +  cursorRitualX,
 						0.35D + cursorRitualY,
 						0.5D +  cursorRitualZ, 3, 0.0D, 0.1D, 0.0D, -0.04D);
-				createNonBasicParticle(cursorPos, 1, new ItemParticleData(ParticleTypes.ITEM, stack));
+				createNonBasicParticle(cursorPos, 1, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 
 				if ((currentRitual == RITUAL_LIGHTING) && (isLightable(cursorPos))) {
 						noValidRitualBlockFound = false;
-				} else if ((currentRitual == RITUAL_MINING) && (isMinable(cursorPos))) {
+						if ((world.getRandom().nextFloat() * 100.0f) <50.0f) {
+							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						}
+				} else if ((currentRitual == RITUAL_FARMING) && isReadyCropBlock(cursorPos)) {
+						noValidRitualBlockFound = false;
+						if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
+							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						}
+				}
+				else if ((currentRitual == RITUAL_MINING) && (isMinable(cursorPos))) {
 					doMineGalleries = (mine[(int) (cursorRitualX - minRitualX)] + mine[(int) (cursorRitualZ - minRitualZ)]) > 0;
 					if (doMineGalleries) {
 						noValidRitualBlockFound = false;
@@ -357,11 +408,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
 						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 					}
-				} else { // not mining, lighting, or logging
-					if (!(tBS.getBlock() instanceof AirBlock)) {
-						noValidRitualBlockFound = false;
-					}
-				}
+				} 
 			}
 
 			((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
@@ -388,6 +435,18 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 		}
 
+	}
+
+	private boolean isReadyCropBlock(BlockPos cursorPos) {
+		BlockState tBS = world.getBlockState(cursorPos);
+		Block tBlock = world.getBlockState(cursorPos).getBlock();
+		if (tBlock instanceof CropsBlock) {
+			CropsBlock c = (CropsBlock) tBlock;
+			if (c.isMaxAge(tBS)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

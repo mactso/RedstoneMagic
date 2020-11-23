@@ -3,13 +3,13 @@ package com.mactso.redstonemagic.block;
 import java.util.Random;
 
 import com.mactso.redstonemagic.tileentity.GathererTileEntity;
-import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.ContainerBlock;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -19,6 +19,7 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
 public class Gatherer extends ContainerBlock
@@ -34,6 +35,16 @@ public class Gatherer extends ContainerBlock
 			VoxelShapes.create(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
 			VoxelShapes.create(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
 			VoxelShapes.create(0.375, 0.75, 0.375, 0.625, 1, 0.625));
+
+	@Override
+	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+	}
+	
+	@Override
+	public boolean isValidPosition(BlockState state, IWorldReader worldIn, BlockPos pos) {
+		return super.isValidPosition(state, worldIn, pos);
+	}
 
 	@Override
 	public TileEntity createNewTileEntity(IBlockReader worldIn) {
