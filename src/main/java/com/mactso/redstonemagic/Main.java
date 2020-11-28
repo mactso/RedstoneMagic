@@ -7,6 +7,7 @@ import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.events.ChunkEvent;
 import com.mactso.redstonemagic.events.MyBreakEvent;
+import com.mactso.redstonemagic.events.MyPlaceBlockEvent;
 import com.mactso.redstonemagic.events.OnPlayerCloned;
 import com.mactso.redstonemagic.events.OnPlayerLoggedIn;
 import com.mactso.redstonemagic.events.OnServerPlayerEvent;
@@ -77,6 +78,7 @@ public class Main {
 			MinecraftForge.EVENT_BUS.register(new OnServerPlayerEvent());
 			MinecraftForge.EVENT_BUS.register(new ChunkEvent());
 			MinecraftForge.EVENT_BUS.register(new MyBreakEvent());
+			MinecraftForge.EVENT_BUS.register(new MyPlaceBlockEvent());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerCloned());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerLoggedIn());
 			CapabilityMagic.register();

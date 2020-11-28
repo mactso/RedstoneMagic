@@ -16,6 +16,12 @@
       }
     ]
   },
+  "redstonemagic.nuke.icy": {
+    "subtitle": "subtitles.redstonemagic.nuke.icy",
+    "sounds": [
+      "redstonemagic:spells/nuke_icy"
+    ]
+  },
   "redstonemagic.heal": {
     "subtitle": "subtitles.redstonemagic.heal",
     "sounds": [
@@ -48,13 +54,13 @@
   "redstonemagic.dot": {
     "subtitle": "subtitles.redstonemagic.dot",
     "sounds": [
-      "random/fizz"
+      "redstonemagic:spells/dot.casting"
     ]
   },
   "redstonemagic.sdot": {
     "subtitle": "subtitles.redstonemagic.sdot",
     "sounds": [
-      "note/snare"
+      "redstonemagic:spells/sdot.casting"
     ]
   },
   "redstonemagic.resi": {
@@ -69,13 +75,17 @@
       "note/flute"
     ]
   },
+  "redstonemagic.tele.start": {
+    "sounds": [
+       "redstonemagic:spells/tele.start"
+    ]
+  },
   "redstonemagic.buff": {
     "subtitle": "subtitles.redstonemagic.buff",
     "sounds": [
-      "step/cloth1",
-      "step/cloth2",
-      "step/cloth3",
-      "step/cloth4"
+      "redstonemagic:spells/buff.casting",
+      "redstonemagic:spells/buff.casting",
+      "redstonemagic:spells/buff.casting2"      
     ]
   },
   "redstonemagic.rcrs": {
@@ -83,6 +93,12 @@
     "sounds": [
       "mob/evocation_illager/cast1",
       "mob/evocation_illager/cast2"
+    ]
+  },
+  "redstonemagic.fly": {
+    "sounds": [
+      "redstonemagic:spells/flying1",
+      "redstonemagic:spells/flying2"
     ]
   },
   "spell.resonates": {
@@ -115,6 +131,13 @@
       }
     ]
   },
+  "gatherer.gathers": {
+    "subtitle": "subtitles.gatherer.gathers",
+    "sounds": [
+        "redstonemagic:block/gathers1",
+        "redstonemagic:block/gathers2"
+    ]
+  },
   "ritual.pylon.thrums": {
     "subtitle": "subtitles.ritual.pylon.thrums",
     "sounds": [
@@ -130,6 +153,19 @@
       "note/didgeridoo"
     ],
     "subtitle": "subtitles.spell.fails"
+  },
+  "ritual.begins": {
+    "sounds": [
+      "mob/evocation_illager/cast1",
+      "mob/evocation_illager/cast2"
+    ],
+    "subtitle": "subtitles.ritual.begins"
+  },
+  "ritual.ends": {
+    "sounds": [
+      "mob/ghast/death"
+    ],
+    "subtitle": "subtitles.ritual.ends"
   },
   "red.spirit.works": {
     "sounds": [

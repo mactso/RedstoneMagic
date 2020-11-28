@@ -1,5 +1,7 @@
 package com.mactso.redstonemagic.tileentity;
 
+import com.mactso.redstonemagic.block.ModBlocks;
+import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.sounds.ModSounds;
@@ -19,9 +21,9 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
 public class GathererTileEntity extends TileEntity implements ITickableTileEntity {
-	static final ItemStack RED_STAINED_GLASS_STACK = new ItemStack(Items.RED_STAINED_GLASS, 1);
-	static final ItemStack RED_GLAZED_TERRACOTTA_STACK = new ItemStack(Items.RED_GLAZED_TERRACOTTA, 1);
-	static final ItemStack REDSTONE_BLOCK_STACK = new ItemStack(Items.REDSTONE_BLOCK, 1);
+	static final ItemStack FIRE_CORAL_STACK = new ItemStack(Items.FIRE_CORAL_BLOCK, 1);
+	static final ItemStack JACK_O_LANTERN_STACK = new ItemStack(Items.JACK_O_LANTERN, 1);
+	static final ItemStack LIGHT_SPELL_STACK = new ItemStack(ModBlocks.LIGHT_SPELL, 1);
 	static final ItemStack GLOWSTONE_STACK = new ItemStack(Items.GLOWSTONE, 1);
 	
 	final int NO_UPDATE = -1;
@@ -29,6 +31,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	float humLevel = -0.2f;
 	float humCycleDirection = -.1f;
 	int roughChunkMana = 0;
+	int manaSparkle = 0;
 	
 	public GathererTileEntity() {
 		super(ModTileEntities.GATHERER);
@@ -43,7 +46,16 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 			return;
 		}
 		long dayTime = world.getDayTime();
+		if (dayTime % 10 == 0) {
+			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
+					0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), 3, 0, -1.15D, 0, 0.06D);
+			if (manaSparkle > 0) {
+				manaSparkle--;
+				createNonBasicParticle(pos.up(2), 3, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
+			}
+		}
 		if (dayTime % 20 == 0) {
+
 			// periodically update level of chunk mana to reduce server load.
 			if (dayTime % 200 == 0) {
 				Chunk baseChunk = (Chunk)world.getChunk(pos);				
@@ -53,8 +65,9 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 				}
 			}
 			doGathererHum();
-			doGathererParticles(2);      
+			doGathererParticles(1);      
 			if (dayTime%6000 == 0L) {
+				manaSparkle = 11;
 				processGatheredManaToChunks();
 			}
 		}
@@ -77,47 +90,56 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	private void processGatheredManaToChunks() {
 
 		world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,
-				SoundCategory.BLOCKS, 0.04f, 0.05f);	
+				SoundCategory.BLOCKS, 0.14f, 0.15f);	
 		doGathererParticles(15);                
 		Chunk baseChunk = (Chunk)world.getChunk(pos);
 		// baseChunk.getEntitiesWithinAABBForEntity(entityIn, aabb, listToFill, filter);
-		addManaToChunk(baseChunk,RitualPylonTileEntity.RITUAL_CHUNK_COST,4);
+		addManaToChunk(baseChunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/2,5);
 		int chunkX = baseChunk.getPos().x;
 		int chunkZ = baseChunk.getPos().z;
 		Chunk chunk = world.getChunk(chunkX+1, chunkZ);
-		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/4,2);
+		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
 		chunk = world.getChunk(chunkX-1, chunkZ);
-		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/4,2);
+		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
 		chunk = world.getChunk(chunkX, chunkZ+1);
-		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/4,2);
+		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
 		chunk = world.getChunk(chunkX, chunkZ-1);
-		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/4,2);
-		world.playSound(null, pos, ModSounds.SPELL_RESONATES,
-				SoundCategory.BLOCKS, 0.04f, 0.05f);	
+		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
+		world.playSound(null, pos, ModSounds.GATHERER_GATHERS,
+				SoundCategory.BLOCKS, 0.2f, 0.45f);	
 	}
 
 	private void doGathererParticles(int particles) {
+		
+		
 		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
 				0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), particles, 0, -1.15D, 0, 0.06D);
 
-		if (roughChunkMana < 1) {
-			// nothing.
-		} else if (roughChunkMana < 10) {
-			createNonBasicParticle(pos.up(2), 2, new ItemParticleData(ParticleTypes.ITEM, RED_GLAZED_TERRACOTTA_STACK));
+		
+		if (roughChunkMana > 64) {
+			createNonBasicParticle(pos.up(2), particles, new ItemParticleData(ParticleTypes.ITEM, LIGHT_SPELL_STACK));
 			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 0.35D, 0.5D + (double) pos.getZ(), 2, 0.0D, 0.2D, 0.0D, -0.04D);
-		} else if (roughChunkMana < 100) {
-			createNonBasicParticle(pos.up(2), 3, new ItemParticleData(ParticleTypes.ITEM, RED_STAINED_GLASS_STACK));
+					(double) pos.getY() + 2.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
+		}
+		if (roughChunkMana > 256) {
+			createNonBasicParticle(pos.up(3), particles, new ItemParticleData(ParticleTypes.ITEM, FIRE_CORAL_STACK));
 			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 0.35D, 0.5D + (double) pos.getZ(), 3, 0.0D, 0.2D, 0.0D, -0.04D);
-		} else if (roughChunkMana < 1000) {
-			createNonBasicParticle(pos.up(2), 4, new ItemParticleData(ParticleTypes.ITEM, REDSTONE_BLOCK_STACK));
+					(double) pos.getY() + 3.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
+		} 
+		if (roughChunkMana > 1024) {
+			createNonBasicParticle(pos.up(4), particles, new ItemParticleData(ParticleTypes.ITEM, JACK_O_LANTERN_STACK));
 			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 0.35D, 0.5D + (double) pos.getZ(), 3, 0.0D, 0.2D, 0.0D, -0.04D);
-		} else {
-			createNonBasicParticle(pos.up(2), 5, RedstoneParticleData.REDSTONE_DUST);
+					(double) pos.getY() + 4.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
+		} 
+		if (roughChunkMana > 4096) {
+			createNonBasicParticle(pos.up(5), particles, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 0.35D, 0.5D + (double) pos.getZ(), 5, 0.0D, 0.2D, 0.0D, -0.04D);
+					(double) pos.getY() + 5.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
+		}
+		if (roughChunkMana > 16367) {
+			createNonBasicParticle(pos.up(particles+1), particles+2, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
+			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
+					(double) pos.getY() + 5.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
 		}
 	}
 

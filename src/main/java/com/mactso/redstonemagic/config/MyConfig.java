@@ -40,13 +40,9 @@ public class MyConfig
 		COMMON = specPair.getLeft();
 	}
 
-
-
-
-
 	private static int debugLevel;
 	private static int neverBreakTools;
-	private static boolean allowPvp = false;
+
 	private static int maxChunkRedstoneMagic;
 	private static int maxPlayerRedstoneMagic;
 	public static String[]  defaultModExclusionList;
@@ -76,11 +72,7 @@ public class MyConfig
 		maxPlayerRedstoneMagic = COMMON.maxPlayerRedstoneMagic.get();
 		defaultModExclusionList6464 = COMMON.defaultModExclusionListActual.get() ;
 		SpellManager.redstoneMagicSpellInit();
-		DynamicRegistries.Impl dynamicregistries$impl = DynamicRegistries.func_239770_b_();
-		Path path = Paths.get("server.properties");
-        ServerPropertiesProvider serverpropertiesprovider = new ServerPropertiesProvider(dynamicregistries$impl, path);
-		ServerProperties serverproperties = serverpropertiesprovider.getProperties();
-		allowPvp = (serverproperties.allowPvp);
+
 	}
 
 
@@ -148,9 +140,6 @@ public class MyConfig
 		}
 	}
 
-	public static boolean isAllowPvp() {
-		return allowPvp;
-	}
 	
 	public static int getDebugLevel() {
 		return debugLevel;

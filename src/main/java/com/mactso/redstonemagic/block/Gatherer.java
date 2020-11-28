@@ -21,6 +21,8 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.server.ServerWorld;
 
 public class Gatherer extends ContainerBlock
 {
@@ -29,17 +31,14 @@ public class Gatherer extends ContainerBlock
 
 	public static final IntegerProperty POWER = BlockStateProperties.LEVEL_0_15;
 	
-
+    
+	
 	private static VoxelShape SHAPE = VoxelShapes.or(
 			VoxelShapes.create(0, 0, 0, 1, 0.25, 1),
 			VoxelShapes.create(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
 			VoxelShapes.create(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
 			VoxelShapes.create(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-	}
 	
 	@Override
 	public boolean isValidPosition(BlockState state, IWorldReader worldIn, BlockPos pos) {

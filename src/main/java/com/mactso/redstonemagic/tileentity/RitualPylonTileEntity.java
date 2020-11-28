@@ -5,6 +5,8 @@ import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
+import com.mactso.redstonemagic.network.Network;
+import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mojang.datafixers.types.templates.Tag.TagType;
 
@@ -13,9 +15,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
+import net.minecraft.block.FlowerBlock;
 import net.minecraft.block.GrassBlock;
+import net.minecraft.block.RedstoneBlock;
+import net.minecraft.block.TallGrassBlock;
 import net.minecraft.command.impl.SeedCommand;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockNamedItem;
@@ -24,6 +30,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.ShovelItem;
+import net.minecraft.item.SwordItem;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
@@ -46,16 +54,19 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.Tags;
 
 public class RitualPylonTileEntity extends TileEntity implements ITickableTileEntity {
-	static final int RITUAL_PLAYER_COST = 3;
+	static final int RITUAL_PLAYER_COST = 5;
 	static final int RITUAL_CHUNK_COST = 16;
 	static final int RITUAL_NONE = 90;
 	static final int RITUAL_FARMING = 91;
 	static final int RITUAL_MINING = 92;
 	static final int RITUAL_LOGGING = 93;
 	static final int RITUAL_LIGHTING = 94;
+	static final int RITUAL_CLEARING = 95;
+	static final int RITUAL_TESTING = 96;
+	
 	static final int RITUAL_WARMUP_TIME = 100; // 5 seconds
 	static final ItemStack GLOWSTONE_STACK = new ItemStack(Items.GLOWSTONE, 1);
-
+	static final ItemStack REDSTONE_BLOCK_STACK = new ItemStack(Items.REDSTONE_BLOCK, 1);
 
 	String spellTranslationKey;
 	String spellComment;
@@ -65,6 +76,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	boolean mustPayChunkCost = false;
 
 	int ritualSpeed = 0;
+	float harvestCount = 0.0f;
 	int timeRitualWarmup = 0;
 	int timeRitualCooldown = 0;
 	int currentRitual = RITUAL_NONE;
@@ -86,6 +98,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		super(ModTileEntities.RITUAL_PYLON);
 	}
 
+	@SuppressWarnings("deprecation")
 	public void changeRitual(PlayerEntity player, Hand handIn) {
 
 		if (!(player.isServerWorld())) {
@@ -96,15 +109,27 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			return;
 		}
 
+		ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 		ItemStack handItemStack = player.getHeldItem(handIn);
 		int newRitual = RITUAL_NONE;
 		int newMaxHeight = 0;
 		Item newRitualItem = handItemStack.getItem();
 		int newRitualSpeed = 20;
+		int newRitualCost= RITUAL_PLAYER_COST;
 		boolean damageItem = false;
 		boolean useItem = false;
 
-		if (newRitualItem instanceof HoeItem) {
+
+		if (newRitualItem instanceof SwordItem) {
+			newRitual = RITUAL_TESTING;
+			newMaxHeight = 1;
+			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
+		} else if (newRitualItem instanceof ShovelItem) {
+			damageItem = true;
+			newRitual = RITUAL_CLEARING;
+			newMaxHeight = 1;
+			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
+		} else if (newRitualItem instanceof HoeItem) {
 			damageItem = true;
 			newRitual = RITUAL_FARMING;
 			newMaxHeight = 0;
@@ -113,15 +138,19 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			damageItem = true;
 			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_MINING;
+			int yCost = 4-pos.getY()/10;
+			if (yCost < 1) yCost = 1;
+			newRitualCost= RITUAL_PLAYER_COST+RITUAL_PLAYER_COST * yCost;
 			newMaxHeight = 3;
 		} else if (newRitualItem instanceof AxeItem) {
 			damageItem = true;
 			newRitualSpeed = 51 - (int) Math.sqrt(100+newRitualItem.getMaxDamage());
 			newRitual = RITUAL_LOGGING;
-			newMaxHeight = 7;
+			newMaxHeight = 19;
 		} else if ((newRitualItem == Items.TORCH) || (newRitualItem == Items.LANTERN))  {
 			useItem = true;
 			newRitualSpeed = 50;
+			newRitualCost= RITUAL_PLAYER_COST*2;
 			newRitual = RITUAL_LIGHTING;
 			newMaxHeight = 0;
 			if (newRitualItem == Items.LANTERN) {
@@ -145,11 +174,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 
 			int xx = playerManaStorage.getManaStored();
-			if (playerManaStorage.getManaStored() < RITUAL_PLAYER_COST) { // must have 3 mana to start a ritual spell
+			if (playerManaStorage.getManaStored() < newRitualCost) { // player must have this much mana to start a ritual spell
 				world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 				return;
 			}
-			playerManaStorage.useMana(RITUAL_PLAYER_COST);
+			playerManaStorage.useMana(newRitualCost);
 
 			Chunk chunk = (Chunk) world.getChunk(pos);
 			IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
@@ -161,6 +190,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 			chunkManaStorage.useMana(RITUAL_CHUNK_COST);
 
+			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), chunkManaStorage.getManaStored()),
+					serverPlayer);
+			
 			if (damageItem) {
 				int itemDamage = handItemStack.getMaxDamage() - handItemStack.getDamage() ;
 				if (itemDamage > 64) {
@@ -177,9 +209,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 			ritualSpeed = newRitualSpeed+3;
 			if (ritualSpeed < 8) ritualSpeed = 8;
+			harvestCount = 0.0f;
 			currentRitual = newRitual;
 			mustPayChunkCost = false;
-			world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.BLOCKS, 0.5f, 0.2f);
+			world.playSound(null, pos, ModSounds.RITUAL_BEGINS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 			maxHeight = newMaxHeight;
 			calculateRitualArea();			
 			cursorRitualY = minRitualY = pos.getY();
@@ -262,11 +295,19 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 				&& (world.getLight(cursorPos) <= 8);
 	}
 
-	private boolean isMinable(BlockPos cursorPos) {
+	private boolean isMineable(BlockPos cursorPos) {
 		BlockState bS = world.getBlockState(cursorPos);
 		return (bS.getBlock() == Blocks.NETHERRACK) || (Tags.Blocks.STONE.contains(bS.getBlock()))
 				|| (Tags.Blocks.DIRT.contains(bS.getBlock()))
 				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock())));
+	}
+
+	private boolean isClearable(BlockPos cursorPos) {
+		BlockState bS = world.getBlockState(cursorPos);
+		return (BlockTags.FLOWERS.contains(bS.getBlock()) ||
+				(bS.getBlock() instanceof TallGrassBlock) ||
+				Tags.Blocks.DIRT.contains(bS.getBlock())
+				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock()))));
 	}
 
 	private boolean isLoggable(BlockPos cursorPos) {
@@ -288,9 +329,26 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private void processEndRitual() {
 		currentRitual = RITUAL_NONE;
 		timeRitualCooldown = 40;
-		world.playSound(null, pos, SoundEvents.ENTITY_GHAST_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		world.playSound(null, pos, ModSounds.RITUAL_ENDS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 	}
 
+	
+	private void processClearingRitual(BlockPos cursorPos) {
+		BlockState tBS = world.getBlockState(cursorPos);
+		Block tBlock = tBS.getBlock();
+		if (isClearable(cursorPos)) {
+			mustPayChunkCost = true;
+			world.destroyBlock(cursorPos, false);
+	        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
+	        {
+				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				if (chestInv != null) {
+					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+				}
+	        }
+		}
+	}
+	
 	private void processFarmingRitual(BlockPos cursorPos) {
 		BlockState tBS = world.getBlockState(cursorPos);
 		Block tBlock = tBS.getBlock();
@@ -305,7 +363,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
 		        {
 		        	if (dropsStack.getItem() instanceof BlockNamedItem) {
-		        		dropsStack.setCount(1);  // take seeds for replanting.
+		        		int v = Math.max((dropsStack.getCount()-2),0);
+		        		dropsStack.setCount(v); ;
 		        	}
 		        	IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
 					if (chestInv != null) {
@@ -340,26 +399,30 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		Block tBlock = tBS.getBlock();
 		if (BlockTags.LEAVES.contains(tBlock)) {
 			world.destroyBlock(cursorPos, true);
-			mustPayChunkCost = true;
+        	harvestCount += 0.1f;
 		}
 		if (BlockTags.LOGS.contains(world.getBlockState(cursorPos).getBlock())) {
-			mustPayChunkCost = true;
 			world.destroyBlock(cursorPos, false);
-			
 	        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
 	        {
-				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+	        	harvestCount += 1.0f;
+	        	IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
 				if (chestInv != null) {
 					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
 				}
 	        }
 		}
+    	if (harvestCount > 64.0f) {
+    		harvestCount = 0.0f;
+        	mustPayChunkCost = true;
+    	}
+
 	}
 
 	private void processMiningRitual(BlockPos cursorPos) {
 		BlockState tBS = world.getBlockState(cursorPos);
 		Block tBlock = tBS.getBlock();
-		if (isMinable(cursorPos)) {
+		if (isMineable(cursorPos)) {
 			mustPayChunkCost = true;
 			world.destroyBlock(cursorPos, false);
 	        for (ItemStack dropsStack: tBS.getDrops(doGetLootBuilder(cursorPos)))
@@ -445,12 +508,15 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						Chunk chunk = (Chunk) world.getChunk(pos);
 						IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 						int x = chunkManaStorage.getManaStored();
-						if (!(chunkManaStorage.useMana(12))) {
-							world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
-							world.playSound(null, pos, SoundEvents.ENTITY_ENDERMITE_DEATH, SoundCategory.BLOCKS, 0.5f,
-									0.2f);
-							processEndRitual();
-							return;
+						if (mustPayChunkCost) {
+							if (!(chunkManaStorage.useMana(16))) {
+								world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+								world.playSound(null, pos, SoundEvents.ENTITY_ENDERMITE_DEATH, SoundCategory.BLOCKS, 0.5f,
+										0.2f);
+								processEndRitual();
+								return;
+							}
+							mustPayChunkCost = false;
 						}
 
 					}
@@ -472,8 +538,13 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						if ((world.getRandom().nextFloat() * 100.0f) <25.0f) {
 							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 						}
+				} else if ((currentRitual == RITUAL_CLEARING) && isClearable(cursorPos)) {
+					noValidRitualBlockFound = false;
+					if ((world.getRandom().nextFloat() * 100.0f) <15.0f) {
+						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					}
 				}
-				else if ((currentRitual == RITUAL_MINING) && (isMinable(cursorPos))) {
+				else if ((currentRitual == RITUAL_MINING) && (isMineable(cursorPos))) {
 
 					int x = Math.abs((cursorPos.getX())%16);
 					if (cursorPos.getX() < 0) {
@@ -503,7 +574,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					(double) minRitualY + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 3,
 					0.0D, 0.1D, 0.0D, 0.04D);
 
-			if (currentRitual == RITUAL_FARMING) {
+			if (currentRitual == RITUAL_CLEARING) {
+				processClearingRitual(cursorPos);
+			} else if (currentRitual == RITUAL_FARMING) {
 				processFarmingRitual(cursorPos);
 			} else if (currentRitual == RITUAL_MINING) {
 				if (doMineGalleries) {

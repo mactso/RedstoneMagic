@@ -3,6 +3,7 @@ package com.mactso.redstonemagic.spells;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Random;
 
 import org.lwjgl.system.CallbackI.V;
 
@@ -83,6 +84,7 @@ public class CastSpells {
 	static final ItemStack FIRE_CHARGE_STACK = new ItemStack (Items.FIRE_CHARGE);
 	static final ItemStack REDSTONE_STACK = new ItemStack (Items.REDSTONE);
 	static final ItemStack MAGMA_CREAM_STACK = new ItemStack (Items.MAGMA_CREAM);
+	static final ItemStack FERMENTED_SPIDER_EYE_STACK = new ItemStack (Items.FERMENTED_SPIDER_EYE);
 	static final ItemStack SPIDER_EYE_STACK = new ItemStack (Items.SPIDER_EYE);
 	static final ItemStack TURTLE_HELMET = new ItemStack (Items.TURTLE_HELMET);
 	static final ItemStack GLOWSTONE_DUST_STACK = new ItemStack (Items.GLOWSTONE_DUST);
@@ -164,14 +166,14 @@ public class CastSpells {
 
 		
 		int totalDamage = (int) (targetEntity.getMaxHealth() * 0.7);
-		int nukeDamage = spellTime/2;
+		int nukeDamage = spellTime/4;
 		int dotDamage = totalDamage - nukeDamage;
 		
 		weaponDamage = weaponDamage + damageModifierForTarget;
 		if (dotDamage > BOSS_MOB_LIMIT) dotDamage = BOSS_MOB_LIMIT;
 		if (dotDamage > (weaponDamage * 2.0f)) dotDamage = (int) (weaponDamage*2.0f);
-		if (dotDamage < weaponDamage) dotDamage = (int) (weaponDamage);
-		int duration = totalDamage;
+		if (dotDamage < weaponDamage) dotDamage = (int) (weaponDamage/0.4f);
+		int duration = 1 + (dotDamage*spellTime)/4;
 		int intensity = 0;
 		if (dotDamage > 32) {
 			intensity = 1;
@@ -182,13 +184,10 @@ public class CastSpells {
 			duration += 1;
 		}
 		
-		if (MyConfig.isAllowPvp() == false) {
-			if (isValidPVETarget(targetEntity) == false) {
-				return false;
-			}
+		if (canAttackTarget(serverPlayer, targetEntity)== false) {
+			return false;
 		}
-
-
+		
 //		boolean nukeHit = false;
 		myDamageSource.setDamageBypassesArmor();
 		boolean nukeHit = targetEntity.attackEntityFrom(myDamageSource, nukeDamage);
@@ -215,6 +214,28 @@ public class CastSpells {
 		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ANGRY_VILLAGER); 
 		return true;
 		
+	}
+
+	private static boolean canAttackTarget(ServerPlayerEntity serverPlayer, LivingEntity targetEntity) {
+		boolean canAttackTargetEntity = true;
+		if (targetEntity instanceof PlayerEntity) {
+			if (serverPlayer.canAttackPlayer((PlayerEntity) targetEntity) == false) {
+				canAttackTargetEntity = false;
+			}
+		}
+		
+		if (targetEntity instanceof TameableEntity) {
+			TameableEntity t = (TameableEntity) targetEntity;
+			if (t.isTamed()) {
+				if ( t.getOwner() instanceof PlayerEntity) {
+					PlayerEntity p = (PlayerEntity) t.getOwner();
+					if (serverPlayer.canAttackPlayer(p) == false) {
+						canAttackTargetEntity = false;
+					}
+				}
+			}
+		}
+		return canAttackTargetEntity;
 	}
 
 	private static boolean isValidPVETarget(LivingEntity targetEntity) {
@@ -320,7 +341,16 @@ public class CastSpells {
 	private static boolean doSpellMultiBuff(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime, ServerWorld serverWorld) {
 
 		BlockPos pos = targetEntity.getPosition();
+		int netherBoost = 0;
+		if (hasFalderal(serverPlayer,NETHER_STAR_STACK)) {
+			netherBoost = THIRTY_SECONDS;
+		}
 
+		Random r = serverPlayer.getServerWorld().getRandom();
+		int randomBoost = (int) (320 * r.nextFloat());
+		
+		int durationBoosts = netherBoost + randomBoost;
+		
 		if (hasFalderal(serverPlayer, FEATHER_STACK)) {
 			EffectInstance ei = targetEntity.getActivePotionEffect(Effects.SLOW_FALLING);
 			if (ei != null) {
@@ -336,7 +366,7 @@ public class CastSpells {
 				serverWorld.playSound(null, targetEntity.getPosition(),
 						SoundEvents.ENTITY_CHICKEN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 				if (targetEntity.getAir() < targetEntity.getMaxAir()) targetEntity.setAir(targetEntity.getAir()+1);
-				int secondsDuration = (spellTime * THIRTY_SECONDS/2);
+				int secondsDuration = (spellTime * THIRTY_SECONDS/2) + durationBoosts;
 				int effectIntensity = 1;
 				targetEntity.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, secondsDuration/2, effectIntensity, true, true));
 				return true;
@@ -363,7 +393,7 @@ public class CastSpells {
 				if (hasFalderal(serverPlayer, new ItemStack (Items.PUFFERFISH))) {
 					falderalBoost = THIRTY_SECONDS/2;
 				}
-				int secondsDuration = (spellTime * (THIRTY_SECONDS+falderalBoost));
+				int secondsDuration = (spellTime * (THIRTY_SECONDS+falderalBoost)) + durationBoosts;
 				int effectIntensity = 1;
 				targetEntity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, secondsDuration, effectIntensity, true, true));
 				return true;
@@ -371,7 +401,7 @@ public class CastSpells {
 		}
 		
 		World w = (World) serverWorld;
-		if (serverWorld.getLight(pos) <= 8 ) {
+		if ((serverWorld.getLight(pos) <= 8 ) || (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK))) {
 			ei = targetEntity.getActivePotionEffect(Effects.NIGHT_VISION);
 			if (ei != null) {
 				if ((ei.getDuration() < 20) ) {
@@ -399,7 +429,7 @@ public class CastSpells {
 				if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
 					falderalBoost = THIRTY_SECONDS/2;
 				}
-				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));
+				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;
 				int effectIntensity = 1;
 				targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
 				return true;
@@ -425,9 +455,30 @@ public class CastSpells {
 				if (hasFalderal(serverPlayer, MAGMA_CREAM_STACK)) {
 					falderalBoost = THIRTY_SECONDS/2;
 				}
-				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost));				
+				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;				
 				int effectIntensity = 1;
 				targetEntity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, secondsDuration, effectIntensity, true, true));
+				return true;
+			}
+		}
+
+		if (hasFalderal(serverPlayer, FERMENTED_SPIDER_EYE_STACK)) {
+			ei = targetEntity.getActivePotionEffect(Effects.INVISIBILITY);
+			if (ei != null) {
+				if ((ei.getDuration() < 80) ) {
+					targetEntity.removeActivePotionEffect(Effects.INVISIBILITY);
+					ei = null;
+				}
+			}
+			if (ei == null) {
+				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.POOF);				
+				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
+				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.POOF); 
+				serverWorld.playSound(null, targetEntity.getPosition(),
+						SoundEvents.ENTITY_BAT_HURT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				int secondsDuration = ((spellTime * THIRTY_SECONDS) /2) + durationBoosts;	
+				int effectIntensity = 1;
+				targetEntity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, secondsDuration, effectIntensity, true, true));
 				return true;
 			}
 		}
@@ -442,14 +493,8 @@ public class CastSpells {
 	private static boolean doSpellNuke(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForTarget) {
 
-		// can't nuke pets that are not mad at you.  But they can block casting at a target.
-		if ((targetEntity instanceof TameableEntity)) {
-			TameableEntity t = (TameableEntity) targetEntity;
-			if (t.isTamed()) {
-				if ((t.getRevengeTarget() != (LivingEntity) serverPlayer)) {
-					return false;
-				}
-			}
+		if (canAttackTarget(serverPlayer, targetEntity)== false) {
+			return false;
 		}
 
 		float totalDamage = (int) (targetEntity.getMaxHealth() * 0.4f);
@@ -473,8 +518,8 @@ public class CastSpells {
 			targetEntity.attackEntityFrom(myDamageSource, nukeDamage);
 			serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
 					SoundCategory.AMBIENT, 0.5f, 0.5f);
-			serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
-					SoundCategory.AMBIENT, 0.2f, 0.4f);
+			serverWorld.playSound(null, targetEntity.getPosition(), ModSounds.REDSTONEMAGIC_NUKE_ICY,
+					SoundCategory.AMBIENT, 0.3f, 0.4f);
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.SOUL_FIRE_FLAME);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, RedstoneParticleData.REDSTONE_DUST);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) spellTime, ParticleTypes.CAMPFIRE_COSY_SMOKE);
@@ -650,15 +695,21 @@ public class CastSpells {
 	private static boolean doSpellSnareDot(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForTarget) {
 
+		
+		if (canAttackTarget(serverPlayer, targetEntity)== false) {
+			return false;
+		}
+		
+		
 		int totalDamage = (int) (targetEntity.getMaxHealth() * 0.6);
-		int nukeDamage = spellTime/2;
+		int nukeDamage = spellTime/4;
 		int dotDamage = totalDamage - nukeDamage;
 		
 		weaponDamage = weaponDamage + damageModifierForTarget;
 		if (dotDamage > BOSS_MOB_LIMIT) dotDamage = BOSS_MOB_LIMIT;
 		if (dotDamage > (weaponDamage * 2.0f)) dotDamage = (int) (weaponDamage*2.0f);
 		if (dotDamage < weaponDamage) dotDamage = (int) (weaponDamage - nukeDamage);
-		int duration = (dotDamage*spellTime)/4;
+		int duration = 1 + (dotDamage*spellTime)/4;
 		int intensity = 0;
 		if (dotDamage > 32) {
 			intensity = 1;
@@ -672,11 +723,6 @@ public class CastSpells {
 			duration += 1;
 		}
 
-		if (MyConfig.isAllowPvp() == false) {
-			if (isValidPVETarget(targetEntity) == false) {
-				return false;
-			}
-		}
 
 		myDamageSource.setDamageBypassesArmor();
 //		boolean nukeHit = false;
@@ -708,7 +754,7 @@ public class CastSpells {
 			serverWorld.playSound(null, targetEntity.getPosition(),	SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
 		}
 		serverWorld.playSound(null, targetEntity.getPosition(),	SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
-		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.getDefaultState()));
+		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.CRYING_OBSIDIAN.getDefaultState()));
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 6, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 6, ParticleTypes.WITCH); 
 		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, new BlockParticleData(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.getDefaultState())); 
@@ -742,7 +788,6 @@ public class CastSpells {
 			}
 		}
 		
-		// TODO Check for configurable reagent.
 		float headPitch = serverPlayer.rotationPitch;
 		float headYaw = serverPlayer.rotationYaw;
 		// default - teleport to worldspawn.
@@ -903,7 +948,7 @@ public class CastSpells {
           serverWorld.spawnParticle(particleType, entity.getPosX(), entity.getPosY()+(double)entity.getEyeHeight(), entity.getPosZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
     }
 	
-	private static void serverSpawnMagicalParticles(BlockPos targetPos, ServerWorld serverWorld, int particleCount,
+	public static void serverSpawnMagicalParticles(BlockPos targetPos, ServerWorld serverWorld, int particleCount,
 			IParticleData particleType) {
         double xOffset = 0.5D;
         double yOffset = 0.5D;

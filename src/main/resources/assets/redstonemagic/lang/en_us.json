@@ -29,6 +29,8 @@
 	"subtitles.spell.resonates" : "Spell Resonating",
 	"subtitles.gatherer.hums" : "Gatherer Hums Quietly",
 	"subtitles.ritual.pylon.thrums" : "Pylon Thrums Quietly",
+	"subtitles.ritual.begins" : "The Ritual Begins",
+	"subtitles.ritual.ends" : "A Ritual Ends",
 	"subtitles.spell.fails" : "A Spell Fails",
 	"subtitles.red.spirit.works" : "Red Spirit Works"
 }
