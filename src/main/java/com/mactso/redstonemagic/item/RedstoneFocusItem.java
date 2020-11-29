@@ -72,13 +72,15 @@ public class RedstoneFocusItem extends ShieldItem {
 	public final static int NBT_NUMBER_FIELD = 99;
 	public final static long SPELL_NOT_CASTING = -1;
 	static final int NO_CHUNK_MANA_UPDATE = -1;
-	static boolean wasFlying = false;
-	static boolean isFlying = false;
-	static boolean chunkFlying = false;
-	static final float FLIGHT_SPEED = 1.6f;
+	
+//  ANYTHING except constants here should probably be in the item CompoundNBT.
+//  variables are global.
+//	static boolean wasFlying = false;
+//	static boolean isFlying = false;
+//	static boolean chunkFlying = false;
+//	static final float FLIGHT_SPEED = 1.6f;
 //	static list<Block> = {Blocks.WATER,Blocks.LAPIS_ORE};
 
-	
 	@OnlyIn(value = Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
 		double d0 = 30.0;
@@ -371,25 +373,26 @@ public class RedstoneFocusItem extends ShieldItem {
 				} else {
 					doCastPreparedSpell(serverPlayer, itemStack);
 				}
-				if (serverPlayer.getHeldItemMainhand().getItem() == Items.FEATHER) {
-					if ((serverPlayer.getPosition().getY() > serverPlayer.getServerWorld().getSeaLevel()) ||
-							(serverPlayer.getServerWorld().canSeeSky(serverPlayer.getPosition()))	) {
-						if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition())
-								.getBlock() != Blocks.WATER) {
-							if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
-									.getBlock() != Blocks.LAPIS_ORE) {
-								if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
-										.getBlock() != Blocks.LAPIS_BLOCK) {
-									IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC)
-											.orElse(null);
-									if (playerManaStorage.useMana(3)) {
-										isFlying = true;
-									}
-								}
-							}
-						}
-					}
-				}
+//				if (serverPlayer.getHeldItemMainhand().getItem() == Items.FEATHER) {
+//					if ((serverPlayer.getPosition().getY() > serverPlayer.getServerWorld().getSeaLevel())
+//							|| (serverPlayer.getServerWorld().canSeeSky(serverPlayer.getPosition()))) {
+//						if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition())
+//								.getBlock() != Blocks.WATER) {
+//							if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
+//									.getBlock() != Blocks.LAPIS_ORE) {
+//								if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
+//										.getBlock() != Blocks.LAPIS_BLOCK) {
+//									IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC)
+//											.orElse(null);
+//									if (playerManaStorage.useMana(3)) {
+//										isFlying = true;
+//										rewrite to use compoundNBT here.
+//									}
+//								}
+//							}
+//						}
+//					}
+//				}
 			}
 		}
 
@@ -405,12 +408,13 @@ public class RedstoneFocusItem extends ShieldItem {
 		}
 
 		if (entityLiving instanceof ServerPlayerEntity) {
-			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityLiving;
-			if (wasFlying) {
-				serverPlayer.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 40, 0, true, true));
-				wasFlying = false;
-				isFlying = false;
-			}
+//			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityLiving;
+//			if (wasFlying) {
+//				serverPlayer.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 40, 0, true, true));
+//				wasFlying = false;
+//				isFlying = false;
+//			    TODO rewrite this with compoundNBT
+//			}
 			// if I reset casting time here, it happens at arbitrary time.
 		} else { // client side.
 
@@ -575,41 +579,8 @@ public class RedstoneFocusItem extends ShieldItem {
 		if (player instanceof ServerPlayerEntity) {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			BlockPos sPos = serverPlayer.getPosition();
-			
-			if (isFlying) {
-				double x = serverPlayer.getLookVec().x * FLIGHT_SPEED;
-				double y = serverPlayer.getLookVec().y * FLIGHT_SPEED;
-				double z = serverPlayer.getLookVec().z * FLIGHT_SPEED;
-				serverPlayer.setMotion(x, y, z);
-				float pitchMod = (serverPlayer.getServerWorld().rand.nextFloat() - 0.5F);
-				if (chunkFlying) pitchMod -= 1.0f;
-				serverPlayer.getServerWorld().playSound(null, sPos.getX(),
-						sPos.getY(), sPos.getZ(),
-						ModSounds.REDSTONEMAGIC_FLY, SoundCategory.BLOCKS, 0.5F,
-						1.5F + pitchMod);
-				wasFlying = true;
-			}
-			if (serverPlayer.getServerWorld().getGameTime() % 20 == 0) {
-				Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
-				// possible bug here.  getting from player not chunk
-				IMagicStorage chunkManaStorage = playerChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
-				if (chunkManaStorage.useMana(3)) {
-					chunkFlying = true;
-				} else {
-					chunkFlying = false;
-					IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
-					if (playerManaStorage.useMana(2)) {
-						Network.sendToClient(
-								new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
-								serverPlayer);
-					} else {
-						isFlying = false;
-					}
-				}
-				if (serverPlayer.getServerWorld().getBlockState(sPos).getBlock() == Blocks.WATER) {
-					isFlying = false;
-				}
-			}
+
+
 
 			CompoundNBT compoundnbt = stack.getOrCreateTag();
 			long spellCastingStartTime = compoundnbt != null
@@ -623,16 +594,56 @@ public class RedstoneFocusItem extends ShieldItem {
 			if (spellCastingStartTime != SPELL_NOT_CASTING) {
 				doPlayCastingTickSounds(serverPlayer, stack, spellCastingStartTime, preparedSpellNumber);
 			}
-
-		} else {
-			ClientPlayerEntity clientPlayer = (ClientPlayerEntity) player;
-			if (isFlying) {
-				double x = clientPlayer.getLookVec().x * FLIGHT_SPEED;
-				double y = clientPlayer.getLookVec().y * FLIGHT_SPEED;
-				double z = clientPlayer.getLookVec().z * FLIGHT_SPEED;
-				clientPlayer.setMotion(x, y, z);
-			}
 		}
+
+// 		bad flying code - needs to be rewritten with CompoundNBT instead of variables.
+//		if (isFlying) {
+//		double x = serverPlayer.getLookVec().x * FLIGHT_SPEED;
+//		double y = serverPlayer.getLookVec().y * FLIGHT_SPEED;
+//		double z = serverPlayer.getLookVec().z * FLIGHT_SPEED;
+//		serverPlayer.setMotion(x, y, z);
+//		float pitchMod = (serverPlayer.getServerWorld().rand.nextFloat() - 0.5F);
+//		if (chunkFlying)
+//			pitchMod -= 1.0f;
+//		serverPlayer.getServerWorld().playSound(null, sPos.getX(), sPos.getY(), sPos.getZ(),
+//				ModSounds.REDSTONEMAGIC_FLY, SoundCategory.BLOCKS, 0.5F, 1.5F + pitchMod);
+//		wasFlying = true;
+//	}
+//	if (serverPlayer.getServerWorld().getGameTime() % 20 == 0) {
+//		Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
+//		// possible bug here. getting from player not chunk
+//		IMagicStorage chunkManaStorage = playerChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
+//		if (chunkManaStorage.useMana(3)) {
+//			chunkFlying = true;
+//		} else {
+//			chunkFlying = false;
+//			IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+//			if (playerManaStorage.useMana(2)) {
+//				Network.sendToClient(
+//						new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
+//						serverPlayer);
+//			} else {
+//				isFlying = false;
+//			}
+//		}
+//		if (serverPlayer.getServerWorld().getBlockState(sPos).getBlock() == Blocks.WATER) {
+//			isFlying = false;
+//		}
+//	}
+//		} else {
+//			if (player != null) {
+//				if (player instanceof PlayerEntity) {
+//					PlayerEntity clientPlayer = (PlayerEntity) player;
+//					if (isFlying) {
+//						double x = clientPlayer.getLookVec().x * FLIGHT_SPEED;
+//						double y = clientPlayer.getLookVec().y * FLIGHT_SPEED;
+//						double z = clientPlayer.getLookVec().z * FLIGHT_SPEED;
+//						clientPlayer.setMotion(x, y, z);
+//					}
+//
+//				}
+//			}
+//		}
 		super.onUsingTick(stack, player, count);
 	}
 
