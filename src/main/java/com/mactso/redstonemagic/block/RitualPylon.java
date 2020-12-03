@@ -1,5 +1,6 @@
 package com.mactso.redstonemagic.block;
 
+import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
 import net.minecraft.block.Block;
@@ -15,6 +16,7 @@ import net.minecraft.item.ShovelItem;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -44,14 +46,15 @@ public class RitualPylon extends ContainerBlock
 	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult result) {
 
-		DaylightDetectorBlock d;
 		if (!player.abilities.allowEdit) {
 			return ActionResultType.PASS;
 		} else {
 			if ((worldIn instanceof ServerWorld)) {
 				TileEntity r = worldIn.getTileEntity(pos);
 				if (r instanceof RitualPylonTileEntity) {
-					((RitualPylonTileEntity) r).changeRitual(player, handIn);
+					if (((RitualPylonTileEntity) r).doRitualPylonInteraction(player, handIn) == false) {
+						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					}
 				}
 				
 			}

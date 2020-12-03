@@ -179,8 +179,15 @@ public class RedstoneFocusItem extends ShieldItem {
 		boolean canUseRedstoneFocus = false;
 
 		ItemStack handItem = playerIn.getHeldItemMainhand();
+		String i = handItem.getTranslationKey().toString();
+		if (MyConfig.getDebugLevel() > 1) {
+		System.out.println("canUseRFI check : Item in hand " + i + playerIn.getName().toString());
+		}
 		if (handItem.getUseDuration() == 0) {
 			canUseRedstoneFocus = true;
+			if (MyConfig.getDebugLevel() > 1) {
+				System.out.println("canUseRFI: Duration == 0 " + i + playerIn.getName().toString());
+			}
 		}
 
 		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() instanceof ShovelItem)) {
@@ -196,6 +203,9 @@ public class RedstoneFocusItem extends ShieldItem {
 		}
 
 		if (handItem.getItem() instanceof RedstoneFocusItem) {
+			if (MyConfig.getDebugLevel() > 1) {
+				System.out.println("canUseRFI: Using Focus Item " + i + playerIn.getName().toString());
+			}
 			canUseRedstoneFocus = true;
 			return canUseRedstoneFocus;
 		}
@@ -371,6 +381,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				if (serverPlayer.isSneaking()) { // change spell
 					doChangePreparedSpell(serverPlayer, itemStack);
 				} else {
+					System.out.println("docastspell");
 					doCastPreparedSpell(serverPlayer, itemStack);
 				}
 //				if (serverPlayer.getHeldItemMainhand().getItem() == Items.FEATHER) {

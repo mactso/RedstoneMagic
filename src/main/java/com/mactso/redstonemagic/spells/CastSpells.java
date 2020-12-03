@@ -928,7 +928,10 @@ public class CastSpells {
 				}
 			}
 			playerManaStorage.useMana(personalManaUsed);
-
+			
+			if (MyConfig.getDebugLevel() > 0) {
+				System.out.println(serverPlayer.getName().toString() +"cast spell " + spell + " using mana: " + personalManaUsed);
+			}
 			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
 					serverPlayer);
 		} else {

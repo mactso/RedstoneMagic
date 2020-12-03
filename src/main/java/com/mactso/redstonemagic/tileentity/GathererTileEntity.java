@@ -6,14 +6,20 @@ import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -30,12 +36,15 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	int particleCount = 1;
 	float humLevel = -0.2f;
 	float humCycleDirection = -.1f;
-	int roughChunkMana = 0;
 	int manaSparkle = 0;
+	int rndTimeOffset = -1;
+
+	boolean showManaLevel = false;
 	
 	public GathererTileEntity() {
 		super(ModTileEntities.GATHERER);
 	}
+	
 
 	@Override
 	public void tick() {
@@ -45,7 +54,11 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		if (world.isRemote) {
 			return;
 		}
-		long dayTime = world.getDayTime();
+		
+		if (rndTimeOffset < 0) rndTimeOffset = this.world.rand.nextInt(20);
+		
+		long dayTime = world.getDayTime() + rndTimeOffset;
+		
 		if (dayTime % 10 == 0) {
 			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
 					0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), 3, 0, -1.15D, 0, 0.06D);
@@ -54,25 +67,64 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 				createNonBasicParticle(pos.up(2), 3, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 			}
 		}
-		if (dayTime % 20 == 0) {
+		
+		// should make different gatherers processing spread across ticks 0-20.
 
-			// periodically update level of chunk mana to reduce server load.
-			if (dayTime % 200 == 0) {
-				Chunk baseChunk = (Chunk)world.getChunk(pos);				
-				IMagicStorage cap = baseChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
-				if (cap != null) {
-					roughChunkMana = cap.getManaStored(); // checks for max capacity internally based on object type.
-				}
+ 		if (dayTime % 20 == 0) {
+			Chunk baseChunk = (Chunk)world.getChunk(pos);				
+			int chunkManaPowerLevel = 0;
+			IMagicStorage cap = baseChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			if (cap != null) {
+				chunkManaPowerLevel = getManaPowerLevel(cap.getManaStored());
 			}
 			doGathererHum();
+			doShowManaLevelDisplay(chunkManaPowerLevel);
 			doGathererParticles(1);      
 			if (dayTime%6000 == 0L) {
-				manaSparkle = 11;
+				manaSparkle = 17;
 				processGatheredManaToChunks();
 			}
 		}
+
 	}
 
+	private void doShowManaLevelDisplay(int manaPowerLevel) {
+		if (showManaLevel) {
+			for (int i = 2;i<= 8; i++ ) {
+					if (i<=manaPowerLevel) {
+						world.setBlockState(pos.up(i), ModBlocks.LIGHT_SPELL.getDefaultState());
+					} else {
+						world.setBlockState(pos.up(i), Blocks.AIR.getDefaultState());
+					}
+				}
+
+		} else {
+			doEraseManaLevelDisplay();
+		}
+	}
+	
+	public void doEraseManaLevelDisplay() {
+		for (int i = 2;i<= 8; i++ ) {
+			world.destroyBlock(pos.up(i), false);
+		}
+	}
+	
+	@Override
+	// restore state when chunk reloads
+	public void read(BlockState state, CompoundNBT nbt) {
+		super.read(state, nbt);
+		showManaLevel = nbt.getBoolean("showManaLevel");
+	}
+	
+	@Override
+	// save state when chunk unloads
+	public CompoundNBT write(CompoundNBT compound) {
+
+		compound.putBoolean("showManaLevel", showManaLevel);
+
+		return super.write(compound);
+	}
+	
 	private void doGathererHum() {
 		humLevel += humCycleDirection;
 		if(humLevel > 1.0) {
@@ -91,10 +143,11 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 
 		world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,
 				SoundCategory.BLOCKS, 0.14f, 0.15f);	
-		doGathererParticles(15);                
+		doGathererParticles(15);  
+		
 		Chunk baseChunk = (Chunk)world.getChunk(pos);
-		// baseChunk.getEntitiesWithinAABBForEntity(entityIn, aabb, listToFill, filter);
-		addManaToChunk(baseChunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/2,5);
+		int newManaLevel = 0;
+		newManaLevel = addManaToChunk(baseChunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/2,5);
 		int chunkX = baseChunk.getPos().x;
 		int chunkZ = baseChunk.getPos().z;
 		Chunk chunk = world.getChunk(chunkX+1, chunkZ);
@@ -109,54 +162,52 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 				SoundCategory.BLOCKS, 0.2f, 0.45f);	
 	}
 
-	private void doGathererParticles(int particles) {
-		
-		
-		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
-				0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), particles, 0, -1.15D, 0, 0.06D);
-
-		
-		if (roughChunkMana > 64) {
-			createNonBasicParticle(pos.up(2), particles, new ItemParticleData(ParticleTypes.ITEM, LIGHT_SPELL_STACK));
-			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 2.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
+	public boolean doGathererInteraction(PlayerEntity player, Hand handIn) {
+		if (player instanceof ServerPlayerEntity) {
+			showManaLevel = !showManaLevel;
+			if (showManaLevel) {
+				world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_PLING,
+						SoundCategory.BLOCKS, 0.2f, 0.45f);	
+			}
+			Chunk chunk = (Chunk) world.getChunk(pos);
+			chunk.markDirty();
 		}
-		if (roughChunkMana > 256) {
-			createNonBasicParticle(pos.up(3), particles, new ItemParticleData(ParticleTypes.ITEM, FIRE_CORAL_STACK));
-			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 3.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
-		} 
-		if (roughChunkMana > 1024) {
-			createNonBasicParticle(pos.up(4), particles, new ItemParticleData(ParticleTypes.ITEM, JACK_O_LANTERN_STACK));
-			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 4.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
-		} 
-		if (roughChunkMana > 4096) {
-			createNonBasicParticle(pos.up(5), particles, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
-			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 5.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
-		}
-		if (roughChunkMana > 16367) {
-			createNonBasicParticle(pos.up(particles+1), particles+2, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
-			((ServerWorld) world).spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(),
-					(double) pos.getY() + 5.35D, 0.5D + (double) pos.getZ(), particles, 0.0D, 0.2D, 0.0D, -0.04D);
-		}
+		return true;
 	}
 
-	private void addManaToChunk(Chunk chunk, int newManaAmount, int sparkle) {
+	private int getManaPowerLevel(int chunkManaLevel) {
+		if (chunkManaLevel > 16367)
+			return 7;
+		if (chunkManaLevel > 4096)
+			return 6;
+		if (chunkManaLevel > 1024)
+			return 5;
+		if (chunkManaLevel> 256)
+			return 4;
+		if (chunkManaLevel > 64)
+			return 3;
+		if (chunkManaLevel > 16)
+			return 2;
+		return 1;
+	}
+		
+	private void doGathererParticles(int particles) {
+		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
+				0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), particles, 0, -1.15D, 0, 0.06D);
+	}
+
+	private int addManaToChunk(Chunk chunk, int newManaAmount, int sparkle) {
+		int newManaLevel = 0;
 		IMagicStorage cap = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (cap != null) {
 			cap.addMana(newManaAmount); // checks for max capacity internally based on object type.
-			if (newManaAmount == RitualPylonTileEntity.RITUAL_CHUNK_COST) {
-				roughChunkMana = cap.getManaStored();
-			}
 		}
 		int sparkleX = (int) (chunk.getPos().getXStart()+chunk.getPos().getXEnd())/2;
 		int sparkleZ = (int) (chunk.getPos().getZStart()+chunk.getPos().getZEnd())/2;
 		int sparkleY = pos.getY() + 2;
 		BlockPos sparklePos = new BlockPos (sparkleX,sparkleY,sparkleZ);
 		createNonBasicParticle(sparklePos, sparkle, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
-
+		return newManaLevel;
 	}
 	private void createNonBasicParticle(BlockPos pos, int particleCount, IParticleData particleType) {
 		double xOffset = 0.5D;
