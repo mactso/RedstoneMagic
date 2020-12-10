@@ -8,15 +8,22 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ContainerBlock;
 import net.minecraft.block.DaylightDetectorBlock;
+import net.minecraft.client.particle.SimpleAnimatedParticle;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
 import net.minecraft.item.ShovelItem;
+import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.tileentity.StructureBlockTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -35,6 +42,46 @@ public class RitualPylon extends ContainerBlock
 //		this.setDefaultState(
 //				this.stateContainer.getBaseState()
 //				.with(POWER, Integer.valueOf(4)));
+	}
+	
+	@Override
+	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+
+		// StructureBlockTileEntity s;
+		worldIn.playSound(null, pos, SoundEvents.ENTITY_ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+
+		if (worldIn.isRemote()) {
+			int iY = pos.getY() + 1;
+			int sX = worldIn.getChunk(pos).getPos().getXStart();
+			int sZ = worldIn.getChunk(pos).getPos().getZStart();
+
+			for (int iX = 0; iX <= 15; iX++) {
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.35D + iY, 0.5D + sZ,
+						0.0D, 0.001D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.35D + iY, 0.5D + sZ +15,
+						0.0D, 0.001D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.5D + iY, 0.5D + sZ,
+						0.0D, 0.05D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.5D + iY, 0.5D + sZ +15,
+						0.0D, 0.05D, 0.0D);
+
+			}
+
+			for (int iZ = 0; iZ <= 15; iZ++) {
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + sX, 0.35D + iY, 0.5D + iZ + sZ,
+						0.0D, 0.001D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + sX +15, 0.35D + iY, 0.5D + iZ + sZ,
+						0.0D, 0.001D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + sX, 0.5D + iY, 0.5D + iZ + sZ,
+						0.0D, 0.05D, 0.0D);
+				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + sX +15, 0.5D + iY, 0.5D + iZ + sZ,
+						0.0D, 0.05D, 0.0D);
+
+			}
+
+		}
+		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+
 	}
 	
 	@Override

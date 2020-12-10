@@ -19,7 +19,8 @@ public class ModSounds {
 	public static final SoundEvent REDSTONEMAGIC_BUFF = create("redstonemagic.buff");
 	public static final SoundEvent REDSTONEMAGIC_RCRS = create("redstonemagic.rcrs");
 	
-	public static final SoundEvent REDSTONEMAGIC_FLY= create("redstonemagic.fly");
+	public static final SoundEvent REDSTONEMAGIC_FLY = create("redstonemagic.fly");
+	public static final SoundEvent REDSTONEMAGIC_LIGHT = create("redstonemagic.light");
 	
 	public static final SoundEvent SPELL_RESONATES = create("spell.resonates");	
 	public static final SoundEvent SPELL_FAILS = create("spell.fails");	

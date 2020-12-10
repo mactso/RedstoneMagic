@@ -90,11 +90,15 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 
 	private void doShowManaLevelDisplay(int manaPowerLevel) {
 		if (showManaLevel) {
-			for (int i = 2;i<= 8; i++ ) {
+			for (int i = 1;i<= 8; i++ ) {
 					if (i<=manaPowerLevel) {
-						world.setBlockState(pos.up(i), ModBlocks.LIGHT_SPELL.getDefaultState());
+						if (world.getBlockState(pos.up(i)).getBlock() == Blocks.AIR) {
+							world.setBlockState(pos.up(i), ModBlocks.LIGHT_SPELL.getDefaultState());
+						}
 					} else {
-						world.setBlockState(pos.up(i), Blocks.AIR.getDefaultState());
+						if (world.getBlockState(pos.up(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
+							world.setBlockState(pos.up(i), Blocks.AIR.getDefaultState());
+						}
 					}
 				}
 
@@ -104,8 +108,10 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	}
 	
 	public void doEraseManaLevelDisplay() {
-		for (int i = 2;i<= 8; i++ ) {
-			world.destroyBlock(pos.up(i), false);
+		for (int i = 1;i<= 8; i++ ) {
+			if (world.getBlockState(pos.up(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
+				world.destroyBlock(pos.up(i), false);
+			}
 		}
 	}
 	

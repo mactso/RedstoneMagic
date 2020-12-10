@@ -307,6 +307,8 @@ public class CastSpells {
 			if (targetPos != null) {
 				serverWorld.setBlockState(targetPos, ModBlocks.LIGHT_SPELL.getDefaultState());
 				serverSpawnMagicalParticles(targetPos, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
+				serverWorld.playSound(null, targetEntity.getPosition(), ModSounds.REDSTONEMAGIC_LIGHT,
+						SoundCategory.AMBIENT, 0.7f, 0.86f);
 			}
 			return true;
 		}
@@ -420,20 +422,21 @@ public class CastSpells {
 				if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
 					castNightVision = true;
 				}
-				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.END_ROD);		
-				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
-				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
-				int falderalBoost = 0;
-				if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
-					falderalBoost = THIRTY_SECONDS/2;
+				if (castNightVision == true) {
+					drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.END_ROD);		
+					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
+					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
+					serverWorld.playSound(null, targetEntity.getPosition(),
+							SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+					int falderalBoost = 0;
+					if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
+						falderalBoost = THIRTY_SECONDS/2;
+					}
+					int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;
+					int effectIntensity = 1;
+					targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
+					return true;
 				}
-				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;
-				int effectIntensity = 1;
-				targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
-				return true;
-
 			}
 		}
 

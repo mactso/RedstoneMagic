@@ -251,7 +251,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private int getRitualHeight(int ritualID) {
 		
 		if (ritualID == RITUAL_TESTING) {
-			return 1;
+			return 2;
 		} else if (ritualID == RITUAL_CLEARING) {
 			return  1;
 		} else if (ritualID == RITUAL_FARMING) {
@@ -420,7 +420,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private void processLightingRitual(BlockPos cursorPos) {
 		if (isLightable(cursorPos)) {
 			world.setBlockState(cursorPos, ModBlocks.LIGHT_SPELL.getDefaultState());
-			world.playSound(null, cursorPos, SoundEvents.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 0.5f, 0.2f);
+			world.playSound(null, cursorPos,ModSounds.REDSTONEMAGIC_LIGHT,
+					SoundCategory.BLOCKS, 0.7f, 0.86f);
 			mustPayChunkCost = true;
 		}
 	}
@@ -635,9 +636,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 				}
 			}
 
-			((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
-					(double) pos.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 3,
-					0.0D, 0.1D, 0.0D, 0.04D);
+			if (currentRitual != RITUAL_TESTING ) {
+				((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
+						(double) pos.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 3,
+						0.0D, 0.1D, 0.0D, 0.04D);
+			} else {
+				((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
+						(double) pos.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 1,
+						0.0D, 0.1D, 0.0D, 0.04D);
+				
+			}
 
 			if (currentRitual == RITUAL_CLEARING) {
 				processClearingRitual(cursorPos);

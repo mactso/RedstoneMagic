@@ -101,6 +101,12 @@
       "redstonemagic:spells/flying2"
     ]
   },
+  "redstonemagic.light": {
+    "sounds": [
+      "entity/endereye/dead1",
+      "entity/endereye/dead2"
+    ]
+  },
   "spell.resonates": {
     "subtitle": "subtitles.spell.resonates",
     "sounds": [
