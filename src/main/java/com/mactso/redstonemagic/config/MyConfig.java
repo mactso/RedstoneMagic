@@ -1,7 +1,4 @@
 package com.mactso.redstonemagic.config;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,9 +6,6 @@ import org.apache.logging.log4j.Logger;
 import com.mactso.redstonemagic.Main;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.ServerPropertiesProvider;
-import net.minecraft.server.dedicated.ServerProperties;
-import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -42,7 +36,8 @@ public class MyConfig
 
 	private static int debugLevel;
 	private static int neverBreakTools;
-
+	private static int flightTime;
+	private static int maxFlightSpeed;
 	private static int maxChunkRedstoneMagic;
 	private static int maxPlayerRedstoneMagic;
 	public static String[]  defaultModExclusionList;
@@ -67,6 +62,8 @@ public class MyConfig
 	public static void bakeConfig()
 	{
 		debugLevel = COMMON.debugLevel.get();
+		flightTime = COMMON.flightTime.get();
+		maxFlightSpeed = COMMON.maxFlightSpeed.get();
 		neverBreakTools = COMMON.neverBreakTools.get();
 		maxChunkRedstoneMagic = COMMON.maxChunkRedstoneMagic.get();
 		maxPlayerRedstoneMagic = COMMON.maxPlayerRedstoneMagic.get();
@@ -81,6 +78,8 @@ public class MyConfig
 
 		public final IntValue debugLevel;
 		public final IntValue neverBreakTools;
+		public final IntValue flightTime;
+		public final IntValue maxFlightSpeed;
 		public final IntValue maxChunkRedstoneMagic;
 		public final IntValue maxPlayerRedstoneMagic;
 
@@ -104,7 +103,17 @@ public class MyConfig
 					.comment("NeverBreakTools: 0 = Off, 1-99 = % to break")
 					.translation(Main.MODID + ".config." + "neverBreakTools")
 					.defineInRange("neverBreakTools", () -> 0, 67, 100);
-						
+
+			flightTime = builder
+					.comment("flightTime: Seconds of Flight per mana payment")
+					.translation(Main.MODID + ".config." + "flightTime")
+					.defineInRange("flightTime", () -> 6, 1, 3600);
+
+			maxFlightSpeed = builder
+					.comment("maxFlightSpeed: In Meters per Second")
+					.translation(Main.MODID + ".config." + "maxflightSpeed")
+					.defineInRange("maxFlightSpeed", () -> 20, 0, 36);			
+			
 			maxChunkRedstoneMagic = builder
 					.comment("Max Chunk Redstone Magic Amount")
 					.translation(Main.MODID + ".config." + "maxChunkRedstoneMagic")
@@ -134,6 +143,7 @@ public class MyConfig
 			System.out.println (dbgMsg);
 		}
 	}
+
 	public static void dbgPrintln(PlayerEntity p, String dbgMsg, int dbgLevel) {
 		if (dbgLevel <= debugLevel ) {
 			sendChat (p, dbgMsg, Color.fromTextFormatting((TextFormatting.YELLOW)));
@@ -147,6 +157,14 @@ public class MyConfig
 
 	public static void setDebugLevel(int debugLevel) {
 		MyConfig.debugLevel = debugLevel;
+	}
+
+	public static int getFlightTime() {
+		return flightTime;
+	}
+	
+	public static int getMaxFlightSpeed() {
+		return maxFlightSpeed;
 	}
 
 	public static int getNeverBreakTools() {

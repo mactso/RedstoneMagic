@@ -1,6 +1,7 @@
 package com.mactso.redstonemagic.item;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -14,19 +15,20 @@ import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicPacket;
+import com.mactso.redstonemagic.network.SyncClientFlyingPacket;
 import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
+import com.mactso.redstonemagic.spells.CastSpells;
 
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.TickableSound;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Pose;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,6 +41,8 @@ import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.ActionResult;
@@ -69,17 +73,25 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class RedstoneFocusItem extends ShieldItem {
 
-	public final static int NBT_NUMBER_FIELD = 99;
-	public final static long SPELL_NOT_CASTING = -1;
-	static final int NO_CHUNK_MANA_UPDATE = -1;
-	
 //  ANYTHING except constants here should probably be in the item CompoundNBT.
 //  variables are global.
-//	static boolean wasFlying = false;
-//	static boolean isFlying = false;
-//	static boolean chunkFlying = false;
-//	static final float FLIGHT_SPEED = 1.6f;
-//	static list<Block> = {Blocks.WATER,Blocks.LAPIS_ORE};
+	public static final int NBT_NUMBER_FIELD = 99;
+	public static final long SPELL_NOT_CASTING = -1;
+	static final int TICKS_PER_SECOND = 20;
+	public static final int NO_CHUNK_MANA_UPDATE = -1;
+
+	static final int MANA_REGENERATION_DURATION = 300;
+
+	static final ItemStack GHAST_TEAR_STACK = new ItemStack(Items.GHAST_TEAR);
+
+	static final int START_FLYING = 1;
+	static final int KEEP_FLYING = 2;
+	static final int STOP_FLYING = 3;
+
+	static final List<Block> NO_FLY_LIST = new ArrayList<Block>(
+			Arrays.asList(Blocks.WATER, Blocks.LAPIS_ORE, Blocks.LAPIS_BLOCK));
+	static final List<Block> FREE_FLY_LIST = new ArrayList<Block>(
+			Arrays.asList(Blocks.REDSTONE_ORE, Blocks.REDSTONE_BLOCK));
 
 	@OnlyIn(value = Dist.CLIENT)
 	public static LivingEntity doLookForDistantTarget(PlayerEntity clientPlayer) {
@@ -96,7 +108,6 @@ public class RedstoneFocusItem extends ShieldItem {
 				}, d1);
 		if (entityRayTraceResult != null) {
 			Entity entity1 = entityRayTraceResult.getEntity();
-			Vector3d vector3d3 = entityRayTraceResult.getHitVec();
 			if (entity1 instanceof LivingEntity) {
 				LivingEntity livingEntity = (LivingEntity) entity1;
 				if (livingEntity.canEntityBeSeen(clientPlayer)) {
@@ -139,10 +150,8 @@ public class RedstoneFocusItem extends ShieldItem {
 				targetPos = null;
 			}
 		}
-//		System.out.println(" " + p.getX() + " " + p.getY() + " " + p.getZ());
 		Direction d = clientPlayer.getHorizontalFacing();
 		d = d.getOpposite();
-// server world command		world.setBlockState(p, Blocks.WALL_TORCH.getDefaultState().with(BlockStateProperties.FACING, d));
 		return targetPos;
 
 	}
@@ -173,21 +182,70 @@ public class RedstoneFocusItem extends ShieldItem {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 	}
 
+	public static void setIsFlying(PlayerEntity player, boolean isFlying, long chunkAge) {
+
+		CompoundNBT compoundnbt = player.getPersistentData();
+		if (compoundnbt.getBoolean("isFlying") != isFlying) {
+			compoundnbt.putBoolean("isFlying", isFlying);
+			if (player instanceof ServerPlayerEntity) {
+				setChunkAge(player, chunkAge);
+				Network.sendToClient(new SyncClientFlyingPacket(isFlying, getIsChunkFlying(player), chunkAge),
+						(ServerPlayerEntity) player);
+			}
+		}
+		if (!isFlying) {
+			player.setForcedPose(null);
+		}
+
+	}
+
+	public static boolean getIsFlying(PlayerEntity player) {
+		CompoundNBT compoundnbt = player.getPersistentData();
+		return compoundnbt.getBoolean("isFlying");
+	}
+
+	public static void setIsChunkFlying(PlayerEntity player, boolean bool) {
+		CompoundNBT compoundnbt = player.getPersistentData();
+		compoundnbt.putBoolean("isChunkFlying", bool);
+	}
+
+	public static boolean getIsChunkFlying(PlayerEntity player) {
+		CompoundNBT compoundnbt = player.getPersistentData();
+		return compoundnbt.getBoolean("isChunkFlying");
+	}
+
+	// exists because client side chunk "inhabited time" field is not populated.
+	public static void setChunkAge(PlayerEntity player, long chunkAge) {
+		CompoundNBT compoundnbt = player.getPersistentData();
+		compoundnbt.putLong("chunkAge", chunkAge);
+	}
+
+	// exists because client side chunk "inhabited time" field is not populated.
+	public static long getChunkAge(PlayerEntity player) {
+		CompoundNBT compoundnbt = player.getPersistentData();
+		long chunkAge = compoundnbt.getLong("chunkAge");
+		if (MyConfig.getDebugLevel() > 0) {
+			MyConfig.sendChat(player, "ChunkAge:" + chunkAge, Color.fromTextFormatting(TextFormatting.AQUA));
+		}
+		return chunkAge;
+	}
+
 	private boolean canUseRedstoneFocusItem(PlayerEntity playerIn) {
 
 		int baseWeaponDamage = 0;
 		boolean canUseRedstoneFocus = false;
 
 		ItemStack handItem = playerIn.getHeldItemMainhand();
-		String i = handItem.getTranslationKey().toString();
-		if (MyConfig.getDebugLevel() > 1) {
-		System.out.println("canUseRFI check : Item in hand " + i + playerIn.getName().toString());
+		ItemStack offHandItem = playerIn.getHeldItemOffhand();
+
+		if (!(handItem.getItem() instanceof RedstoneFocusItem) &&
+		   !(offHandItem.getItem() instanceof RedstoneFocusItem)) {
+			return false;
 		}
+		
+		String i = handItem.getTranslationKey().toString();
 		if (handItem.getUseDuration() == 0) {
 			canUseRedstoneFocus = true;
-			if (MyConfig.getDebugLevel() > 1) {
-				System.out.println("canUseRFI: Duration == 0 " + i + playerIn.getName().toString());
-			}
 		}
 
 		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() instanceof ShovelItem)) {
@@ -203,9 +261,6 @@ public class RedstoneFocusItem extends ShieldItem {
 		}
 
 		if (handItem.getItem() instanceof RedstoneFocusItem) {
-			if (MyConfig.getDebugLevel() > 1) {
-				System.out.println("canUseRFI: Using Focus Item " + i + playerIn.getName().toString());
-			}
 			canUseRedstoneFocus = true;
 			return canUseRedstoneFocus;
 		}
@@ -221,12 +276,6 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		return canUseRedstoneFocus;
 	}
-
-//	CompoundNBT compoundnbt = stack.getOrCreateTag();
-//	int spellState = compoundnbt != null && compoundnbt.contains("spellState", NBT_NUMBER_FIELD)
-//			? compoundnbt.getInt("spellState")
-//			: 0;
-//	compoundnbt.putInt("spellState", STATE_NEUTRAL);
 
 	@Override
 	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
@@ -284,7 +333,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		long castingDuration = serverWorld.getGameTime() - spellCastingStartTime;
 		float soundModifier = 0.4f + (0.01f * castingDuration);
 		if (soundModifier < 0.8f) {
-			if (castingDuration % 3 == 0) {
+			if (castingDuration % 5 == 0) {
 				if (preparedSpellNumber == 0) {
 					doPlayTickSpellSound(serverPlayer, serverWorld, ModSounds.REDSTONEMAGIC_NUKE, SoundCategory.WEATHER,
 							0.3f + soundModifier, 0.3f + soundModifier);
@@ -375,39 +424,53 @@ public class RedstoneFocusItem extends ShieldItem {
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
 
 		if (playerIn instanceof ServerPlayerEntity) {
+			
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) playerIn;
-			ItemStack itemStack = serverPlayer.getHeldItem(handIn);
+			ItemStack stack = serverPlayer.getHeldItem(handIn);
+			CompoundNBT compoundnbt = stack.getOrCreateTag();
+			int preparedSpellNumber = compoundnbt != null && compoundnbt.contains("preparedSpellNumber", NBT_NUMBER_FIELD)
+					? compoundnbt.getInt("preparedSpellNumber")
+					: 0;	
+
 			if (canUseRedstoneFocusItem(serverPlayer)) {
 				if (serverPlayer.isSneaking()) { // change spell
-					doChangePreparedSpell(serverPlayer, itemStack);
+					doChangePreparedSpell(serverPlayer, stack);
+				} else if ((playerCanFly(serverPlayer) &&
+						(preparedSpellNumber == 0) &&
+						(CastSpells.hasFalderal(serverPlayer, GHAST_TEAR_STACK)))) {
+					if (doPayFlyingCost(serverPlayer, START_FLYING)) {
+						ServerWorld sWorld = serverPlayer.getServerWorld();
+						BlockPos pos = serverPlayer.getPosition();
+						setIsFlying(serverPlayer, true, sWorld.getChunkAt(pos).getInhabitedTime());
+							sWorld.spawnParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, 0.5D + (double) pos.getX(),
+									0.5D + (double) pos.getY(), 0.5D + (double) pos.getZ(), 13, 0, -1.15D, 0, 0.06D);
+					}
 				} else {
-					System.out.println("docastspell");
-					doCastPreparedSpell(serverPlayer, itemStack);
+					doCastPreparedSpell(serverPlayer, stack);
 				}
-//				if (serverPlayer.getHeldItemMainhand().getItem() == Items.FEATHER) {
-//					if ((serverPlayer.getPosition().getY() > serverPlayer.getServerWorld().getSeaLevel())
-//							|| (serverPlayer.getServerWorld().canSeeSky(serverPlayer.getPosition()))) {
-//						if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition())
-//								.getBlock() != Blocks.WATER) {
-//							if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
-//									.getBlock() != Blocks.LAPIS_ORE) {
-//								if (serverPlayer.getServerWorld().getBlockState(serverPlayer.getPosition().down())
-//										.getBlock() != Blocks.LAPIS_BLOCK) {
-//									IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC)
-//											.orElse(null);
-//									if (playerManaStorage.useMana(3)) {
-//										isFlying = true;
-//										rewrite to use compoundNBT here.
-//									}
-//								}
-//							}
-//						}
-//					}
-//				}
+
 			}
 		}
 
 		return super.onItemRightClick(worldIn, playerIn, handIn);
+	}
+
+	private boolean playerCanFly(ServerPlayerEntity serverPlayer) {
+		ServerWorld sWorld = serverPlayer.getServerWorld();
+		BlockPos pos = serverPlayer.getPosition();
+		if (MyConfig.getMaxFlightSpeed() == 0) {
+			return false;
+		}
+		if (!CastSpells.hasFalderal(serverPlayer, GHAST_TEAR_STACK)) {
+			return false;
+		}
+		if ((sWorld.getBlockState(pos).getBlock() == Blocks.WATER)
+				|| (NO_FLY_LIST.contains(sWorld.getBlockState(pos.down()).getBlock()))) {
+			sWorld.playSound(null, pos.getX(), pos.getY(), pos.getZ(), ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5F,
+					1.5F);
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -418,14 +481,13 @@ public class RedstoneFocusItem extends ShieldItem {
 			return;
 		}
 
+		boolean wasFlying = false;
 		if (entityLiving instanceof ServerPlayerEntity) {
-//			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityLiving;
-//			if (wasFlying) {
-//				serverPlayer.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 40, 0, true, true));
-//				wasFlying = false;
-//				isFlying = false;
-//			    TODO rewrite this with compoundNBT
-//			}
+			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityLiving;
+			if (getIsFlying(serverPlayer)) {
+				doStopFlying(serverPlayer);
+				wasFlying = true;
+			}
 			// if I reset casting time here, it happens at arbitrary time.
 		} else { // client side.
 
@@ -467,7 +529,7 @@ public class RedstoneFocusItem extends ShieldItem {
 						MyConfig.sendChat(clientPlayer, msg.getString(),
 								Color.fromTextFormatting((TextFormatting.RED)));
 						clientPlayer.world.playSound(clientPlayer, clientPlayer.getPosition(), soundEvent,
-								SoundCategory.AMBIENT, 0.7f, 0.3f);
+								SoundCategory.AMBIENT, 0.6f, 0.3f);
 					}
 				} else {
 
@@ -524,15 +586,31 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	}
 
+	private void doStopFlying(ServerPlayerEntity serverPlayer) {
+		ServerWorld sw = serverPlayer.getServerWorld();
+		BlockPos pos = serverPlayer.getPosition();
+		setIsFlying(serverPlayer, false, sw.getChunk(pos).getInhabitedTime());
+		serverPlayer.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 60, 0, true, true));
+		sw.spawnParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, 0.5D + (double) pos.getX(), 0.5D + (double) pos.getY(),
+				0.5D + (double) pos.getZ(), 7, 0, -1.15D, 0.03D, 0.26D);
+		sw.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.BLOCKS,
+				0.7F, 1.5F);
+	}
+
 	@Override
 	public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
-
+		
 		if ((entityIn instanceof ServerPlayerEntity)) {
-			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) entityIn;
-
-			if ((int) (worldIn.getGameTime()) % 300 == 0) { // every 15 seconds.
-				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			ServerPlayerEntity sPlayer = (ServerPlayerEntity) entityIn;
+			if (!canUseRedstoneFocusItem(sPlayer)) {
+				if (getIsFlying(sPlayer)) {
+					doStopFlying(sPlayer);
+				}
+			}
+			if (worldIn.getGameTime() % MANA_REGENERATION_DURATION == 0) { // every 300 ticks / 15 seconds.
+				BlockPos pos = sPlayer.getPosition();
+				IMagicStorage playerManaStorage = sPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
 				if (manaLevel < 20) {
 					int maxMana = MyConfig.getMaxPlayerRedstoneMagic();
@@ -540,13 +618,15 @@ public class RedstoneFocusItem extends ShieldItem {
 						maxMana = 300;
 					int manaLevelPercent = (100 * manaLevel) / maxMana;
 					if (manaLevelPercent <= 2) {
-						playerManaStorage.addMana(1);
-						Network.sendToClient(
-								new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
-								serverPlayer);
+						Block b = worldIn.getBlockState(pos.down()).getBlock();
+						if (!NO_FLY_LIST.contains(b) && b != Blocks.AIR) {
+							playerManaStorage.addMana(1);
+							Network.sendToClient(
+									new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
+									sPlayer);
+						}
 					}
 				}
-
 			}
 		} else { // client side - update gui.
 
@@ -565,7 +645,6 @@ public class RedstoneFocusItem extends ShieldItem {
 						System.out.println("main hand prepared spell:");
 					}
 					RedstoneMagicGuiEvent.setPreparedSpellNumber(preparedSpellNumber);
-//					Network.sendToClient(new SyncClientGuiPacket(preparedSpellNumber,-1), serverPlayer);
 
 				} else {
 					ItemStack offHand = p.getHeldItemOffhand();
@@ -575,7 +654,6 @@ public class RedstoneFocusItem extends ShieldItem {
 									? compoundnbt.getInt("preparedSpellNumber")
 									: 0;
 					RedstoneMagicGuiEvent.setPreparedSpellNumber(preparedSpellNumber);
-//					Network.sendToClient(new SyncClientGuiPacket(preparedSpellNumber,-1), serverPlayer);
 
 				}
 			}
@@ -586,76 +664,174 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	@Override
 	public void onUsingTick(ItemStack stack, LivingEntity player, int count) {
+		long gameTime = player.world.getGameTime();
 
 		if (player instanceof ServerPlayerEntity) {
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-			BlockPos sPos = serverPlayer.getPosition();
-
-
-
 			CompoundNBT compoundnbt = stack.getOrCreateTag();
+			
 			long spellCastingStartTime = compoundnbt != null
 					&& compoundnbt.contains("spellCastingStartTime", NBT_NUMBER_FIELD)
 							? compoundnbt.getLong("spellCastingStartTime")
 							: 0;
-			int preparedSpellNumber = compoundnbt != null
-					&& compoundnbt.contains("preparedSpellNumber", NBT_NUMBER_FIELD)
-							? compoundnbt.getInt("preparedSpellNumber")
-							: 0;
 			if (spellCastingStartTime != SPELL_NOT_CASTING) {
+				int preparedSpellNumber = compoundnbt != null
+						&& compoundnbt.contains("preparedSpellNumber", NBT_NUMBER_FIELD)
+								? compoundnbt.getInt("preparedSpellNumber")
+								: 0;
 				doPlayCastingTickSounds(serverPlayer, stack, spellCastingStartTime, preparedSpellNumber);
+			}
+			
+			if (getIsFlying((PlayerEntity) serverPlayer)) {
+				if (gameTime % 2 == 0) {
+					doServerPlayerFlying(serverPlayer, stack);
+				}
+				if (doPayFlyingCost(serverPlayer, KEEP_FLYING)) {
+					mySetForcedPose(serverPlayer);
+				}
+			}
+		} else { // client
+			if (getIsFlying((PlayerEntity) player)) {
+				if (gameTime % 2 == 0) {
+					doClientPlayerFlying((PlayerEntity) player);
+				}
+				mySetForcedPose((PlayerEntity) player);
+			}
+
+		}
+
+		super.onUsingTick(stack, player, count);
+
+	}
+
+	private void mySetForcedPose(PlayerEntity player) {
+		Pose p = Pose.FALL_FLYING;
+		if (player.getPitch(1.0f) < -50.0f) {
+			p = null;
+		}
+		player.setForcedPose(p);
+	}
+
+	private boolean doPayFlyingCost(ServerPlayerEntity serverPlayer, int flyingType) {
+		BlockPos pos = serverPlayer.getPosition();
+		ServerWorld sw = serverPlayer.getServerWorld();
+		Chunk chunk = (Chunk) sw.getChunk(serverPlayer.getPosition());
+		Block groundBlock = sw.getBlockState(pos.down()).getBlock();
+
+		int flightTime = MyConfig.getFlightTime() * 20;
+		int manaCost = 11;
+		if ((flyingType == START_FLYING) || ((serverPlayer.getServerWorld().getGameTime() % flightTime) == 0)) {
+
+			if (serverPlayer.getServerWorld().getBlockState(pos).getBlock() == Blocks.WATER) {
+				setIsFlying(serverPlayer, false, serverPlayer.getServerWorld().getChunk(pos).getInhabitedTime());
+				return false;
+			}
+
+			if (flyingType == START_FLYING) {
+				manaCost = 1;
+			}
+
+			if (FREE_FLY_LIST.contains(groundBlock)) {
+				manaCost = 0;
+			}
+
+			IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			if (chunkManaStorage.useMana(manaCost)) {
+				MyConfig.dbgPrintln(1, "Pay from Chunk: " + manaCost + " of " + chunkManaStorage.getManaStored());
+				setIsChunkFlying(serverPlayer, true);
+			} else {
+
+				setIsChunkFlying(serverPlayer, false);
+				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+				if (manaCost > 0) {
+					manaCost = 1;
+				}
+				long chunkAgeFactor = Math.max((long) (10 - (getChunkAge(serverPlayer) / 500)), 0);
+				manaCost += chunkAgeFactor;
+
+				if (flyingType == START_FLYING) {
+					manaCost = (manaCost / 2) + 1;
+					MyConfig.dbgPrintln(1, "Start Flying-" + chunkAgeFactor);
+				}
+
+				serverPlayer.addExhaustion(0.5f);
+				ItemStack stack = serverPlayer.getHeldItemMainhand();
+				if (stack.getItem()== GHAST_TEAR_STACK.getItem()) {
+					serverPlayer.addExhaustion(0.5f);
+				}
+				if (playerManaStorage.useMana(manaCost)) {
+					MyConfig.dbgPrintln(1,
+							"Pay from Player : " + manaCost + "  of " + playerManaStorage.getManaStored());
+					Network.sendToClient(
+							new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
+							serverPlayer);
+					long chunkAge = serverPlayer.getServerWorld().getChunk(serverPlayer.getPosition())
+							.getInhabitedTime();
+					setChunkAge(serverPlayer, chunkAge);
+					Network.sendToClient(new SyncClientFlyingPacket(getIsFlying(serverPlayer),
+							getIsChunkFlying(serverPlayer), chunkAge), (ServerPlayerEntity) serverPlayer);
+				} else {
+					doStopFlying(serverPlayer);
+					return false;
+				}
+			}
+
+		}
+		return true;
+	}
+
+	private void doServerPlayerFlying(ServerPlayerEntity serverPlayer, ItemStack stack) {
+		
+		double newSpeed = calcNewSpeed(serverPlayer);
+		serverPlayer.setMotion(serverPlayer.getLookVec().scale(newSpeed));
+		ServerWorld sw = serverPlayer.getServerWorld();
+		BlockPos pos = serverPlayer.getPosition();
+		float pitchMod = (sw.rand.nextFloat() - 0.5F);
+		if (getIsChunkFlying(serverPlayer)) {
+			sw.spawnParticle(ParticleTypes.CRIMSON_SPORE, 0.5D + (double) pos.getX(), 0.5D + (double) pos.getY(),
+					0.5D + (double) pos.getZ(), 11, 0.7D, -0.4D, 0.15D, 0.16D);
+			sw.playSound(null, pos.getX(), pos.getY(), pos.getZ(), ModSounds.REDSTONEMAGIC_FLY, SoundCategory.BLOCKS,
+					0.30F, 0.05F + pitchMod / 16);
+		} else {
+			sw.spawnParticle(RedstoneParticleData.REDSTONE_DUST, 0.5D + (double) pos.getX(), 0.5D + (double) pos.getY(),
+					0.5D + (double) pos.getZ(), 11, 0.8D, -.5D, 0.2D, 0.16D);
+			sw.playSound(null, pos.getX(), pos.getY(), pos.getZ(), ModSounds.REDSTONEMAGIC_FLY, SoundCategory.BLOCKS,
+					0.15F, 2.0F + pitchMod);
+		}
+
+	}
+
+	private double calcNewSpeed(PlayerEntity player) {
+		float currentSpeed = (float) player.getMotion().length();
+		long chunkAge = getChunkAge(player);
+		float potentialMaxFlightSpeed = (float) (MyConfig.getMaxFlightSpeed() / TICKS_PER_SECOND); 
+		float maxFlightSpeed = potentialMaxFlightSpeed;
+		ItemStack stack = player.getHeldItemMainhand();
+		if (chunkAge != 0 && chunkAge < 5000) {
+			maxFlightSpeed = potentialMaxFlightSpeed * 0.5f;
+		} 
+		if (stack.getItem() == Items.GHAST_TEAR) {
+			maxFlightSpeed = maxFlightSpeed * 1.25f;
+		
+		}
+
+		if (currentSpeed < maxFlightSpeed) {
+			currentSpeed = (currentSpeed + (maxFlightSpeed) / 20) * 1.33f; // "magic" number that feels right.
+			float pitchmod = .0733f + (player.getPitch(1.0f) / 90) * 0.0004f;
+//			MyConfig.sendChat(player, "Speed: " + currentSpeed+ " Pitchmod: "+ pitchmod, Color.fromHex("0xFF3030"));
+			currentSpeed = currentSpeed + pitchmod;
+			if (currentSpeed > maxFlightSpeed) {
+				currentSpeed = maxFlightSpeed; // smooth slowdown
 			}
 		}
 
-// 		bad flying code - needs to be rewritten with CompoundNBT instead of variables.
-//		if (isFlying) {
-//		double x = serverPlayer.getLookVec().x * FLIGHT_SPEED;
-//		double y = serverPlayer.getLookVec().y * FLIGHT_SPEED;
-//		double z = serverPlayer.getLookVec().z * FLIGHT_SPEED;
-//		serverPlayer.setMotion(x, y, z);
-//		float pitchMod = (serverPlayer.getServerWorld().rand.nextFloat() - 0.5F);
-//		if (chunkFlying)
-//			pitchMod -= 1.0f;
-//		serverPlayer.getServerWorld().playSound(null, sPos.getX(), sPos.getY(), sPos.getZ(),
-//				ModSounds.REDSTONEMAGIC_FLY, SoundCategory.BLOCKS, 0.5F, 1.5F + pitchMod);
-//		wasFlying = true;
-//	}
-//	if (serverPlayer.getServerWorld().getGameTime() % 20 == 0) {
-//		Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
-//		// possible bug here. getting from player not chunk
-//		IMagicStorage chunkManaStorage = playerChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
-//		if (chunkManaStorage.useMana(3)) {
-//			chunkFlying = true;
-//		} else {
-//			chunkFlying = false;
-//			IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
-//			if (playerManaStorage.useMana(2)) {
-//				Network.sendToClient(
-//						new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
-//						serverPlayer);
-//			} else {
-//				isFlying = false;
-//			}
-//		}
-//		if (serverPlayer.getServerWorld().getBlockState(sPos).getBlock() == Blocks.WATER) {
-//			isFlying = false;
-//		}
-//	}
-//		} else {
-//			if (player != null) {
-//				if (player instanceof PlayerEntity) {
-//					PlayerEntity clientPlayer = (PlayerEntity) player;
-//					if (isFlying) {
-//						double x = clientPlayer.getLookVec().x * FLIGHT_SPEED;
-//						double y = clientPlayer.getLookVec().y * FLIGHT_SPEED;
-//						double z = clientPlayer.getLookVec().z * FLIGHT_SPEED;
-//						clientPlayer.setMotion(x, y, z);
-//					}
-//
-//				}
-//			}
-//		}
-		super.onUsingTick(stack, player, count);
+		return currentSpeed;
 	}
 
+	private void doClientPlayerFlying(PlayerEntity player) {
+		if (getIsFlying(player)) {
+			double newSpeed = calcNewSpeed(player);
+			player.setMotion(player.getLookVec().scale(newSpeed));
+		}
+	}
 }

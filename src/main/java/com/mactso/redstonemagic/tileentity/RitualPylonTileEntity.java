@@ -1,6 +1,5 @@
 package com.mactso.redstonemagic.tileentity;
 
-import com.electronwill.nightconfig.core.conversion.ForceBreakdown;
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
@@ -8,7 +7,6 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
-import com.mojang.datafixers.types.templates.Tag.TagType;
 
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
@@ -16,11 +14,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
 import net.minecraft.block.DoublePlantBlock;
-import net.minecraft.block.FlowerBlock;
-import net.minecraft.block.GrassBlock;
-import net.minecraft.block.RedstoneBlock;
 import net.minecraft.block.TallGrassBlock;
-import net.minecraft.command.impl.SeedCommand;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
@@ -93,7 +87,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private int calcChunkRitualManaCost() {
 		int newRitualChunkCost = RITUAL_CHUNK_COST;
-		if (pos.getY()< 22) {
+		if (pos.getY()< 22	) {
 			newRitualChunkCost += RITUAL_CHUNK_COST;	
 		}
 		if (pos.getY()< 11) {

@@ -1,7 +1,6 @@
 package com.mactso.redstonemagic.tileentity;
 
 import com.mactso.redstonemagic.block.ModBlocks;
-import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.sounds.ModSounds;
@@ -16,13 +15,13 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
@@ -38,6 +37,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	float humCycleDirection = -.1f;
 	int manaSparkle = 0;
 	int rndTimeOffset = -1;
+	int lastDayTime = 0;
 
 	boolean showManaLevel = false;
 	
@@ -55,11 +55,9 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 			return;
 		}
 		
-		if (rndTimeOffset < 0) rndTimeOffset = this.world.rand.nextInt(20);
-		
-		long dayTime = world.getDayTime() + rndTimeOffset;
-		
-		if (dayTime % 10 == 0) {
+		long tickTime = calcTickTime();
+
+		if (tickTime % 10 == 0) {
 			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
 					0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), 3, 0, -1.15D, 0, 0.06D);
 			if (manaSparkle > 0) {
@@ -69,8 +67,9 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		}
 		
 		// should make different gatherers processing spread across ticks 0-20.
+ 		if (tickTime % 20 == 0) {
 
- 		if (dayTime % 20 == 0) {
+
 			Chunk baseChunk = (Chunk)world.getChunk(pos);				
 			int chunkManaPowerLevel = 0;
 			IMagicStorage cap = baseChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
@@ -79,15 +78,28 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 			}
 			doGathererHum();
 			doShowManaLevelDisplay(chunkManaPowerLevel);
-			doGathererParticles(1);      
-			if (dayTime%6000 == 0L) {
-				manaSparkle = 17;
+			doGathererParticles(1); 
+
+			if (tickTime%6000 == 0L) {
+				manaSparkle = 13;
 				processGatheredManaToChunks();
 			}
 		}
 
 	}
 
+
+	private long calcTickTime() {
+		long tickTime;
+		if (world.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)) {
+			tickTime = world.getDayTime() + rndTimeOffset;
+		} else {
+			tickTime = world.getGameTime() + rndTimeOffset;			
+		}
+		return tickTime;
+	}
+
+	
 	private void doShowManaLevelDisplay(int manaPowerLevel) {
 		if (showManaLevel) {
 			for (int i = 1;i<= 8; i++ ) {
@@ -120,6 +132,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	public void read(BlockState state, CompoundNBT nbt) {
 		super.read(state, nbt);
 		showManaLevel = nbt.getBoolean("showManaLevel");
+
 	}
 	
 	@Override
@@ -127,8 +140,8 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	public CompoundNBT write(CompoundNBT compound) {
 
 		compound.putBoolean("showManaLevel", showManaLevel);
-
 		return super.write(compound);
+
 	}
 	
 	private void doGathererHum() {
@@ -169,6 +182,8 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	}
 
 	public boolean doGathererInteraction(PlayerEntity player, Hand handIn) {
+		BlockPos pos = player.getPosition();
+
 		if (player instanceof ServerPlayerEntity) {
 			showManaLevel = !showManaLevel;
 			if (showManaLevel) {

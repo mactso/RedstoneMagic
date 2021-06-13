@@ -12,6 +12,10 @@ public class Register
 	    		SyncClientManaPacket::writePacketData,
 	    		SyncClientManaPacket::readPacketData,
 	    		SyncClientManaPacket::processSyncClientManaPacket);
+	    Network.registerMessage(SyncClientFlyingPacket.class,
+	    		SyncClientFlyingPacket::writePacketData,
+	    		SyncClientFlyingPacket::readPacketData,
+	    		SyncClientFlyingPacket::processSyncClientFlyingPacket);
 	    Network.registerMessage(SyncClientGuiPacket.class,
 	    		SyncClientGuiPacket::writePacketData,
 	    		SyncClientGuiPacket::readPacketData,

@@ -15,6 +15,10 @@ import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.crafting.RedstoneMagicRecipe;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.network.Register;
+import com.mactso.redstonemagic.proxy.IProxy;
+import com.mactso.redstonemagic.proxy.ClientProxy;
+import com.mactso.redstonemagic.proxy.ServerProxy;
+
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.ModTileEntities;
 
@@ -31,6 +35,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -44,7 +49,7 @@ public class Main {
 	    public static Main instance;
 	    public static final String MODID = "redstonemagic"; 
 	    public static final String PREFIX_GUI = MODID +":"+"textures/gui/";
-
+	    public static IProxy proxy = DistExecutor.safeRunForDist(()-> ClientProxy::new , ()-> ServerProxy::new );
 	    
 	    public Main()
 	    {

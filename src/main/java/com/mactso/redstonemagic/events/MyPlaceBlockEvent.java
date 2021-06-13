@@ -3,13 +3,11 @@ package com.mactso.redstonemagic.events;
 
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.sounds.ModSounds;
-import com.mactso.redstonemagic.spells.CastSpells;
 import com.mactso.redstonemagic.tileentity.GathererTileEntity;
 
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;

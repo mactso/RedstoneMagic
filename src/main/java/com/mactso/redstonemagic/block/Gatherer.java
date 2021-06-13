@@ -4,19 +4,16 @@ import java.util.Random;
 
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.GathererTileEntity;
-import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.ContainerBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -33,7 +30,6 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
 public class Gatherer extends ContainerBlock
@@ -83,6 +79,22 @@ public class Gatherer extends ContainerBlock
 		setDefaultState(stateContainer.getBaseState().with(POWER, Integer.valueOf(0)));
 	}
 
+//	@Override
+//	public Class<GathererTileEntity> getTileEntityClass() {
+//		return GatherTileEntity.class;
+//	}
+	
+	@Override
+	public boolean hasTileEntity(BlockState state) {
+		return true;
+	}
+	
+	@Override
+	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+		// TODO Auto-generated method stub
+		return super.createTileEntity(state, world);
+	}
+	
 	@Override
 	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult result) {
@@ -111,7 +123,7 @@ public class Gatherer extends ContainerBlock
 		// StructureBlockTileEntity s;
 		// RedstoneParticleData pR = new RedstoneParticleData(1.0f, 1.0f, 1.0f, 2.0f);
 		worldIn.playSound(null, pos, SoundEvents.ENTITY_ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
-
+//		System.out.println("Gatherer Placed at ("+pos.getX()+", "+pos.getY()+", "+pos.getZ()+")");
 		if (worldIn.isRemote()) {
 			int iY = pos.getY() + 1;
 			int sX = worldIn.getChunk(pos).getPos().getXStart();

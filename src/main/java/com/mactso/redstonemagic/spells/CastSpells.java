@@ -1,11 +1,7 @@
 package com.mactso.redstonemagic.spells;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Random;
-
-import org.lwjgl.system.CallbackI.V;
 
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
@@ -19,7 +15,6 @@ import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.client.GameSettings;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.Entity;
@@ -35,7 +30,6 @@ import net.minecraft.entity.passive.horse.AbstractHorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
@@ -45,8 +39,6 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.server.ServerPropertiesProvider;
-import net.minecraft.server.dedicated.ServerProperties;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -56,10 +48,8 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
@@ -107,7 +97,7 @@ public class CastSpells {
 	  	posY = targetEntity.getPosY();
 	  	posZ = targetEntity.getPosZ();
 	  	
-	  	int baseWeaponDamage = 0;
+	  	int baseWeaponDamage = 1;
 
 		ItemStack handItem = serverPlayer.getHeldItemMainhand();
 		float damageModifierForCreature = 0.1f;
@@ -122,8 +112,15 @@ public class CastSpells {
         {
             baseWeaponDamage = (int) attr.getAmount()+1;
         }
-		float weaponDamage = baseWeaponDamage;
 		if (spellTime > 4) spellTime = 4;
+		
+        float weaponDamage = baseWeaponDamage + ((spellTime/2) * (spellTime/2));
+		if (weaponDamage < 2.0f) {
+			weaponDamage = 2.0f;
+		}
+		
+//		MyConfig.sendChat(serverPlayer, "baseWeaponDamage:"+baseWeaponDamage+" weaponDamage: "+weaponDamage, Color.fromHex("0x3333FF"));
+
 //		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
 
 //***
@@ -198,7 +195,7 @@ public class CastSpells {
 				return false;
 			}
 			if (ei.getAmplifier() <= intensity) {
-				targetEntity.removeActivePotionEffect(Effects.POISON);
+				targetEntity.removePotionEffect(Effects.POISON);
 			}
 		}
 
@@ -258,8 +255,7 @@ public class CastSpells {
 			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForTarget, BlockPos targetPos) {
 
 		if (targetEntity.isEntityUndead()) {
-
-			float totalDamage = (int) (targetEntity.getMaxHealth() / 10) * spellTime;
+			float totalDamage = targetEntity.getMaxHealth() * (0.125f * spellTime);
 			float nukeDamage = totalDamage;
 			weaponDamage = weaponDamage + damageModifierForTarget;
 			if (nukeDamage > BOSS_MOB_LIMIT) nukeDamage = BOSS_MOB_LIMIT;
@@ -283,10 +279,8 @@ public class CastSpells {
 		}
 
 		if ((isHealable(targetEntity))) {
-			float totalDamage = (int) (targetEntity.getMaxHealth() / 10) * spellTime;
+			float healDamage = targetEntity.getMaxHealth() * .10f * spellTime;
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ASH);
-			float healDamage = totalDamage;
-
 			targetEntity.heal(healDamage);
 			if(targetEntity instanceof WolfEntity) {
 				WolfEntity wE = (WolfEntity) targetEntity;
@@ -357,7 +351,7 @@ public class CastSpells {
 			EffectInstance ei = targetEntity.getActivePotionEffect(Effects.SLOW_FALLING);
 			if (ei != null) {
 				if ((ei.getDuration() < 20) ) {
-					targetEntity.removeActivePotionEffect(Effects.SLOW_FALLING);
+					targetEntity.removePotionEffect(Effects.SLOW_FALLING);
 					ei = null;
 				}
 			}
@@ -378,7 +372,7 @@ public class CastSpells {
 		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.WATER_BREATHING);
 		if (ei != null) {
 			if ((ei.getDuration() < 40) ) {
-				targetEntity.removeActivePotionEffect(Effects.WATER_BREATHING);
+				targetEntity.removePotionEffect(Effects.WATER_BREATHING);
 				ei = null;
 			}
 		}
@@ -407,7 +401,7 @@ public class CastSpells {
 			ei = targetEntity.getActivePotionEffect(Effects.NIGHT_VISION);
 			if (ei != null) {
 				if ((ei.getDuration() < 20) ) {
-					targetEntity.removeActivePotionEffect(Effects.NIGHT_VISION);
+					targetEntity.removePotionEffect(Effects.NIGHT_VISION);
 					ei = null;
 				}
 			}	
@@ -444,7 +438,7 @@ public class CastSpells {
 		ei = targetEntity.getActivePotionEffect(Effects.FIRE_RESISTANCE);
 		if (ei != null) {
 			if ((ei.getDuration() < 40) ) {
-				targetEntity.removeActivePotionEffect(Effects.FIRE_RESISTANCE);
+				targetEntity.removePotionEffect(Effects.FIRE_RESISTANCE);
 				ei = null;
 			}
 		}			
@@ -469,7 +463,7 @@ public class CastSpells {
 			ei = targetEntity.getActivePotionEffect(Effects.INVISIBILITY);
 			if (ei != null) {
 				if ((ei.getDuration() < 80) ) {
-					targetEntity.removeActivePotionEffect(Effects.INVISIBILITY);
+					targetEntity.removePotionEffect(Effects.INVISIBILITY);
 					ei = null;
 				}
 			}
@@ -500,7 +494,7 @@ public class CastSpells {
 			return false;
 		}
 
-		float totalDamage = (int) (targetEntity.getMaxHealth() * 0.4f);
+		float totalDamage = (int) (targetEntity.getMaxHealth() * (0.1f * spellTime));
 		float nukeDamage = totalDamage;
 		weaponDamage = weaponDamage + damageModifierForTarget;
 		if (nukeDamage > BOSS_MOB_LIMIT) nukeDamage = BOSS_MOB_LIMIT;
@@ -608,46 +602,22 @@ public class CastSpells {
 		}
 		// small chance to replace milk bucket with empty bucket.
 		
-
 		EffectInstance ei = null;
 		boolean curseRemoved = false;
 		if (!(curseRemoved)) {
-			ei = targetEntity.getActivePotionEffect(Effects.BLINDNESS);
-			if (ei != null) {
-				targetEntity.removeActivePotionEffect(Effects.BLINDNESS);
-				curseRemoved = true;
-			}
+			curseRemoved = targetEntity.removePotionEffect(Effects.BLINDNESS);
 		}
 		if (!(curseRemoved)) {
-			ei = targetEntity.getActivePotionEffect(Effects.WITHER);
-			if (ei != null) {
-				targetEntity.removeActivePotionEffect(Effects.WITHER);
-				targetEntity.addPotionEffect(new EffectInstance(Effects.WITHER, 1, 0, true, true));
-				curseRemoved = true;
-			}
+			curseRemoved = targetEntity.removePotionEffect(Effects.WITHER);
 		}
 		if (!(curseRemoved)) {
-			ei = targetEntity.getActivePotionEffect(Effects.POISON);
-			if (ei != null) {
-				targetEntity.removeActivePotionEffect(Effects.POISON);
-				targetEntity.addPotionEffect(new EffectInstance(Effects.POISON, 1, 0, true, true));
-				curseRemoved = true;
-			}
+			curseRemoved = targetEntity.removePotionEffect(Effects.POISON);
 		}
 		if (!(curseRemoved)) {
-			ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
-			if (ei != null) {
-				targetEntity.removeActivePotionEffect(Effects.SLOWNESS);
-				curseRemoved = true;
-			}
-			
+			curseRemoved = targetEntity.removePotionEffect(Effects.SLOWNESS);
 		}
 		if (!(curseRemoved)) {
-			ei = targetEntity.getActivePotionEffect(Effects.MINING_FATIGUE);
-			if (ei != null) {
-				targetEntity.removeActivePotionEffect(Effects.MINING_FATIGUE);
-				curseRemoved = true;
-			}
+			curseRemoved = targetEntity.removePotionEffect(Effects.MINING_FATIGUE);
 		}
 		
 		if (curseRemoved) {
@@ -678,7 +648,7 @@ public class CastSpells {
 				effectIntensity = 1;
 				effectDuration = THIRTY_SECONDS + FOUR_SECONDS;
 			} 
-			targetEntity.removeActivePotionEffect(Effects.RESISTANCE);
+			targetEntity.removePotionEffect(Effects.RESISTANCE);
 		}
 		targetEntity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
 		if (effectIntensity == 0) {
@@ -734,7 +704,7 @@ public class CastSpells {
 		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.WITHER);
 		if (ei != null) {
 			if ((ei.getDuration() < 19) || (ei.getAmplifier() <= intensity)) {
-				targetEntity.removeActivePotionEffect(Effects.WITHER);
+				targetEntity.removePotionEffect(Effects.WITHER);
 			}
 		}
 		targetEntity.addPotionEffect(new EffectInstance(Effects.WITHER, (duration * 45), intensity, true, true));
@@ -748,7 +718,7 @@ public class CastSpells {
 			ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
 			if (ei != null) {
 				if ((ei.getDuration() < 19) || (ei.getAmplifier() <= 0)) {
-					targetEntity.removeActivePotionEffect(Effects.SLOWNESS);
+					targetEntity.removePotionEffect(Effects.SLOWNESS);
 				}
 			}
 			targetEntity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, duration * 61, 0, true, true));

@@ -2,7 +2,6 @@ package com.mactso.redstonemagic.item;
 
 import org.lwjgl.glfw.GLFW;
 
-
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicArmorPacket;
 
