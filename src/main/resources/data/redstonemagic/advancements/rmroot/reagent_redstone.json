@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/reagents",
+	"display": {
+		"icon": {
+			"item": "minecraft:redstone"
+		},
+		"title": {
+			"translate": "advancements.reagent.redstone.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.reagent.redstone.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_reagent_redstone": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:redstone"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_reagent_redstone"
+		]
+	]
+}

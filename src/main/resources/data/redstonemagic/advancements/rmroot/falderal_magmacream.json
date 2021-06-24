@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/falderals",
+	"display": {
+		"icon": {
+			"item": "minecraft:magma_cream"
+		},
+		"title": {
+			"translate": "advancements.falderal.magmacream.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.falderal.magmacream.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_falderal_magma_cream": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:magma_cream"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_falderal_magma_cream"
+		]
+	]
+}

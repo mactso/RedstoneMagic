@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/items",
+	"display": {
+		"icon": {
+			"item": "minecraft:paper"
+		},
+		"title": {
+			"translate": "advancements.preparingspells.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.preparingspells.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_preparingspells": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "redstonemagic:redstone_focus"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_preparingspells"
+		]
+	]
+}

@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/rm_root",
+	"display": {
+		"icon": {
+			"item": "redstonemagic:redstone_focus"
+		},
+		"title": {
+			"translate": "advancements.items.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.items.description",
+			"color": "white"
+		},
+		"frame": "goal",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_redstone": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:redstone"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_redstone"
+		]
+	]
+}

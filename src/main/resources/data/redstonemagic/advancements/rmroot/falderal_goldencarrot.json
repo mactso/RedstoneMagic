@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/falderals",
+	"display": {
+		"icon": {
+			"item": "minecraft:golden_carrot"
+		},
+		"title": {
+			"translate": "advancements.falderal.goldencarrot.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.falderal.goldencarrot.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_falderal_golden_carrot": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:golden_carrot"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_falderal_golden_carrot"
+		]
+	]
+}

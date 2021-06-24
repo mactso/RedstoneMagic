@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/rm_root",
+	"display": {
+		"icon": {
+			"item": "minecraft:redstone"
+		},
+		"title": {
+			"translate": "advancements.falderals.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.falderals.description",
+			"color": "white"
+		},
+		"frame": "goal",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": true
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_falderals": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:redstone"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_falderals"
+		]
+	]
+}

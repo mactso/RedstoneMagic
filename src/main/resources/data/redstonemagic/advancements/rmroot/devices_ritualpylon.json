@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/devices",
+	"display": {
+		"icon": {
+			"item": "redstonemagic:ritual_pylon"
+		},
+		"title": {
+			"translate": "advancements.devices.ritualpylon.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.devices.ritualpylon.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_redstone_ore": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:redstone_ore"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_redstone_ore"
+		]
+	]
+}
