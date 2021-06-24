@@ -28,7 +28,7 @@ public class CapabilityMagic
             {
                 if (!(instance instanceof MagicStorage))
                     throw new IllegalArgumentException("Can not deserialize to an instance that isn't the default implementation");
-                ((MagicStorage)instance).addMana(((IntNBT)nbt).getInt());
+                ((MagicStorage)instance).addMana(((IntNBT)nbt).getAsInt());
             }
         },
         () -> new MagicStorage(null));

@@ -21,6 +21,8 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.world.World;
 
+import net.minecraft.item.Item.Properties;
+
 public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClick 
 {
 	public RedstoneArmorItem(IArmorMaterial material, EquipmentSlotType slot, Properties prop, String name) {
@@ -30,7 +32,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 	@Override
 	public int getColor(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getChildTag("display");
+		CompoundNBT compoundnbt = stack.getTagElement("display");
 		return compoundnbt != null && compoundnbt.contains("color", 99) ? compoundnbt.getInt("color") : 0xCAC8C8;
 	}
 
@@ -53,8 +55,8 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		// only check suit bonus once per second
 		if (world.getGameTime() % 20 == 0) {
 			int suitBonus = 0;
-			if (stack.getItem().getTranslationKey().contains("redstonemagic")) {
-				Iterable<ItemStack> playerArmorSet = player.getArmorInventoryList();
+			if (stack.getItem().getDescriptionId().contains("redstonemagic")) {
+				Iterable<ItemStack> playerArmorSet = player.getArmorSlots();
 				Iterator<ItemStack> i = playerArmorSet.iterator();
 				while (i.hasNext()) {
 					ItemStack armorpiece = i.next();
@@ -78,11 +80,11 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		boolean refreshSuitBonus = true;
 		int effectDuration = 160; // 8 seconds
 		int effectIntensity = 0;
-		EffectInstance ei = player.getActivePotionEffect(Effects.RESISTANCE);
+		EffectInstance ei = player.getEffect(Effects.DAMAGE_RESISTANCE);
 		if (ei != null) {
 			if (ei.getAmplifier() > effectIntensity) {
 				if (ei.getDuration() <= 15) {
-					player.removeActivePotionEffect(Effects.RESISTANCE);
+					player.removeEffectNoUpdate(Effects.DAMAGE_RESISTANCE);
 				} else {
 					refreshSuitBonus = false;
 				}
@@ -93,7 +95,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 				System.out
 						.println("Redstone Magic: " + player.getName().getString() + " Applying Suit Resistance Bonus");
 			}
-			player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
+			player.addEffect(new EffectInstance(Effects.DAMAGE_RESISTANCE, effectDuration, effectIntensity, true, true));
 		}
 
 	}
@@ -128,16 +130,16 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 
 	@Override
-	public boolean hasEffect(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getChildTag("display");
+	public boolean isFoil(ItemStack stack) {
+		CompoundNBT compoundnbt = stack.getTagElement("display");
 		boolean glint = compoundnbt != null && compoundnbt.contains("glint", 1) ? compoundnbt.getBoolean("glint")
 				: false;
-		return glint && super.hasEffect(stack);
+		return glint && super.isFoil(stack);
 	}
 
 	@Override
 	public void menuRightClick(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getOrCreateChildTag("display");
+		CompoundNBT compoundnbt = stack.getOrCreateTagElement("display");
 		boolean glint = compoundnbt.contains("glint", 1) && compoundnbt.getBoolean("glint");
 		if (glint)
 			compoundnbt.remove("glint");

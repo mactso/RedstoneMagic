@@ -48,21 +48,21 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 
 	@Override
 	public void tick() {
-		if (world == null) {
+		if (level == null) {
 			return;
 		}
-		if (world.isRemote) {
+		if (level.isClientSide) {
 			return;
 		}
 		
 		long tickTime = calcTickTime();
 
 		if (tickTime % 10 == 0) {
-			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
-					0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), 3, 0, -1.15D, 0, 0.06D);
+			((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) worldPosition.getX(),
+					0.5D + (double) worldPosition.above(2).getY(), 0.5D + (double) worldPosition.getZ(), 3, 0, -1.15D, 0, 0.06D);
 			if (manaSparkle > 0) {
 				manaSparkle--;
-				createNonBasicParticle(pos.up(2), 3, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
+				createNonBasicParticle(worldPosition.above(2), 3, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 			}
 		}
 		
@@ -70,7 +70,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
  		if (tickTime % 20 == 0) {
 
 
-			Chunk baseChunk = (Chunk)world.getChunk(pos);				
+			Chunk baseChunk = (Chunk)level.getChunk(worldPosition);				
 			int chunkManaPowerLevel = 0;
 			IMagicStorage cap = baseChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {
@@ -91,10 +91,10 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 
 	private long calcTickTime() {
 		long tickTime;
-		if (world.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)) {
-			tickTime = world.getDayTime() + rndTimeOffset;
+		if (level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
+			tickTime = level.getDayTime() + rndTimeOffset;
 		} else {
-			tickTime = world.getGameTime() + rndTimeOffset;			
+			tickTime = level.getGameTime() + rndTimeOffset;			
 		}
 		return tickTime;
 	}
@@ -104,12 +104,12 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		if (showManaLevel) {
 			for (int i = 1;i<= 8; i++ ) {
 					if (i<=manaPowerLevel) {
-						if (world.getBlockState(pos.up(i)).getBlock() == Blocks.AIR) {
-							world.setBlockState(pos.up(i), ModBlocks.LIGHT_SPELL.getDefaultState());
+						if (level.getBlockState(worldPosition.above(i)).getBlock() == Blocks.AIR) {
+							level.setBlockAndUpdate(worldPosition.above(i), ModBlocks.LIGHT_SPELL.defaultBlockState());
 						}
 					} else {
-						if (world.getBlockState(pos.up(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
-							world.setBlockState(pos.up(i), Blocks.AIR.getDefaultState());
+						if (level.getBlockState(worldPosition.above(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
+							level.setBlockAndUpdate(worldPosition.above(i), Blocks.AIR.defaultBlockState());
 						}
 					}
 				}
@@ -121,26 +121,26 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	
 	public void doEraseManaLevelDisplay() {
 		for (int i = 1;i<= 8; i++ ) {
-			if (world.getBlockState(pos.up(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
-				world.destroyBlock(pos.up(i), false);
+			if (level.getBlockState(worldPosition.above(i)).getBlock() == ModBlocks.LIGHT_SPELL) {
+				level.destroyBlock(worldPosition.above(i), false);
 			}
 		}
 	}
 	
 	@Override
 	// restore state when chunk reloads
-	public void read(BlockState state, CompoundNBT nbt) {
-		super.read(state, nbt);
+	public void load(BlockState state, CompoundNBT nbt) {
+		super.load(state, nbt);
 		showManaLevel = nbt.getBoolean("showManaLevel");
 
 	}
 	
 	@Override
 	// save state when chunk unloads
-	public CompoundNBT write(CompoundNBT compound) {
+	public CompoundNBT save(CompoundNBT compound) {
 
 		compound.putBoolean("showManaLevel", showManaLevel);
-		return super.write(compound);
+		return super.save(compound);
 
 	}
 	
@@ -154,44 +154,44 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		}
 		float humVolume = (float) (0.4 + (0.3f * humLevel));
 		float humPitch = (float) (0.5 + (0.3f * humLevel));
-		world.playSound(null, pos, ModSounds.GATHERER_HUMS,
+		level.playSound(null, worldPosition, ModSounds.GATHERER_HUMS,
 				SoundCategory.BLOCKS, humVolume/3, humPitch);
 	}
 
 	private void processGatheredManaToChunks() {
 
-		world.playSound(null, pos, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,
+		level.playSound(null, worldPosition, SoundEvents.ILLUSIONER_CAST_SPELL,
 				SoundCategory.BLOCKS, 0.14f, 0.15f);	
 		doGathererParticles(15);  
 		
-		Chunk baseChunk = (Chunk)world.getChunk(pos);
+		Chunk baseChunk = (Chunk)level.getChunk(worldPosition);
 		int newManaLevel = 0;
 		newManaLevel = addManaToChunk(baseChunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/2,5);
 		int chunkX = baseChunk.getPos().x;
 		int chunkZ = baseChunk.getPos().z;
-		Chunk chunk = world.getChunk(chunkX+1, chunkZ);
+		Chunk chunk = level.getChunk(chunkX+1, chunkZ);
 		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
-		chunk = world.getChunk(chunkX-1, chunkZ);
+		chunk = level.getChunk(chunkX-1, chunkZ);
 		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
-		chunk = world.getChunk(chunkX, chunkZ+1);
+		chunk = level.getChunk(chunkX, chunkZ+1);
 		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
-		chunk = world.getChunk(chunkX, chunkZ-1);
+		chunk = level.getChunk(chunkX, chunkZ-1);
 		addManaToChunk(chunk,RitualPylonTileEntity.RITUAL_CHUNK_COST/8,3);
-		world.playSound(null, pos, ModSounds.GATHERER_GATHERS,
+		level.playSound(null, worldPosition, ModSounds.GATHERER_GATHERS,
 				SoundCategory.BLOCKS, 0.2f, 0.45f);	
 	}
 
 	public boolean doGathererInteraction(PlayerEntity player, Hand handIn) {
-		BlockPos pos = player.getPosition();
+		BlockPos pos = player.blockPosition();
 
 		if (player instanceof ServerPlayerEntity) {
 			showManaLevel = !showManaLevel;
 			if (showManaLevel) {
-				world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_PLING,
+				level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING,
 						SoundCategory.BLOCKS, 0.2f, 0.45f);	
 			}
-			Chunk chunk = (Chunk) world.getChunk(pos);
-			chunk.markDirty();
+			Chunk chunk = (Chunk) level.getChunk(pos);
+			chunk.markUnsaved();
 		}
 		return true;
 	}
@@ -213,8 +213,8 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 	}
 		
 	private void doGathererParticles(int particles) {
-		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) pos.getX(),
-				0.5D + (double) pos.up(2).getY(), 0.5D + (double) pos.getZ(), particles, 0, -1.15D, 0, 0.06D);
+		((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) worldPosition.getX(),
+				0.5D + (double) worldPosition.above(2).getY(), 0.5D + (double) worldPosition.getZ(), particles, 0, -1.15D, 0, 0.06D);
 	}
 
 	private int addManaToChunk(Chunk chunk, int newManaAmount, int sparkle) {
@@ -223,9 +223,9 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		if (cap != null) {
 			cap.addMana(newManaAmount); // checks for max capacity internally based on object type.
 		}
-		int sparkleX = (int) (chunk.getPos().getXStart()+chunk.getPos().getXEnd())/2;
-		int sparkleZ = (int) (chunk.getPos().getZStart()+chunk.getPos().getZEnd())/2;
-		int sparkleY = pos.getY() + 2;
+		int sparkleX = (int) (chunk.getPos().getMinBlockX()+chunk.getPos().getMaxBlockX())/2;
+		int sparkleZ = (int) (chunk.getPos().getMinBlockZ()+chunk.getPos().getMaxBlockZ())/2;
+		int sparkleY = worldPosition.getY() + 2;
 		BlockPos sparklePos = new BlockPos (sparkleX,sparkleY,sparkleZ);
 		createNonBasicParticle(sparklePos, sparkle, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 		return newManaLevel;
@@ -234,7 +234,7 @@ public class GathererTileEntity extends TileEntity implements ITickableTileEntit
 		double xOffset = 0.5D;
 		double yOffset = 0.25D;
 		double zOffset = 0.5D;
-		((ServerWorld) world).spawnParticle(particleType, pos.getX(), pos.getY(), pos.getZ(), particleCount, xOffset,
+		((ServerWorld) level).sendParticles(particleType, pos.getX(), pos.getY(), pos.getZ(), particleCount, xOffset,
 				yOffset, zOffset, -0.04D);
 	}	
 }

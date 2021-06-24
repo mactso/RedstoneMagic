@@ -66,7 +66,7 @@ public class RedstoneMagicPacket
 	public static void processRedstoneMagicPacket(RedstoneMagicPacket message, Supplier<NetworkEvent.Context> ctx)
 	{
 		ServerPlayerEntity serverPlayer = ctx.get().getSender();
-		Entity targetEntity = serverPlayer.world.getEntityByID(message.id);
+		Entity targetEntity = serverPlayer.level.getEntity(message.id);
 
 		ctx.get().enqueueWork( () -> 
 			{

@@ -19,16 +19,16 @@ public class MyPlaceBlockEvent {
 	public void onPlaceBlock(EntityPlaceEvent event) {
 
 		if (event.getPlacedBlock().getBlock() == ModBlocks.GATHERER) {
-			Chunk chunk = (Chunk) event.getEntity().getEntityWorld().getChunk(event.getPos());
+			Chunk chunk = (Chunk) event.getEntity().getCommandSenderWorld().getChunk(event.getPos());
 			int x = 0;
-			for (TileEntity t : chunk.getTileEntityMap().values()) {
+			for (TileEntity t : chunk.getBlockEntities().values()) {
 				if (t instanceof GathererTileEntity) {
 					x++;
 					if (x > 2) {
 						if (event.getWorld() instanceof ServerWorld) {
 							ServerWorld serverWorld = (ServerWorld) event.getWorld();
 							serverWorld.playSound(null, event.getPos(), ModSounds.SPELL_FAILS, SoundCategory.AMBIENT, 0.6f, 0.8f);
-					        serverWorld.spawnParticle(ParticleTypes.POOF, event.getPos().getX(), event.getPos().getY(), event.getPos().getZ(), 3, 0.5, 0.5, 0.5, -0.14D);
+					        serverWorld.sendParticles(ParticleTypes.POOF, event.getPos().getX(), event.getPos().getY(), event.getPos().getZ(), 3, 0.5, 0.5, 0.5, -0.14D);
 
 						}
 

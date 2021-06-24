@@ -88,23 +88,23 @@ public class CastSpells {
 		
 		String spellTranslationKey = spell.getSpellTranslationKey();
 		String spellTargetType = spell.getSpellTargetType();
-		DamageSource myDamageSource = DamageSource.causePlayerDamage(serverPlayer).setDamageBypassesArmor()
-				.setMagicDamage();
+		DamageSource myDamageSource = DamageSource.playerAttack(serverPlayer).bypassArmor()
+				.setMagic();
 		
-		ServerWorld serverWorld = (ServerWorld) targetEntity.world;
+		ServerWorld serverWorld = (ServerWorld) targetEntity.level;
 		
-	  	posX = targetEntity.getPosX();
-	  	posY = targetEntity.getPosY();
-	  	posZ = targetEntity.getPosZ();
+	  	posX = targetEntity.getX();
+	  	posY = targetEntity.getY();
+	  	posZ = targetEntity.getZ();
 	  	
 	  	int baseWeaponDamage = 1;
 
-		ItemStack handItem = serverPlayer.getHeldItemMainhand();
+		ItemStack handItem = serverPlayer.getMainHandItem();
 		float damageModifierForCreature = 0.1f;
         if (targetEntity instanceof LivingEntity) {
-            damageModifierForCreature = EnchantmentHelper.getModifierForCreature(serverPlayer.getHeldItemMainhand(), ((LivingEntity)targetEntity).getCreatureAttribute());
+            damageModifierForCreature = EnchantmentHelper.getDamageBonus(serverPlayer.getMainHandItem(), ((LivingEntity)targetEntity).getMobType());
          } else {
-            damageModifierForCreature = EnchantmentHelper.getModifierForCreature(serverPlayer.getHeldItemMainhand(), CreatureAttribute.UNDEFINED);
+            damageModifierForCreature = EnchantmentHelper.getDamageBonus(serverPlayer.getMainHandItem(), CreatureAttribute.UNDEFINED);
          }
   	
 	  	Collection<AttributeModifier> d = handItem.getAttributeModifiers(EquipmentSlotType.MAINHAND).get(Attributes.ATTACK_DAMAGE);
@@ -121,7 +121,7 @@ public class CastSpells {
 		
 //		MyConfig.sendChat(serverPlayer, "baseWeaponDamage:"+baseWeaponDamage+" weaponDamage: "+weaponDamage, Color.fromHex("0x3333FF"));
 
-//		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.func_240744_a_(TextFormatting.RED));
+//		MyConfig.sendChat(serverPlayer, "Cast A Spell before Switch.  Spell is " + spell.getSpellTranslationKey(), Color.fromLegacyFormat(TextFormatting.RED));
 
 //***
 		if (spell.getSpellTranslationKey().equals("redstonemagic.nuke")) { // red bolt
@@ -186,25 +186,25 @@ public class CastSpells {
 		}
 		
 //		boolean nukeHit = false;
-		myDamageSource.setDamageBypassesArmor();
-		boolean nukeHit = targetEntity.attackEntityFrom(myDamageSource, nukeDamage);
+		myDamageSource.bypassArmor();
+		boolean nukeHit = targetEntity.hurt(myDamageSource, nukeDamage);
 		
-		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.POISON);
+		EffectInstance ei = targetEntity.getEffect(Effects.POISON);
 		if (ei != null) {
 			if (ei.getDuration() > 19) {
 				return false;
 			}
 			if (ei.getAmplifier() <= intensity) {
-				targetEntity.removePotionEffect(Effects.POISON);
+				targetEntity.removeEffect(Effects.POISON);
 			}
 		}
 
-		targetEntity.attackEntityFrom(myDamageSource, spellTime);
-		targetEntity.addPotionEffect(new EffectInstance(Effects.POISON,  duration * TICKS_PER_SECOND, intensity, true, true));
+		targetEntity.hurt(myDamageSource, spellTime);
+		targetEntity.addEffect(new EffectInstance(Effects.POISON,  duration * TICKS_PER_SECOND, intensity, true, true));
 		LivingEntity lE = (LivingEntity) targetEntity;
-		lE.func_230246_e_(serverPlayer); // set attacking player (I think)
-		serverWorld.playSound(null, targetEntity.getPosition(),SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
-		serverWorld.playSound(null, targetEntity.getPosition(),SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
+		lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
+		serverWorld.playSound(null, targetEntity.blockPosition(),SoundEvents.LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
+		serverWorld.playSound(null, targetEntity.blockPosition(),SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
 		drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ITEM_SLIME);
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 3, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 3, ParticleTypes.WITCH); 
@@ -216,17 +216,17 @@ public class CastSpells {
 	private static boolean canAttackTarget(ServerPlayerEntity serverPlayer, LivingEntity targetEntity) {
 		boolean canAttackTargetEntity = true;
 		if (targetEntity instanceof PlayerEntity) {
-			if (serverPlayer.canAttackPlayer((PlayerEntity) targetEntity) == false) {
+			if (serverPlayer.canHarmPlayer((PlayerEntity) targetEntity) == false) {
 				canAttackTargetEntity = false;
 			}
 		}
 		
 		if (targetEntity instanceof TameableEntity) {
 			TameableEntity t = (TameableEntity) targetEntity;
-			if (t.isTamed()) {
+			if (t.isTame()) {
 				if ( t.getOwner() instanceof PlayerEntity) {
 					PlayerEntity p = (PlayerEntity) t.getOwner();
-					if (serverPlayer.canAttackPlayer(p) == false) {
+					if (serverPlayer.canHarmPlayer(p) == false) {
 						canAttackTargetEntity = false;
 					}
 				}
@@ -239,7 +239,7 @@ public class CastSpells {
 
 		if (targetEntity instanceof TameableEntity) {
 			TameableEntity t = (TameableEntity) targetEntity;
-			if (t.isTamed()) {
+			if (t.isTame()) {
 				return false;
 			}
 		}
@@ -254,7 +254,7 @@ public class CastSpells {
 	private static boolean doSpellHeal(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			DamageSource myDamageSource, ServerWorld serverWorld, float weaponDamage, float damageModifierForTarget, BlockPos targetPos) {
 
-		if (targetEntity.isEntityUndead()) {
+		if (targetEntity.isInvertedHealAndHarm()) {
 			float totalDamage = targetEntity.getMaxHealth() * (0.125f * spellTime);
 			float nukeDamage = totalDamage;
 			weaponDamage = weaponDamage + damageModifierForTarget;
@@ -263,15 +263,15 @@ public class CastSpells {
 			if (nukeDamage <= weaponDamage) nukeDamage = (int) (weaponDamage - 1);
 			if (spellTime >= 4) nukeDamage += 1;
 		
-			if (targetEntity.attackEntityFrom(myDamageSource, nukeDamage)) {
-				serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+			if (targetEntity.hurt(myDamageSource, nukeDamage)) {
+				serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 						SoundCategory.AMBIENT, 0.2f, 0.9f);
-				serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+				serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 						SoundCategory.AMBIENT, 0.9f, 0.25f);
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.DAMAGE_INDICATOR);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.CAMPFIRE_COSY_SMOKE);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, ParticleTypes.DAMAGE_INDICATOR);
-				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
+				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE);
 				return true;
 			} else {
 				return false;
@@ -284,24 +284,24 @@ public class CastSpells {
 			targetEntity.heal(healDamage);
 			if(targetEntity instanceof WolfEntity) {
 				WolfEntity wE = (WolfEntity) targetEntity;
-				if (wE.getRevengeTarget() instanceof PlayerEntity) {
-					wE.setRevengeTarget(null);
+				if (wE.getLastHurtByMob() instanceof PlayerEntity) {
+					wE.setLastHurtByMob(null);
 				}
 			}
-			serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_BEACON_ACTIVATE,
+			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.BEACON_ACTIVATE,
 					SoundCategory.AMBIENT, 0.2f, 0.8f);
-			serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE,
+			serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE,
 					SoundCategory.AMBIENT, 0.7f, 0.86f);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.HEART);
-			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE);
 			return true;
 		}
 		else if (hasFalderal(serverPlayer, GLOWSTONE_DUST_STACK)) {
 			if (targetPos != null) {
-				serverWorld.setBlockState(targetPos, ModBlocks.LIGHT_SPELL.getDefaultState());
-				serverSpawnMagicalParticles(targetPos, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
-				serverWorld.playSound(null, targetEntity.getPosition(), ModSounds.REDSTONEMAGIC_LIGHT,
+				serverWorld.setBlockAndUpdate(targetPos, ModBlocks.LIGHT_SPELL.defaultBlockState());
+				serverSpawnMagicalParticles(targetPos, serverWorld, spellTime, RedstoneParticleData.REDSTONE);
+				serverWorld.playSound(null, targetEntity.blockPosition(), ModSounds.REDSTONEMAGIC_LIGHT,
 						SoundCategory.AMBIENT, 0.7f, 0.86f);
 			}
 			return true;
@@ -336,22 +336,22 @@ public class CastSpells {
 	
 	private static boolean doSpellMultiBuff(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime, ServerWorld serverWorld) {
 
-		BlockPos pos = targetEntity.getPosition();
+		BlockPos pos = targetEntity.blockPosition();
 		int netherBoost = 0;
 		if (hasFalderal(serverPlayer,NETHER_STAR_STACK)) {
 			netherBoost = THIRTY_SECONDS;
 		}
 
-		Random r = serverPlayer.getServerWorld().getRandom();
+		Random r = serverPlayer.getLevel().getRandom();
 		int randomBoost = (int) (320 * r.nextFloat());
 		
 		int durationBoosts = netherBoost + randomBoost;
 		
 		if (hasFalderal(serverPlayer, FEATHER_STACK)) {
-			EffectInstance ei = targetEntity.getActivePotionEffect(Effects.SLOW_FALLING);
+			EffectInstance ei = targetEntity.getEffect(Effects.SLOW_FALLING);
 			if (ei != null) {
 				if ((ei.getDuration() < 20) ) {
-					targetEntity.removePotionEffect(Effects.SLOW_FALLING);
+					targetEntity.removeEffect(Effects.SLOW_FALLING);
 					ei = null;
 				}
 			}
@@ -359,20 +359,20 @@ public class CastSpells {
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.SPLASH);				
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.SOUL_FIRE_FLAME); 
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.ENTITY_CHICKEN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
-				if (targetEntity.getAir() < targetEntity.getMaxAir()) targetEntity.setAir(targetEntity.getAir()+1);
+				serverWorld.playSound(null, targetEntity.blockPosition(),
+						SoundEvents.CHICKEN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				if (targetEntity.getAirSupply() < targetEntity.getMaxAirSupply()) targetEntity.setAirSupply(targetEntity.getAirSupply()+1);
 				int secondsDuration = (spellTime * THIRTY_SECONDS/2) + durationBoosts;
 				int effectIntensity = 1;
-				targetEntity.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, secondsDuration/2, effectIntensity, true, true));
+				targetEntity.addEffect(new EffectInstance(Effects.SLOW_FALLING, secondsDuration/2, effectIntensity, true, true));
 				return true;
 			}
 			
 		}
-		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.WATER_BREATHING);
+		EffectInstance ei = targetEntity.getEffect(Effects.WATER_BREATHING);
 		if (ei != null) {
 			if ((ei.getDuration() < 40) ) {
-				targetEntity.removePotionEffect(Effects.WATER_BREATHING);
+				targetEntity.removeEffect(Effects.WATER_BREATHING);
 				ei = null;
 			}
 		}
@@ -382,32 +382,32 @@ public class CastSpells {
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.BUBBLE);				
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.BUBBLE_COLUMN_UP); 
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.ENTITY_DOLPHIN_PLAY, SoundCategory.AMBIENT, 0.9f, 0.25f);
-				if (targetEntity.getAir() < targetEntity.getMaxAir()) targetEntity.setAir(targetEntity.getAir()+1);
+				serverWorld.playSound(null, targetEntity.blockPosition(),
+						SoundEvents.DOLPHIN_PLAY, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				if (targetEntity.getAirSupply() < targetEntity.getMaxAirSupply()) targetEntity.setAirSupply(targetEntity.getAirSupply()+1);
 				int falderalBoost = 0;
 				if (hasFalderal(serverPlayer, new ItemStack (Items.PUFFERFISH))) {
 					falderalBoost = THIRTY_SECONDS/2;
 				}
 				int secondsDuration = (spellTime * (THIRTY_SECONDS+falderalBoost)) + durationBoosts;
 				int effectIntensity = 1;
-				targetEntity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, secondsDuration, effectIntensity, true, true));
+				targetEntity.addEffect(new EffectInstance(Effects.WATER_BREATHING, secondsDuration, effectIntensity, true, true));
 				return true;
 			}
 		}
 		
 		World w = (World) serverWorld;
-		if ((serverWorld.getLight(pos) <= 8 ) || (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK))) {
-			ei = targetEntity.getActivePotionEffect(Effects.NIGHT_VISION);
+		if ((serverWorld.getMaxLocalRawBrightness(pos) <= 8 ) || (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK))) {
+			ei = targetEntity.getEffect(Effects.NIGHT_VISION);
 			if (ei != null) {
 				if ((ei.getDuration() < 20) ) {
-					targetEntity.removePotionEffect(Effects.NIGHT_VISION);
+					targetEntity.removeEffect(Effects.NIGHT_VISION);
 					ei = null;
 				}
 			}	
 			if (ei==null) {
-				RegistryKey<World> rK = w.getDimensionKey();
-				ResourceLocation rL1 = rK.getLocation();
+				RegistryKey<World> rK = w.dimension();
+				ResourceLocation rL1 = rK.location();
 				ResourceLocation rl2 = rK.getRegistryName();
 				boolean castNightVision = true;
 				if ((rL1.getPath().equals("the_nether")) || (rL1.getPath().equals("the_end"))) {
@@ -420,50 +420,50 @@ public class CastSpells {
 					drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.END_ROD);		
 					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 					serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
-					serverWorld.playSound(null, targetEntity.getPosition(),
-							SoundEvents.ENTITY_ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+					serverWorld.playSound(null, targetEntity.blockPosition(),
+							SoundEvents.ENDERMAN_AMBIENT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 					int falderalBoost = 0;
 					if (hasFalderal(serverPlayer, GOLDEN_CARROT_STACK)) {
 						falderalBoost = THIRTY_SECONDS/2;
 					}
 					int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;
 					int effectIntensity = 1;
-					targetEntity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
+					targetEntity.addEffect(new EffectInstance(Effects.NIGHT_VISION, secondsDuration, effectIntensity, true, true));
 					return true;
 				}
 			}
 		}
 
 
-		ei = targetEntity.getActivePotionEffect(Effects.FIRE_RESISTANCE);
+		ei = targetEntity.getEffect(Effects.FIRE_RESISTANCE);
 		if (ei != null) {
 			if ((ei.getDuration() < 40) ) {
-				targetEntity.removePotionEffect(Effects.FIRE_RESISTANCE);
+				targetEntity.removeEffect(Effects.FIRE_RESISTANCE);
 				ei = null;
 			}
 		}			
 		if (ei == null) {
-			if ((targetEntity.isBurning()) || (hasFalderal(serverPlayer, MAGMA_CREAM_STACK))) {
+			if ((targetEntity.isOnFire()) || (hasFalderal(serverPlayer, MAGMA_CREAM_STACK))) {
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.END_ROD); 
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				serverWorld.playSound(null, targetEntity.blockPosition(),
+						SoundEvents.FIRE_EXTINGUISH, SoundCategory.AMBIENT, 0.9f, 0.25f);
 				int falderalBoost = 0;
 				if (hasFalderal(serverPlayer, MAGMA_CREAM_STACK)) {
 					falderalBoost = THIRTY_SECONDS/2;
 				}
 				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;				
 				int effectIntensity = 1;
-				targetEntity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, secondsDuration, effectIntensity, true, true));
+				targetEntity.addEffect(new EffectInstance(Effects.FIRE_RESISTANCE, secondsDuration, effectIntensity, true, true));
 				return true;
 			}
 		}
 
 		if (hasFalderal(serverPlayer, FERMENTED_SPIDER_EYE_STACK)) {
-			ei = targetEntity.getActivePotionEffect(Effects.INVISIBILITY);
+			ei = targetEntity.getEffect(Effects.INVISIBILITY);
 			if (ei != null) {
 				if ((ei.getDuration() < 80) ) {
-					targetEntity.removePotionEffect(Effects.INVISIBILITY);
+					targetEntity.removeEffect(Effects.INVISIBILITY);
 					ei = null;
 				}
 			}
@@ -471,11 +471,11 @@ public class CastSpells {
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.POOF);				
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.POOF); 
-				serverWorld.playSound(null, targetEntity.getPosition(),
-						SoundEvents.ENTITY_BAT_HURT, SoundCategory.AMBIENT, 0.9f, 0.25f);
+				serverWorld.playSound(null, targetEntity.blockPosition(),
+						SoundEvents.BAT_HURT, SoundCategory.AMBIENT, 0.9f, 0.25f);
 				int secondsDuration = ((spellTime * THIRTY_SECONDS) /2) + durationBoosts;	
 				int effectIntensity = 1;
-				targetEntity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, secondsDuration, effectIntensity, true, true));
+				targetEntity.addEffect(new EffectInstance(Effects.INVISIBILITY, secondsDuration, effectIntensity, true, true));
 				return true;
 			}
 		}
@@ -484,7 +484,7 @@ public class CastSpells {
 	}
 
 	private static boolean isUnderwater(ServerWorld serverWorld, BlockPos p) {
-		return (serverWorld.getBlockState(p).getBlock() == Blocks.WATER) && (serverWorld.getBlockState(p.up()).getBlock() == Blocks.WATER);
+		return (serverWorld.getBlockState(p).getBlock() == Blocks.WATER) && (serverWorld.getBlockState(p.above()).getBlock() == Blocks.WATER);
 	}
 
 	private static boolean doSpellNuke(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
@@ -507,57 +507,57 @@ public class CastSpells {
 
 		int debugz = 3;
 		if (hasFalderal(serverPlayer, BLUE_ICE_STACK)) {
-			if (targetEntity.isImmuneToFire()) {
+			if (targetEntity.fireImmune()) {
 				nukeDamage += 2;
 			}
 			LivingEntity lE = (LivingEntity) targetEntity;
-			lE.func_230246_e_(serverPlayer); // set attacking player (I think)
-			targetEntity.attackEntityFrom(myDamageSource, nukeDamage);
-			serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+			lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
+			targetEntity.hurt(myDamageSource, nukeDamage);
+			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 					SoundCategory.AMBIENT, 0.5f, 0.5f);
-			serverWorld.playSound(null, targetEntity.getPosition(), ModSounds.REDSTONEMAGIC_NUKE_ICY,
+			serverWorld.playSound(null, targetEntity.blockPosition(), ModSounds.REDSTONEMAGIC_NUKE_ICY,
 					SoundCategory.AMBIENT, 0.3f, 0.4f);
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.SOUL_FIRE_FLAME);
-			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, RedstoneParticleData.REDSTONE_DUST);
+			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, RedstoneParticleData.REDSTONE);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) spellTime, ParticleTypes.CAMPFIRE_COSY_SMOKE);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, ParticleTypes.DAMAGE_INDICATOR);
 			return true;
 		} else if (hasFalderal(serverPlayer, FIRE_CHARGE_STACK)) {
-			if (!(targetEntity.isImmuneToFire())) {
+			if (!(targetEntity.fireImmune())) {
 				LivingEntity lE = (LivingEntity) targetEntity;
-				lE.func_230246_e_(serverPlayer); // set attacking player (I think)
+				lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
 				float targetHealth = targetEntity.getHealth();
 				if (nukeDamage > 3) {
 					nukeDamage = nukeDamage - 2;
 				}
 				targetEntity.setHealth(targetHealth - (float) nukeDamage);
-				targetEntity.setFire(3);
-				serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+				targetEntity.setSecondsOnFire(3);
+				serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 						SoundCategory.AMBIENT, 0.5f, 0.5f);
-				serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+				serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 						SoundCategory.AMBIENT, 0.2f, 0.4f);
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.LAVA);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage,
-						RedstoneParticleData.REDSTONE_DUST);
+						RedstoneParticleData.REDSTONE);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int) spellTime,
 						ParticleTypes.CAMPFIRE_COSY_SMOKE);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, (int) nukeDamage, ParticleTypes.DAMAGE_INDICATOR);
 				return true;
 			} else {
-				targetEntity.setFire(2);
+				targetEntity.setSecondsOnFire(2);
 				LivingEntity lE = (LivingEntity) targetEntity;
-				lE.func_230246_e_(serverPlayer); // set attacking player (I think)
+				lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
 				return false;
 			}
 		} else // magic damage
-		if (targetEntity.attackEntityFrom(myDamageSource, nukeDamage)) {
-			serverWorld.playSound(null, serverPlayer.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+		if (targetEntity.hurt(myDamageSource, nukeDamage)) {
+			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 					SoundCategory.AMBIENT, 0.5f, 0.5f);
-			serverWorld.playSound(null, targetEntity.getPosition(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT,
+			serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 					SoundCategory.AMBIENT, 0.2f, 0.4f);
-			drawSpellBeam(serverPlayer, serverWorld, targetEntity, RedstoneParticleData.REDSTONE_DUST);
-			serverSpawnMagicalParticles(targetEntity, serverWorld, (int)nukeDamage, RedstoneParticleData.REDSTONE_DUST);
-			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE_DUST);
+			drawSpellBeam(serverPlayer, serverWorld, targetEntity, RedstoneParticleData.REDSTONE);
+			serverSpawnMagicalParticles(targetEntity, serverWorld, (int)nukeDamage, RedstoneParticleData.REDSTONE);
+			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, RedstoneParticleData.REDSTONE);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, (int)nukeDamage, ParticleTypes.DAMAGE_INDICATOR);
 			return true;
 		}
@@ -575,7 +575,7 @@ public class CastSpells {
 	public static boolean useReagent (ServerPlayerEntity serverPlayer, ItemStack reagentStack) {
 		int slot = findHotBarSlotWithItemType (serverPlayer, reagentStack);
 		if ((slot >0 ) && (slot< 9)) {
-			serverPlayer.inventory.getStackInSlot(slot).shrink(2);
+			serverPlayer.inventory.getItem(slot).shrink(2);
 			return true;
 		}
 		return false;	
@@ -583,7 +583,7 @@ public class CastSpells {
 	
 	private static int findHotBarSlotWithItemType (ServerPlayerEntity serverPlayer, ItemStack stack) {
 	    for(int i = 0; i < 9; ++i) {
-	        if(serverPlayer.inventory.getStackInSlot(i).getItem() == stack.getItem()) {
+	        if(serverPlayer.inventory.getItem(i).getItem() == stack.getItem()) {
 	        	return i;
 	        }
 	    }		
@@ -592,11 +592,11 @@ public class CastSpells {
 	
 	private static boolean doSpellRemoveCurse(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			ServerWorld serverWorld) {
-		serverWorld.playSound(null, serverPlayer.getPosition(),
-				SoundEvents.ENTITY_DOLPHIN_SWIM, SoundCategory.AMBIENT, 0.6f, 0.25f);
-		if (!(serverPlayer.inventory.hasItemStack(MILK_STACK))) {
-			MyConfig.sendChat(serverPlayer, "You have no milk in your inventory.", Color.fromTextFormatting(TextFormatting.DARK_RED));
-			serverWorld.playSound(null, serverPlayer.getPosition(),
+		serverWorld.playSound(null, serverPlayer.blockPosition(),
+				SoundEvents.DOLPHIN_SWIM, SoundCategory.AMBIENT, 0.6f, 0.25f);
+		if (!(serverPlayer.inventory.contains(MILK_STACK))) {
+			MyConfig.sendChat(serverPlayer, "You have no milk in your inventory.", Color.fromLegacyFormat(TextFormatting.DARK_RED));
+			serverWorld.playSound(null, serverPlayer.blockPosition(),
 					ModSounds.SPELL_FAILS, SoundCategory.AMBIENT, 0.8f, 0.1f);	
 			return false;
 		}
@@ -605,26 +605,26 @@ public class CastSpells {
 		EffectInstance ei = null;
 		boolean curseRemoved = false;
 		if (!(curseRemoved)) {
-			curseRemoved = targetEntity.removePotionEffect(Effects.BLINDNESS);
+			curseRemoved = targetEntity.removeEffect(Effects.BLINDNESS);
 		}
 		if (!(curseRemoved)) {
-			curseRemoved = targetEntity.removePotionEffect(Effects.WITHER);
+			curseRemoved = targetEntity.removeEffect(Effects.WITHER);
 		}
 		if (!(curseRemoved)) {
-			curseRemoved = targetEntity.removePotionEffect(Effects.POISON);
+			curseRemoved = targetEntity.removeEffect(Effects.POISON);
 		}
 		if (!(curseRemoved)) {
-			curseRemoved = targetEntity.removePotionEffect(Effects.SLOWNESS);
+			curseRemoved = targetEntity.removeEffect(Effects.MOVEMENT_SLOWDOWN);
 		}
 		if (!(curseRemoved)) {
-			curseRemoved = targetEntity.removePotionEffect(Effects.MINING_FATIGUE);
+			curseRemoved = targetEntity.removeEffect(Effects.DIG_SLOWDOWN);
 		}
 		
 		if (curseRemoved) {
-			serverWorld.playSound(null, serverPlayer.getPosition(),
-					SoundEvents.BLOCK_NOTE_BLOCK_BELL, SoundCategory.AMBIENT, 0.6f, 0.65f);	
-			serverWorld.playSound(null, serverPlayer.getPosition(),
-					SoundEvents.BLOCK_NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.6f, 0.75f);	
+			serverWorld.playSound(null, serverPlayer.blockPosition(),
+					SoundEvents.NOTE_BLOCK_BELL, SoundCategory.AMBIENT, 0.6f, 0.65f);	
+			serverWorld.playSound(null, serverPlayer.blockPosition(),
+					SoundEvents.NOTE_BLOCK_HARP, SoundCategory.AMBIENT, 0.6f, 0.75f);	
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.WITCH);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.WITCH); 
@@ -635,7 +635,7 @@ public class CastSpells {
 	}
 
 	private static boolean doSpellResistance(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime, ServerWorld serverWorld) {
-		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.RESISTANCE);
+		EffectInstance ei = targetEntity.getEffect(Effects.DAMAGE_RESISTANCE);
 		int effectDuration = FOUR_SECONDS + spellTime * FOUR_SECONDS;
 		int effectIntensity = 0;
 		if (ei != null) {
@@ -648,16 +648,16 @@ public class CastSpells {
 				effectIntensity = 1;
 				effectDuration = THIRTY_SECONDS + FOUR_SECONDS;
 			} 
-			targetEntity.removePotionEffect(Effects.RESISTANCE);
+			targetEntity.removeEffect(Effects.DAMAGE_RESISTANCE);
 		}
-		targetEntity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, effectDuration, effectIntensity, true, true));
+		targetEntity.addEffect(new EffectInstance(Effects.DAMAGE_RESISTANCE, effectDuration, effectIntensity, true, true));
 		if (effectIntensity == 0) {
-			serverWorld.playSound(null, targetEntity.getPosition(),
-					SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 0.9f, 0.25f);
+			serverWorld.playSound(null, targetEntity.blockPosition(),
+					SoundEvents.BELL_BLOCK, SoundCategory.AMBIENT, 0.9f, 0.25f);
 			
 		} else {
-			serverWorld.playSound(null, targetEntity.getPosition(),
-					SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.AMBIENT, 0.9f, 0.5f);
+			serverWorld.playSound(null, targetEntity.blockPosition(),
+					SoundEvents.ANVIL_LAND, SoundCategory.AMBIENT, 0.9f, 0.5f);
 		}
 		drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ENCHANT);
 		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT); 
@@ -697,56 +697,56 @@ public class CastSpells {
 		}
 
 
-		myDamageSource.setDamageBypassesArmor();
+		myDamageSource.bypassArmor();
 //		boolean nukeHit = false;
-		boolean nukeHit = targetEntity.attackEntityFrom(myDamageSource, nukeDamage);
+		boolean nukeHit = targetEntity.hurt(myDamageSource, nukeDamage);
 
-		EffectInstance ei = targetEntity.getActivePotionEffect(Effects.WITHER);
+		EffectInstance ei = targetEntity.getEffect(Effects.WITHER);
 		if (ei != null) {
 			if ((ei.getDuration() < 19) || (ei.getAmplifier() <= intensity)) {
-				targetEntity.removePotionEffect(Effects.WITHER);
+				targetEntity.removeEffect(Effects.WITHER);
 			}
 		}
-		targetEntity.addPotionEffect(new EffectInstance(Effects.WITHER, (duration * 45), intensity, true, true));
+		targetEntity.addEffect(new EffectInstance(Effects.WITHER, (duration * 45), intensity, true, true));
 		LivingEntity lE = (LivingEntity) targetEntity;
-		lE.func_230246_e_(serverPlayer); // set attacking player (I think)
+		lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
 		
-		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_STAINED_GLASS.getDefaultState()));
+		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_STAINED_GLASS.defaultBlockState()));
 		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ASH); 
 		// mobs with over 140hp are not affected by snare
 		if (targetEntity.getMaxHealth() < BOSS_MOB_LIMIT * 4) {
-			ei = targetEntity.getActivePotionEffect(Effects.SLOWNESS);
+			ei = targetEntity.getEffect(Effects.MOVEMENT_SLOWDOWN);
 			if (ei != null) {
 				if ((ei.getDuration() < 19) || (ei.getAmplifier() <= 0)) {
-					targetEntity.removePotionEffect(Effects.SLOWNESS);
+					targetEntity.removeEffect(Effects.MOVEMENT_SLOWDOWN);
 				}
 			}
-			targetEntity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, duration * 61, 0, true, true));
+			targetEntity.addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, duration * 61, 0, true, true));
 		}
 		if (nukeHit) {
-			serverWorld.playSound(null, targetEntity.getPosition(),	SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
+			serverWorld.playSound(null, targetEntity.blockPosition(),	SoundEvents.LIGHTNING_BOLT_IMPACT, SoundCategory.AMBIENT, 0.6f, 0.8f);
 		}
-		serverWorld.playSound(null, targetEntity.getPosition(),	SoundEvents.BLOCK_NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
-		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.CRYING_OBSIDIAN.getDefaultState()));
+		serverWorld.playSound(null, targetEntity.blockPosition(),	SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.AMBIENT, 0.7f, 0.3f);
+		drawSpellBeam(serverPlayer, serverWorld, targetEntity, new BlockParticleData(ParticleTypes.BLOCK, Blocks.CRYING_OBSIDIAN.defaultBlockState()));
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 6, ParticleTypes.CAMPFIRE_COSY_SMOKE); 
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 6, ParticleTypes.WITCH); 
-		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, new BlockParticleData(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.getDefaultState())); 
-		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_STAINED_GLASS.getDefaultState())); 
+		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, new BlockParticleData(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.defaultBlockState())); 
+		serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, new BlockParticleData(ParticleTypes.BLOCK, Blocks.RED_STAINED_GLASS.defaultBlockState())); 
 		return true;
 	}
 
 	private static boolean doSpellTeleport(ServerPlayerEntity serverPlayer, LivingEntity targetEntity, int spellTime,
 			ServerWorld serverWorld) {
 
-		if (serverPlayer.world.getDimensionKey() != World.OVERWORLD) {
-			MyConfig.sendChat(serverPlayer,"You can only teleport in the Overworld.",Color.fromTextFormatting((TextFormatting.YELLOW)));
+		if (serverPlayer.level.dimension() != World.OVERWORLD) {
+			MyConfig.sendChat(serverPlayer,"You can only teleport in the Overworld.",Color.fromLegacyFormat((TextFormatting.YELLOW)));
 			return false;
 		}
 		
 		boolean teleportPetOrHorse = false;
 		if (targetEntity instanceof TameableEntity) {
 			TameableEntity p = (TameableEntity) targetEntity;
-			if (p.isTamed()) {
+			if (p.isTame()) {
 				if (p.getOwner() == serverPlayer) {
 					teleportPetOrHorse = true;
 				}
@@ -754,21 +754,21 @@ public class CastSpells {
 		}
 		if (targetEntity instanceof AbstractHorseEntity) {
 			AbstractHorseEntity p = (AbstractHorseEntity) targetEntity;
-			if (p.isTame()) {
-				if (p.getOwnerUniqueId().equals(serverPlayer.getUniqueID())) {
+			if (p.isTamed()) {
+				if (p.getOwnerUUID().equals(serverPlayer.getUUID())) {
 					teleportPetOrHorse = true;
 				}
 			}
 		}
 		
-		float headPitch = serverPlayer.rotationPitch;
-		float headYaw = serverPlayer.rotationYaw;
+		float headPitch = serverPlayer.xRot;
+		float headYaw = serverPlayer.yRot;
 		// default - teleport to worldspawn.
-		int wX = serverPlayer.world.getWorldInfo().getSpawnX();
-		int wY = serverPlayer.world.getWorldInfo().getSpawnY();
-		int wZ = serverPlayer.world.getWorldInfo().getSpawnZ();
+		int wX = serverPlayer.level.getLevelData().getXSpawn();
+		int wY = serverPlayer.level.getLevelData().getYSpawn();
+		int wZ = serverPlayer.level.getLevelData().getZSpawn();
 
-		BlockPos personalSpawnPos = serverPlayer.func_241140_K_();
+		BlockPos personalSpawnPos = serverPlayer.getRespawnPosition();
 		float pitch = 0.4f;
 		float soundVolume = 0.8f;
 		if ((headPitch == -90.0) || (headPitch == 90)) {
@@ -789,24 +789,24 @@ public class CastSpells {
 
 			serverSpawnMagicalParticles(targetEntity, serverWorld, 2, ParticleTypes.POOF);
 
-			SoundEvent petSound = SoundEvents.BLOCK_PORTAL_TRAVEL;
+			SoundEvent petSound = SoundEvents.PORTAL_TRAVEL;
 			if (targetEntity instanceof WolfEntity) {
-				petSound = SoundEvents.ENTITY_WOLF_HOWL;
+				petSound = SoundEvents.WOLF_HOWL;
 			} else if (targetEntity instanceof AbstractHorseEntity){
-				petSound = SoundEvents.ENTITY_HORSE_ANGRY;
+				petSound = SoundEvents.HORSE_ANGRY;
 			} else if (targetEntity instanceof CatEntity){
-				petSound = SoundEvents.ENTITY_CAT_AMBIENT;
+				petSound = SoundEvents.CAT_AMBIENT;
 			}
-			serverPlayer.world.playSound(null, targetEntity.getPosition(), petSound,
+			serverPlayer.level.playSound(null, targetEntity.blockPosition(), petSound,
 					SoundCategory.AMBIENT, soundVolume/2, pitch);
-			targetEntity.setPosition((double)wX, (double)wY, (double)wZ);
+			targetEntity.setPos((double)wX, (double)wY, (double)wZ);
 
 		} else {
-			serverWorld.getChunkProvider().registerTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverPlayer.getEntityId());
-			serverPlayer.world.playSound(null, targetEntity.getPosition(), SoundEvents.BLOCK_PORTAL_TRAVEL,
+			serverWorld.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkPos, 1 , serverPlayer.getId());
+			serverPlayer.level.playSound(null, targetEntity.blockPosition(), SoundEvents.PORTAL_TRAVEL,
 					SoundCategory.AMBIENT, soundVolume, pitch);
 			serverSpawnMagicalParticles(serverPlayer, serverWorld, 2, ParticleTypes.POOF);
-			serverPlayer.teleport(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
+			serverPlayer.teleportTo(serverWorld, (double)wX, (double)wY, (double)wZ, headYaw, headPitch);
 		}
 		
 		return true;
@@ -816,14 +816,14 @@ public class CastSpells {
 	public static void drawSpellBeam (ServerPlayerEntity serverPlayer, ServerWorld serverWorld, Entity targetEntity, IParticleData spellParticleType) {
 		Vector3d vector3d = serverPlayer.getEyePosition(1.0F);
 		Vector3d vectorFocus = vector3d.subtract(0.0,0.2,0.0);
-		Vector3d vector3d1 = serverPlayer.getLook(1.0F);
+		Vector3d vector3d1 = serverPlayer.getViewVector(1.0F);
 		vector3d.subtract(0.0,0.4,0.0);
 		Vector3d target3d = targetEntity.getEyePosition(1.0F);
 		double targetDistance = vector3d.distanceTo(target3d);
 		boolean doSpellParticleType = true;
 		for (double d0 = 0.0; d0 <= targetDistance; d0=d0+0.5D) {
 			Vector3d beamPath3d2 = vectorFocus.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
-			serverSpawnMagicalParticles(beamPath3d2, serverWorld, 1, RedstoneParticleData.REDSTONE_DUST); 
+			serverSpawnMagicalParticles(beamPath3d2, serverWorld, 1, RedstoneParticleData.REDSTONE); 
 			doSpellParticleType = !doSpellParticleType;
 			if (doSpellParticleType) {
 				Vector3d swirlPath3d2 = beamPath3d2;
@@ -838,9 +838,9 @@ public class CastSpells {
 	public static void processSpellOnServer(int spellNumber, LivingEntity targetEntity, ServerPlayerEntity serverPlayer,
 			int spellTime, int handIndex, int targetPosX, int targetPosY, int targetPosZ) {
 
-		ItemStack correctRedstoneFocusStack = serverPlayer.getHeldItemMainhand();
+		ItemStack correctRedstoneFocusStack = serverPlayer.getMainHandItem();
 		if (handIndex == 2) {
-			correctRedstoneFocusStack = serverPlayer.getHeldItemOffhand();
+			correctRedstoneFocusStack = serverPlayer.getOffhandItem();
 		}
 		CompoundNBT compoundnbt = correctRedstoneFocusStack.getOrCreateTag();
 		long spellCastingStartTime = compoundnbt != null
@@ -852,7 +852,7 @@ public class CastSpells {
 		IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (playerManaStorage == null) {
 			MyConfig.sendChat(serverPlayer, "Impossible Error: You do not have a mana pool.",
-					Color.fromTextFormatting((TextFormatting.YELLOW)));
+					Color.fromLegacyFormat((TextFormatting.YELLOW)));
 			return;
 		}
 
@@ -866,15 +866,15 @@ public class CastSpells {
 			System.out.println(spellNumber +": SpellCost: " + spellCost + ".");
 		}
 		if (spellCost > playerManaStorage.getManaStored()) {
-			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
+			serverPlayer.level.playSound(null, serverPlayer.blockPosition(), SoundEvents.DISPENSER_FAIL,
 					SoundCategory.AMBIENT, 0.7f, 0.8f);
-			serverPlayer.world.playSound(null, serverPlayer.getPosition(), SoundEvents.BLOCK_DISPENSER_FAIL,
+			serverPlayer.level.playSound(null, serverPlayer.blockPosition(), SoundEvents.DISPENSER_FAIL,
 					SoundCategory.NEUTRAL, 0.6f, 0.2f);
-			serverPlayer.world.playSound(null, serverPlayer.getPosition(), ModSounds.SPELL_FAILS,
+			serverPlayer.level.playSound(null, serverPlayer.blockPosition(), ModSounds.SPELL_FAILS,
 					SoundCategory.BLOCKS, 0.8f, 0.4f);
-			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getServerWorld(), 2, ParticleTypes.POOF);
+			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getLevel(), 2, ParticleTypes.POOF);
 			MyConfig.sendChat(serverPlayer, "You do not have enough mana.",
-					Color.fromTextFormatting((TextFormatting.RED)));
+					Color.fromLegacyFormat((TextFormatting.RED)));
 			return;
 		}
 
@@ -887,9 +887,9 @@ public class CastSpells {
 		}
 		
 		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell, targetPos)) {
-			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
-					SoundEvents.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
-			Chunk playerChunk = (Chunk) serverPlayer.world.getChunk(serverPlayer.getPosition());
+			serverPlayer.getLevel().playSound(null, serverPlayer.blockPosition(),
+					SoundEvents.NOTE_BLOCK_CHIME, SoundCategory.AMBIENT, 0.4f, 0.9f);
+			Chunk playerChunk = (Chunk) serverPlayer.level.getChunk(serverPlayer.blockPosition());
 			// possible bug here.  getting from player not chunk
 			IMagicStorage chunkManaStorage = playerChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			int chunkMana = chunkManaStorage.getManaStored();
@@ -908,8 +908,8 @@ public class CastSpells {
 			Network.sendToClient(new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
 					serverPlayer);
 		} else {
-			drawSpellBeam(serverPlayer, serverPlayer.getServerWorld(), targetEntity, ParticleTypes.POOF);
-			serverPlayer.getServerWorld().playSound(null, serverPlayer.getPosition(),
+			drawSpellBeam(serverPlayer, serverPlayer.getLevel(), targetEntity, ParticleTypes.POOF);
+			serverPlayer.getLevel().playSound(null, serverPlayer.blockPosition(),
 					ModSounds.SPELL_FAILS, SoundCategory.AMBIENT, 0.4f, 0.25f);
 		}
 
@@ -921,7 +921,7 @@ public class CastSpells {
           double yOffset = 0.3D;
           double zOffset = 0.75D;
           particleCount *= 3;
-          serverWorld.spawnParticle(particleType, entity.getPosX(), entity.getPosY()+(double)entity.getEyeHeight(), entity.getPosZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
+          serverWorld.sendParticles(particleType, entity.getX(), entity.getY()+(double)entity.getEyeHeight(), entity.getZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
     }
 	
 	public static void serverSpawnMagicalParticles(BlockPos targetPos, ServerWorld serverWorld, int particleCount,
@@ -930,21 +930,21 @@ public class CastSpells {
         double yOffset = 0.5D;
         double zOffset = 0.5D;
         particleCount *= 3;
-        serverWorld.spawnParticle(particleType, targetPos.getX(), targetPos.getY(), targetPos.getZ(), particleCount, xOffset, yOffset, zOffset, -0.14D);
+        serverWorld.sendParticles(particleType, targetPos.getX(), targetPos.getY(), targetPos.getZ(), particleCount, xOffset, yOffset, zOffset, -0.14D);
 		
 	}
 
 	
     public static void serverSpawnMagicalParticles(Vector3d bV3D, ServerWorld serverWorld, int particleCount, IParticleData particleType) {
 
-        double xOffset = 0.25D * (Math.sin(bV3D.getX()));
-        double yOffset = 0.15D * (Math.cos(bV3D.getY())); 
-        double zOffset = 0.25D * (Math.cos(bV3D.getZ()));
+        double xOffset = 0.25D * (Math.sin(bV3D.x()));
+        double yOffset = 0.15D * (Math.cos(bV3D.y())); 
+        double zOffset = 0.25D * (Math.cos(bV3D.z()));
 //        double xOffset = 0.25D ;
 //        double yOffset = 0.15D ;
 //        double zOffset = 0.25D ;
         particleCount *= 2;
-        serverWorld.spawnParticle(particleType, bV3D.getX(), bV3D.getY(), bV3D.getZ(), particleCount, xOffset, yOffset, zOffset, -0.04D);
+        serverWorld.sendParticles(particleType, bV3D.x(), bV3D.y(), bV3D.z(), particleCount, xOffset, yOffset, zOffset, -0.04D);
   }
 
 

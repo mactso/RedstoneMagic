@@ -39,28 +39,28 @@ public interface IGuiRightClick  {
 	    		return;
 			ContainerScreen<?> cg = (ContainerScreen<?>) gui;
 			Slot slot = cg.getSlotUnderMouse();
-			if (slot != null && slot.getHasStack())
+			if (slot != null && slot.hasItem())
 			{
-				ItemStack stack = slot.getStack();
+				ItemStack stack = slot.getItem();
 				if (stack.getItem() instanceof IGuiRightClick)
 				{
-					Container cont = cg.getContainer();
+					Container cont = cg.getMenu();
 					int index = -1;
-					if (cont.windowId == 0 && cont instanceof CreativeContainer)
+					if (cont.containerId == 0 && cont instanceof CreativeContainer)
 					{
 						// need to remap to what the server side is using
 						Minecraft mc = gui.getMinecraft();
-						for (Slot slot2 : mc.player.container.inventorySlots)
+						for (Slot slot2 : mc.player.inventoryMenu.slots)
 						{
 							if (slot2.isSameInventory(slot) && slot2.getSlotIndex() == slot.getSlotIndex())
 							{
-								index = slot2.slotNumber;
+								index = slot2.index;
 								break;
 							}
 						}
 					}
 					else
-						index = slot.slotNumber;
+						index = slot.index;
 					if (cont instanceof RecipeBookContainer<?>)
 					{
 						// skip if in the crafting section
@@ -69,7 +69,7 @@ public interface IGuiRightClick  {
 					}
 					if (index >= 0)
 					{
-						Network.sendToServer(new RedstoneMagicArmorPacket(1, cont.windowId, index));
+						Network.sendToServer(new RedstoneMagicArmorPacket(1, cont.containerId, index));
 						if (event.isCancelable())
 							event.setCanceled(true);
 					}

@@ -21,41 +21,43 @@ import net.minecraft.world.TickPriority;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class TestBlock2 extends Block
 {
 	static int incr = 1;
 	static int skip = 0;
 	static int delay = 4;
-	public static final IntegerProperty POWER = BlockStateProperties.LEVEL_0_15;
+	public static final IntegerProperty POWER = BlockStateProperties.LEVEL;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
 	private static VoxelShape SHAPE = VoxelShapes.or(
-			VoxelShapes.create(0, 0, 0, 1, 0.25, 1),
-			VoxelShapes.create(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
-			VoxelShapes.create(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
-			VoxelShapes.create(0.375, 0.75, 0.375, 0.625, 1, 0.625));
+			VoxelShapes.box(0, 0, 0, 1, 0.25, 1),
+			VoxelShapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
+			VoxelShapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
+			VoxelShapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
 	public TestBlock2(Properties properties) {
 		super(properties);
-		setDefaultState(stateContainer.getBaseState()
-				.with(POWER, Integer.valueOf(0))
-				.with(POWERED, false));
+		registerDefaultState(stateDefinition.any()
+				.setValue(POWER, Integer.valueOf(0))
+				.setValue(POWERED, false));
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
+	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult hit) {
-		if (!state.get(POWERED))
+		if (!state.getValue(POWERED))
 		{
-			worldIn.getPendingBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
+			worldIn.getBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
 		}
-		worldIn.setBlockState(pos, state.func_235896_a_(POWERED));
+		worldIn.setBlockAndUpdate(pos, state.cycle(POWERED));
 		return ActionResultType.SUCCESS;
 	}
 
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return VoxelShapes.fullCube();
+		return VoxelShapes.block();
 		//return SHAPE;
 	}
 
@@ -66,18 +68,18 @@ public class TestBlock2 extends Block
 	}
 
 	@Override
-	public VoxelShape getRenderShape(BlockState state, IBlockReader worldIn, BlockPos pos) {
+	public VoxelShape getOcclusionShape(BlockState state, IBlockReader worldIn, BlockPos pos) {
 		return SHAPE;
 	}
 
 	public static int colorMultiplier(BlockState state) {
-		int r = state.get(POWER) * 16;
+		int r = state.getValue(POWER) * 16;
 		return r << 16;
 	}
 
 	@Override
 	public void tick(BlockState stateIn, ServerWorld worldIn, BlockPos pos, Random rand) {
-		int level = stateIn.get(POWER);
+		int level = stateIn.getValue(POWER);
 		level += incr;
 		if (incr > 0)
 		{
@@ -95,13 +97,13 @@ public class TestBlock2 extends Block
 				incr = 1;
 			}
 		}
-		worldIn.setBlockState(pos, stateIn.with(POWER, Integer.valueOf(level)));
-		if (stateIn.get(POWERED))
-			worldIn.getPendingBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
+		worldIn.setBlockAndUpdate(pos, stateIn.setValue(POWER, Integer.valueOf(level)));
+		if (stateIn.getValue(POWERED))
+			worldIn.getBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
 	}
 
 	@Override
-	protected void fillStateContainer(Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
 		builder.add(POWER, POWERED);
 	}
 }

@@ -87,10 +87,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private int calcChunkRitualManaCost() {
 		int newRitualChunkCost = RITUAL_CHUNK_COST;
-		if (pos.getY()< 22	) {
+		if (worldPosition.getY()< 22	) {
 			newRitualChunkCost += RITUAL_CHUNK_COST;	
 		}
-		if (pos.getY()< 11) {
+		if (worldPosition.getY()< 11) {
 			newRitualChunkCost += RITUAL_CHUNK_COST;	
 		}
 		return newRitualChunkCost;
@@ -98,10 +98,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private int calcPlayerRitualManaCost() {
 		int newRitualCost = RITUAL_PLAYER_COST;
-		if (pos.getY()< 22) {
+		if (worldPosition.getY()< 22) {
 			newRitualCost += RITUAL_PLAYER_COST;	
 		}
-		if (pos.getY()< 11) {
+		if (worldPosition.getY()< 11) {
 			newRitualCost += RITUAL_PLAYER_COST;	
 		}
 		return newRitualCost;
@@ -113,25 +113,25 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		BlockPos westPos = null;
 
 		for (int i = 1; i < 16; i++) {
-			if (world.getBlockState(pos.east(i)).getBlock() == Blocks.REDSTONE_WIRE) {
-				cursorRitualX = minRitualX = pos.east(i).getX() - 15;
-				eastPos = pos.east(i);
+			if (level.getBlockState(worldPosition.east(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+				cursorRitualX = minRitualX = worldPosition.east(i).getX() - 15;
+				eastPos = worldPosition.east(i);
 			} else {
 				break;
 			}
 		}
 		if (eastPos == null) {
 			for (int i = 1; i < 16; i++) {
-				if (world.getBlockState(pos.west(i)).getBlock() == Blocks.REDSTONE_WIRE) {
-					cursorRitualX = minRitualX = pos.west(i).getX();
-					westPos = pos.west(i + 1);
+				if (level.getBlockState(worldPosition.west(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+					cursorRitualX = minRitualX = worldPosition.west(i).getX();
+					westPos = worldPosition.west(i + 1);
 				} else {
 					break;
 				}
 			}
 		}
 		if (eastPos == null && westPos == null) {
-			cursorRitualX = minRitualX = world.getChunk(pos).getPos().getXStart() - 1;
+			cursorRitualX = minRitualX = level.getChunk(worldPosition).getPos().getMinBlockX() - 1;
 		}
 
 
@@ -139,28 +139,28 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		BlockPos northPos = null;
 
 		for (int i = 1; i < 16; i++) {
-			if (world.getBlockState(pos.south(i)).getBlock() == Blocks.REDSTONE_WIRE) {
-				cursorRitualZ = minRitualZ = pos.south(i).getZ() - 15;
-				southPos = pos.south(i);
+			if (level.getBlockState(worldPosition.south(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+				cursorRitualZ = minRitualZ = worldPosition.south(i).getZ() - 15;
+				southPos = worldPosition.south(i);
 			} else {
 				break;
 			}
 		}
 		if (southPos == null) {
 			for (int i = 1; i < 16; i++) {
-				if (world.getBlockState(pos.north(i)).getBlock() == Blocks.REDSTONE_WIRE) {
-					cursorRitualZ = minRitualZ = pos.north(i).getZ();
-					northPos = pos.north(i + 1);
+				if (level.getBlockState(worldPosition.north(i)).getBlock() == Blocks.REDSTONE_WIRE) {
+					cursorRitualZ = minRitualZ = worldPosition.north(i).getZ();
+					northPos = worldPosition.north(i + 1);
 				} else {
 					break;
 				}
 			}
 		}
 		if (southPos == null && northPos == null) {
-			cursorRitualZ = minRitualZ = world.getChunk(pos).getPos().getZStart();
+			cursorRitualZ = minRitualZ = level.getChunk(worldPosition).getPos().getMinBlockZ();
 		}
 		
-		cursorRitualY = pos.getY();
+		cursorRitualY = worldPosition.getY();
 
 	}
 
@@ -168,16 +168,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		double xOffset = 0.5D;
 		double yOffset = 0.25D;
 		double zOffset = 0.5D;
-		((ServerWorld) world).spawnParticle(particleType, pos.getX(), pos.getY(), pos.getZ(), particleCount, xOffset,
+		((ServerWorld) level).sendParticles(particleType, pos.getX(), pos.getY(), pos.getZ(), particleCount, xOffset,
 				yOffset, zOffset, -0.04D);
 	}
 
 	public LootContext.Builder utilDoGetLootBuilder(BlockPos cursorPos) {
-		LootContext.Builder builder = (new LootContext.Builder((ServerWorld) world)).withRandom(world.rand)
-				.withParameter(LootParameters.field_237457_g_, Vector3d.copyCentered(cursorPos))
+		LootContext.Builder builder = (new LootContext.Builder((ServerWorld) level)).withRandom(level.random)
+				.withParameter(LootParameters.ORIGIN, Vector3d.atCenterOf(cursorPos))
 				.withParameter(LootParameters.TOOL, ItemStack.EMPTY)
-				.withNullableParameter(LootParameters.THIS_ENTITY, null)
-				.withNullableParameter(LootParameters.BLOCK_ENTITY, this);
+				.withOptionalParameter(LootParameters.THIS_ENTITY, null)
+				.withOptionalParameter(LootParameters.BLOCK_ENTITY, this);
 		return builder;
 	}
 
@@ -195,7 +195,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		if (player instanceof ServerPlayerEntity) {
 
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-			ItemStack handItemStack = player.getHeldItem(handIn);
+			ItemStack handItemStack = player.getItemInHand(handIn);
 			Item newRitualItem = handItemStack.getItem();
 
 			if (getRitualID(newRitualItem) == RITUAL_NONE) {
@@ -207,12 +207,12 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 
 			IMagicStorage playerManaStorage = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
-			Chunk chunk = (Chunk) world.getChunk(pos);
+			Chunk chunk = (Chunk) level.getChunk(worldPosition);
 			IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 
 			if (playerManaStorage == null) {
 				MyConfig.sendChat(player, "Impossible Error: You do not have a mana pool.",
-						Color.fromTextFormatting((TextFormatting.YELLOW)));
+						Color.fromLegacyFormat((TextFormatting.YELLOW)));
 				return false;
 			}
 
@@ -228,12 +228,12 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					new SyncClientManaPacket(playerManaStorage.getManaStored(), chunkManaStorage.getManaStored()),
 					serverPlayer);
 
-			chunk.markDirty();
+			chunk.markUnsaved();
 			ritualSpeed = getRitualSpeed(newRitualItem);
 			currentRitual = getRitualID(newRitualItem);
 			harvestWorkTotal = 0.0f;
 			mustPayChunkCost = false;
-			world.playSound(null, pos, ModSounds.RITUAL_BEGINS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+			level.playSound(null, worldPosition, ModSounds.RITUAL_BEGINS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 			calcRitualArea();
 			timeRitualWarmup = 40;
 			return true;
@@ -300,7 +300,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private boolean isClearable(BlockPos cursorPos) {
-		BlockState bS = world.getBlockState(cursorPos);
+		BlockState bS = level.getBlockState(cursorPos);
 		return (BlockTags.FLOWERS.contains(bS.getBlock()) || (bS.getBlock() instanceof TallGrassBlock)
 				|| (bS.getBlock() instanceof DoublePlantBlock)
 				|| Tags.Blocks.DIRT.contains(bS.getBlock())
@@ -327,11 +327,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private boolean isLightable(BlockPos cursorPos) {
-		return (world.getBlockState(cursorPos).getBlock() instanceof AirBlock) && (world.getLightFor(LightType.BLOCK, cursorPos) <= 8);
+		return (level.getBlockState(cursorPos).getBlock() instanceof AirBlock) && (level.getBrightness(LightType.BLOCK, cursorPos) <= 8);
 	}
 
 	private boolean isLoggable(BlockPos cursorPos) {
-		BlockState bS = world.getBlockState(cursorPos);
+		BlockState bS = level.getBlockState(cursorPos);
 		if (BlockTags.LEAVES.contains(bS.getBlock()) || BlockTags.LOGS.contains(bS.getBlock())) {
 			return true;
 		}
@@ -339,15 +339,15 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private boolean isMineable(BlockPos cursorPos) {
-		BlockState bS = world.getBlockState(cursorPos);
+		BlockState bS = level.getBlockState(cursorPos);
 		return (bS.getBlock() == Blocks.NETHERRACK) || (Tags.Blocks.STONE.contains(bS.getBlock()))
 				|| (Tags.Blocks.DIRT.contains(bS.getBlock()))
 				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock())));
 	}
 
 	private boolean isReadyCropBlock(BlockPos cursorPos) {
-		BlockState tBS = world.getBlockState(cursorPos);
-		Block tBlock = world.getBlockState(cursorPos).getBlock();
+		BlockState tBS = level.getBlockState(cursorPos);
+		Block tBlock = level.getBlockState(cursorPos).getBlock();
 		if (tBlock instanceof CropsBlock) {
 			CropsBlock c = (CropsBlock) tBlock;
 			if (c.isMaxAge(tBS)) {
@@ -365,14 +365,14 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private void processClearingRitual(BlockPos cursorPos) {
-		BlockState tBS = world.getBlockState(cursorPos);
+		BlockState tBS = level.getBlockState(cursorPos);
 		if (isClearable(cursorPos)) {
 			mustPayChunkCost = true;
-			world.destroyBlock(cursorPos, false);
+			level.destroyBlock(cursorPos, false);
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
-				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 				if (chestInv != null) {
-					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+					HopperTileEntity.addItem(null, chestInv, dropsStack, null);
 				}
 			}
 		}
@@ -381,18 +381,18 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private void processEndRitual() {
 		currentRitual = RITUAL_NONE;
 		timeRitualCooldown = 40;
-		world.playSound(null, pos, ModSounds.RITUAL_ENDS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		level.playSound(null, worldPosition, ModSounds.RITUAL_ENDS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 	}
 
 	private void processFarmingRitual(BlockPos cursorPos) {
-		BlockState tBS = world.getBlockState(cursorPos);
+		BlockState tBS = level.getBlockState(cursorPos);
 		Block tBlock = tBS.getBlock();
 		if (tBlock instanceof CropsBlock) {
 			CropsBlock c = (CropsBlock) tBlock;
 			if (c.isMaxAge(tBS)) {
-				world.playSound(null, cursorPos, SoundEvents.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5f, 0.2f);
-				BlockState bC = c.getDefaultState().with(c.getAgeProperty(), Integer.valueOf(0));
-				world.setBlockState(cursorPos, bC);
+				level.playSound(null, cursorPos, SoundEvents.CROP_PLANTED, SoundCategory.BLOCKS, 0.5f, 0.2f);
+				BlockState bC = c.defaultBlockState().setValue(c.getAgeProperty(), Integer.valueOf(0));
+				level.setBlockAndUpdate(cursorPos, bC);
 				mustPayChunkCost = true;
 
 				for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
@@ -401,9 +401,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 						dropsStack.setCount(v);
 						;
 					}
-					IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+					IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 					if (chestInv != null) {
-						HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+						HopperTileEntity.addItem(null, chestInv, dropsStack, null);
 					}
 				}
 
@@ -413,33 +413,33 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private void processLightingRitual(BlockPos cursorPos) {
 		if (isLightable(cursorPos)) {
-			world.setBlockState(cursorPos, ModBlocks.LIGHT_SPELL.getDefaultState());
-			world.playSound(null, cursorPos,ModSounds.REDSTONEMAGIC_LIGHT,
+			level.setBlockAndUpdate(cursorPos, ModBlocks.LIGHT_SPELL.defaultBlockState());
+			level.playSound(null, cursorPos,ModSounds.REDSTONEMAGIC_LIGHT,
 					SoundCategory.BLOCKS, 0.7f, 0.86f);
 			mustPayChunkCost = true;
 		}
 	}
 
 	private void processLoggingRitual(BlockPos cursorPos) {
-		BlockState tBS = world.getBlockState(cursorPos);
+		BlockState tBS = level.getBlockState(cursorPos);
 		Block tBlock = tBS.getBlock();
 		if (BlockTags.LEAVES.contains(tBlock)) {
-			world.destroyBlock(cursorPos, false);
+			level.destroyBlock(cursorPos, false);
 			harvestWorkTotal += 0.1f;
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
-				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 				if (chestInv != null) {
-					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+					HopperTileEntity.addItem(null, chestInv, dropsStack, null);
 				}
 			}
 		}
-		if (BlockTags.LOGS.contains(world.getBlockState(cursorPos).getBlock())) {
-			world.destroyBlock(cursorPos, false);
+		if (BlockTags.LOGS.contains(level.getBlockState(cursorPos).getBlock())) {
+			level.destroyBlock(cursorPos, false);
 			harvestWorkTotal += 1.0f;
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
-				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 				if (chestInv != null) {
-					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+					HopperTileEntity.addItem(null, chestInv, dropsStack, null);
 				}
 			}
 		}
@@ -451,43 +451,43 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private void processMiningRitual(BlockPos cursorPos) {
-		BlockState tBS = world.getBlockState(cursorPos);
+		BlockState tBS = level.getBlockState(cursorPos);
 		if (isMineable(cursorPos)) {
 			mustPayChunkCost = true;
-			world.destroyBlock(cursorPos, false);
+			level.destroyBlock(cursorPos, false);
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
-				IInventory chestInv = HopperTileEntity.getInventoryAtPosition(this.world, pos.down());
+				IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 				if (chestInv != null) {
-					HopperTileEntity.putStackInInventoryAllSlots(null, chestInv, dropsStack, null);
+					HopperTileEntity.addItem(null, chestInv, dropsStack, null);
 				}
 			}
 		}
 	}
 
 	private void processRitualCooldown() {
-		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) this.pos.getX(),
-				(double) this.pos.getY() + 0.7D, 0.5D + (double) this.pos.getZ(), (int) timeRitualCooldown / 8, 0.0D,
+		((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) this.worldPosition.getX(),
+				(double) this.worldPosition.getY() + 0.7D, 0.5D + (double) this.worldPosition.getZ(), (int) timeRitualCooldown / 8, 0.0D,
 				-0.1D, 0.0D, -0.04D);
-		((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) this.pos.getX(),
-				(double) this.pos.getY() + 0.10D, 0.5D + (double) this.pos.getZ(), (int) timeRitualWarmup / 8, 0.0D,
+		((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + (double) this.worldPosition.getX(),
+				(double) this.worldPosition.getY() + 0.10D, 0.5D + (double) this.worldPosition.getZ(), (int) timeRitualWarmup / 8, 0.0D,
 				0.1D, 0.0D, 0.04D);
 		timeRitualCooldown--;
 	}
 
 	private void processRitualWarmup() {
-		((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) this.pos.getX(),
-				(double) this.pos.getY() + 0.10D, 0.5D + (double) this.pos.getZ(), (int) timeRitualWarmup / 8, 0.0D,
+		((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) this.worldPosition.getX(),
+				(double) this.worldPosition.getY() + 0.10D, 0.5D + (double) this.worldPosition.getZ(), (int) timeRitualWarmup / 8, 0.0D,
 				0.1D, 0.0D, 0.04D);
-		((ServerWorld) world).spawnParticle(ParticleTypes.LAVA, 0.5D + (double) this.pos.getX(),
-				(double) this.pos.getY() + 0.10D, 0.5D + (double) this.pos.getZ(), (int) timeRitualWarmup / 8, 0.0D,
+		((ServerWorld) level).sendParticles(ParticleTypes.LAVA, 0.5D + (double) this.worldPosition.getX(),
+				(double) this.worldPosition.getY() + 0.10D, 0.5D + (double) this.worldPosition.getZ(), (int) timeRitualWarmup / 8, 0.0D,
 				0.1D, 0.0D, 0.04D);
 		timeRitualWarmup--;
 	}
 
 	@Override
 	// restore state when chunk reloads
-	public void read(BlockState state, CompoundNBT nbt) {
-		super.read(state, nbt);
+	public void load(BlockState state, CompoundNBT nbt) {
+		super.load(state, nbt);
 		
 
 		currentRitual = nbt.getInt("currentRitual");
@@ -502,7 +502,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	
 	@Override
 	// save state when chunk unloads
-	public CompoundNBT write(CompoundNBT compound) {
+	public CompoundNBT save(CompoundNBT compound) {
 
 		compound.putInt("currentRitual", currentRitual);
 		compound.putFloat("harvestWorkTotal", harvestWorkTotal);
@@ -515,13 +515,13 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 		//		if (currentRitual != null)
 //			compound.putUniqueId("currentRitual", currentRitual);
-		return super.write(compound);
+		return super.save(compound);
 	}
 	
 	@Override
 	public void tick() {
 
-		if (world != null && !(world instanceof ServerWorld)) {
+		if (level != null && !(level instanceof ServerWorld)) {
 			return;
 		}
 
@@ -538,16 +538,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			long speed = ritualSpeed;
 			if (speed < 8)
 				speed = 8L;
-			if (this.world.getGameTime() % speed != 0L) {
+			if (this.level.getGameTime() % speed != 0L) {
 				return;
 			}
-			long dayTime = world.getDayTime();
+			long dayTime = level.getDayTime();
 			float humVolume = (float) (0.05 + (0.04 * Math.sin((double) dayTime)));
 			float humPitch = (float) (0.7 + (0.3 * Math.sin((double) dayTime)));
 
-			world.playSound(null, pos, ModSounds.RITUAL_PYLON_THRUMS, SoundCategory.BLOCKS, humVolume / 3, humPitch);
-			((ServerWorld) world).spawnParticle(ParticleTypes.WITCH, 0.5D + (double) this.pos.getX(),
-					(double) this.pos.getY() + 0.35D, 0.5D + (double) this.pos.getZ(), 3, 0.0D, 0.1D, 0.0D, -0.04D);
+			level.playSound(null, worldPosition, ModSounds.RITUAL_PYLON_THRUMS, SoundCategory.BLOCKS, humVolume / 3, humPitch);
+			((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) this.worldPosition.getX(),
+					(double) this.worldPosition.getY() + 0.35D, 0.5D + (double) this.worldPosition.getZ(), 3, 0.0D, 0.1D, 0.0D, -0.04D);
 
 			BlockPos cursorPos = new BlockPos(cursorRitualX, cursorRitualY, cursorRitualZ);
 			boolean noValidRitualBlockFound = true;
@@ -562,16 +562,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					if (cursorRitualZ > minRitualZ+15) {
 						cursorRitualZ = minRitualZ;
 						cursorRitualY++;
-						if (cursorRitualY > pos.getY() + getRitualHeight(currentRitual)) {
+						if (cursorRitualY > worldPosition.getY() + getRitualHeight(currentRitual)) {
 							processEndRitual();
 							return;
 						}
-						Chunk chunk = (Chunk) world.getChunk(pos);
+						Chunk chunk = (Chunk) level.getChunk(worldPosition);
 						IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 						if (mustPayChunkCost) {
 							if (!(chunkManaStorage.useMana(16))) {
-								world.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
-								world.playSound(null, pos, SoundEvents.ENTITY_ENDERMITE_DEATH, SoundCategory.BLOCKS,
+								level.playSound(null, worldPosition, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+								level.playSound(null, worldPosition, SoundEvents.ENDERMITE_DEATH, SoundCategory.BLOCKS,
 										0.5f, 0.2f);
 								processEndRitual();
 								return;
@@ -582,26 +582,26 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					}
 				}
 				cursorPos = new BlockPos(cursorRitualX, cursorRitualY, cursorRitualZ);
-				((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + cursorRitualX, 0.35D + cursorRitualY,
+				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + cursorRitualX, 0.35D + cursorRitualY,
 						0.5D + cursorRitualZ, 3, 0.0D, 0.1D, 0.0D, -0.04D);
 				utilCreateNonBasicParticle(cursorPos, 1, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
 
 				if ((currentRitual == RITUAL_LIGHTING_TORCH) || (currentRitual == RITUAL_LIGHTING_LANTERN)) {
 					if (isLightable(cursorPos)) {
 						noValidRitualBlockFound = false;
-						if ((world.getRandom().nextFloat() * 100.0f) < 50.0f) {
-							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						if ((level.getRandom().nextFloat() * 100.0f) < 50.0f) {
+							level.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 						}
 					}
 				} else if ((currentRitual == RITUAL_FARMING) && isReadyCropBlock(cursorPos)) {
 					noValidRitualBlockFound = false;
-					if ((world.getRandom().nextFloat() * 100.0f) < 25.0f) {
-						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					if ((level.getRandom().nextFloat() * 100.0f) < 25.0f) {
+						level.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 					}
 				} else if ((currentRitual == RITUAL_CLEARING) && isClearable(cursorPos)) {
 					noValidRitualBlockFound = false;
-					if ((world.getRandom().nextFloat() * 100.0f) < 15.0f) {
-						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					if ((level.getRandom().nextFloat() * 100.0f) < 15.0f) {
+						level.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 					}
 				} else if ((currentRitual == RITUAL_MINING) && (isMineable(cursorPos))) {
 
@@ -617,26 +617,26 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					doMineGalleries = (mine[x] + mine[z]) > 0;
 					if (doMineGalleries) {
 						noValidRitualBlockFound = false;
-						if ((world.getRandom().nextFloat() * 100.0f) < 25.0f) {
-							world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f,
+						if ((level.getRandom().nextFloat() * 100.0f) < 25.0f) {
+							level.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f,
 									0.2f);
 						}
 					}
 				} else if ((currentRitual == RITUAL_LOGGING) && (isLoggable(cursorPos))) {
 					noValidRitualBlockFound = false;
-					if ((world.getRandom().nextFloat() * 100.0f) < 25.0f) {
-						world.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+					if ((level.getRandom().nextFloat() * 100.0f) < 25.0f) {
+						level.playSound(null, cursorPos, ModSounds.RED_SPIRIT_WORKS, SoundCategory.BLOCKS, 0.5f, 0.2f);
 					}
 				}
 			}
 
 			if (currentRitual != RITUAL_TESTING ) {
-				((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
-						(double) pos.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 3,
+				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
+						(double) worldPosition.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 3,
 						0.0D, 0.1D, 0.0D, 0.04D);
 			} else {
-				((ServerWorld) world).spawnParticle(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
-						(double) pos.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 1,
+				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
+						(double) worldPosition.getY() + cursorRitualY + 0.10D, 0.5D + (double) minRitualZ + cursorRitualZ, (int) 1,
 						0.0D, 0.1D, 0.0D, 0.04D);
 				
 			}
@@ -666,9 +666,9 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			return true;
 		}
 		if (isItemDamagingRitual(ritualItem)) {
-			int itemDamage = handItemStack.getMaxDamage() - handItemStack.getDamage();
+			int itemDamage = handItemStack.getMaxDamage() - handItemStack.getDamageValue();
 			if (itemDamage < 48) return false; // item is too weak to start ritual
-			if (handItemStack.attemptDamageItem(64, world.rand, null)) {
+			if (handItemStack.hurt(64, level.random, null)) {
 				handItemStack.setCount(handItemStack.getCount() - 1);
 			}
 			return true;

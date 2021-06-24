@@ -12,14 +12,14 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModBlocks
 {
-	public static final Block RITUAL_PYLON= new RitualPylon(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.METAL)).setRegistryName("ritual_pylon");
-	public static final Block GATHERER = new Gatherer(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.METAL)
-			.setLightLevel((state) -> {
+	public static final Block RITUAL_PYLON= new RitualPylon(Properties.of(Material.GLASS).strength(0.2F).sound(SoundType.METAL)).setRegistryName("ritual_pylon");
+	public static final Block GATHERER = new Gatherer(Properties.of(Material.GLASS).strength(0.2F).sound(SoundType.METAL)
+			.lightLevel((state) -> {
 			    return 9;
 			 }))
 			.setRegistryName("gatherer");
-	public static final Block TEST_BLOCK2 = new Gatherer(Properties.create(Material.GLASS).hardnessAndResistance(0.2F).sound(SoundType.WOOD)).setRegistryName("test_block2");
-	public static final Block LIGHT_SPELL = new LightSpell(Properties.create(Material.GLASS, MaterialColor.LIGHT_GRAY).doesNotBlockMovement().noDrops().zeroHardnessAndResistance().sound(SoundType.LANTERN).notSolid().setLightLevel((state) -> {
+	public static final Block TEST_BLOCK2 = new Gatherer(Properties.of(Material.GLASS).strength(0.2F).sound(SoundType.WOOD)).setRegistryName("test_block2");
+	public static final Block LIGHT_SPELL = new LightSpell(Properties.of(Material.GLASS, MaterialColor.COLOR_LIGHT_GRAY).noCollission().noDrops().instabreak().sound(SoundType.LANTERN).noOcclusion().lightLevel((state) -> {
 			    return 14;
 			 })).setRegistryName("light_spell");
 

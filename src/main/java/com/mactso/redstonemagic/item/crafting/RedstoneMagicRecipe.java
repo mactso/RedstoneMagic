@@ -31,10 +31,10 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 		super(idIn, groupIn, recipeOutputIn, recipeItemsIn);
 		operation = operationIn;
 		boolean copyDamage = false;
-		if (recipeOutputIn.isDamageable()) {
+		if (recipeOutputIn.isDamageableItem()) {
 			for (Ingredient thing : recipeItemsIn) {
-				for (ItemStack stack : thing.getMatchingStacks()) {
-					if (stack.isDamageable() && stack.getMaxDamage() == recipeOutputIn.getMaxDamage()) {
+				for (ItemStack stack : thing.getItems()) {
+					if (stack.isDamageableItem() && stack.getMaxDamage() == recipeOutputIn.getMaxDamage()) {
 						copyDamage = true;
 						break;
 					}
@@ -50,16 +50,16 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 	}
 
 	@Override
-	public ItemStack getCraftingResult(CraftingInventory inv) {
-		ItemStack ret = this.getRecipeOutput().copy();
+	public ItemStack assemble(CraftingInventory inv) {
+		ItemStack ret = this.getResultItem().copy();
 		if (copyDamage) {
-			for (int j = 0; j < inv.getSizeInventory(); ++j) {
-				ItemStack itemstack = inv.getStackInSlot(j);
+			for (int j = 0; j < inv.getContainerSize(); ++j) {
+				ItemStack itemstack = inv.getItem(j);
 				if (!itemstack.isEmpty()) {
-					if (itemstack.isDamageable() && itemstack.getMaxDamage() == ret.getMaxDamage()) {
-						ret.setDamage(itemstack.getDamage());
-						ret.setRepairCost(itemstack.getRepairCost());
-						ret.setDisplayName(itemstack.getDisplayName());
+					if (itemstack.isDamageableItem() && itemstack.getMaxDamage() == ret.getMaxDamage()) {
+						ret.setDamageValue(itemstack.getDamageValue());
+						ret.setRepairCost(itemstack.getBaseRepairCost());
+						ret.setHoverName(itemstack.getHoverName());
 						if (itemstack.hasTag()) {
 							ret.setTag(itemstack.getTag().copy());
 						}
@@ -69,13 +69,13 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 			}
 		}
 		if (operation.equals("reset_color")) {
-			CompoundNBT compoundnbt = ret.getChildTag("display");
+			CompoundNBT compoundnbt = ret.getTagElement("display");
 			if (compoundnbt != null && compoundnbt.contains("color", 99))
 				compoundnbt.remove("color");
 		} else if (operation.equals("set_color")) {
 			int color = -1;
-			for (int j = 0; j < inv.getSizeInventory(); ++j) {
-				ItemStack itemstack = inv.getStackInSlot(j);
+			for (int j = 0; j < inv.getContainerSize(); ++j) {
+				ItemStack itemstack = inv.getItem(j);
 				if (!itemstack.isEmpty()) {
 					Item item = itemstack.getItem();
 					if (item instanceof DyeItem) {
@@ -95,17 +95,17 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 				}
 			}
 			if (color >= 0) {
-				CompoundNBT compoundnbt = ret.getOrCreateChildTag("display");
+				CompoundNBT compoundnbt = ret.getOrCreateTagElement("display");
 				compoundnbt.putInt("color", color);
 			} else
 				ret = ItemStack.EMPTY;
 		} else if (operation.equals("remove")) {
-			CompoundNBT compoundnbt = ret.getChildTag("display");
+			CompoundNBT compoundnbt = ret.getTagElement("display");
 			if (compoundnbt != null) {
 				compoundnbt.remove("color");
 				compoundnbt.remove("glint");
 				if (compoundnbt.isEmpty())
-					ret.removeChildTag("display");
+					ret.removeTagKey("display");
 			}
 		}
 		return ret;
@@ -115,16 +115,16 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 		private static final ResourceLocation NAME = new ResourceLocation(Main.MODID, "crafting_shapeless");
 
 		@Override
-		public RedstoneMagicRecipe read(ResourceLocation recipeId, JsonObject json) {
-			String s = JSONUtils.getString(json, "group", "");
-			NonNullList<Ingredient> nonnulllist = readIngredients(JSONUtils.getJsonArray(json, "ingredients"));
+		public RedstoneMagicRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
+			String s = JSONUtils.getAsString(json, "group", "");
+			NonNullList<Ingredient> nonnulllist = readIngredients(JSONUtils.getAsJsonArray(json, "ingredients"));
 			if (nonnulllist.isEmpty()) {
 				throw new JsonParseException("No ingredients for shapeless recipe");
 //		        } else if (nonnulllist.size() > ShapedRecipe.getWidth() * ShapedRecipe.getHeight()) {
 //		           throw new JsonParseException("Too many ingredients for shapeless recipe the max is " + (ShapedRecipe.getWidth() * ShapedRecipe.getHeight()));
 			} else {
-				ItemStack itemstack = ShapedRecipe.deserializeItem(JSONUtils.getJsonObject(json, "result"));
-				String s2 = JSONUtils.getString(json, "operation", "");
+				ItemStack itemstack = ShapedRecipe.itemFromJson(JSONUtils.getAsJsonObject(json, "result"));
+				String s2 = JSONUtils.getAsString(json, "operation", "");
 				return new RedstoneMagicRecipe(recipeId, s, itemstack, nonnulllist, s2);
 			}
 		}
@@ -133,8 +133,8 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 			NonNullList<Ingredient> nonnulllist = NonNullList.create();
 
 			for (int i = 0; i < array.size(); ++i) {
-				Ingredient ingredient = Ingredient.deserialize(array.get(i));
-				if (!ingredient.hasNoMatchingItems()) {
+				Ingredient ingredient = Ingredient.fromJson(array.get(i));
+				if (!ingredient.isEmpty()) {
 					nonnulllist.add(ingredient);
 				}
 			}
@@ -143,24 +143,24 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 		}
 
 		@Override
-		public RedstoneMagicRecipe read(ResourceLocation recipeId, PacketBuffer buffer) {
-			String s = buffer.readString(32767);
+		public RedstoneMagicRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer) {
+			String s = buffer.readUtf(32767);
 			int i = buffer.readVarInt();
 			NonNullList<Ingredient> nonnulllist = NonNullList.withSize(i, Ingredient.EMPTY);
 
 			for (int j = 0; j < nonnulllist.size(); ++j) {
-				nonnulllist.set(j, Ingredient.read(buffer));
+				nonnulllist.set(j, Ingredient.fromNetwork(buffer));
 			}
 
-			ItemStack itemstack = buffer.readItemStack();
-			String s2 = buffer.readString(32767);
+			ItemStack itemstack = buffer.readItem();
+			String s2 = buffer.readUtf(32767);
 			return new RedstoneMagicRecipe(recipeId, s, itemstack, nonnulllist, s2);
 		}
 
 		@Override
-		public void write(PacketBuffer buffer, ShapelessRecipe recipe) {
-			super.write(buffer, recipe);
-			buffer.writeString(((RedstoneMagicRecipe) recipe).operation);
+		public void toNetwork(PacketBuffer buffer, ShapelessRecipe recipe) {
+			super.toNetwork(buffer, recipe);
+			buffer.writeUtf(((RedstoneMagicRecipe) recipe).operation);
 		}
 	}
 }

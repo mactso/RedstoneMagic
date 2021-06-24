@@ -10,11 +10,11 @@ public class ModTileEntities {
 
 	public static final TileEntityType<RitualPylonTileEntity> RITUAL_PYLON = create(
 			"ritual_pylon", TileEntityType.Builder
-					.create(RitualPylonTileEntity::new, ModBlocks.RITUAL_PYLON).build(null));
+					.of(RitualPylonTileEntity::new, ModBlocks.RITUAL_PYLON).build(null));
 
 	public static final TileEntityType<GathererTileEntity> GATHERER = create(
 			"gatherer", TileEntityType.Builder
-					.create(GathererTileEntity::new, ModBlocks.GATHERER).build(null));
+					.of(GathererTileEntity::new, ModBlocks.GATHERER).build(null));
 
 	public static <T extends TileEntity> TileEntityType<T> create(String key, TileEntityType<T> type) {
 		type.setRegistryName(key);

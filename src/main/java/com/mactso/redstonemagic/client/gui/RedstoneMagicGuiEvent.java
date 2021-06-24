@@ -81,11 +81,11 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		fizzleSpamLimiter = fizzleSpamLimiter - 1;
 	
 		boolean hasNoFocusItem = true;
-		if (mc.player.inventory.offHandInventory.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
+		if (mc.player.inventory.offhand.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
 			hasNoFocusItem = false;
 		} else {
 			for (int i=0;i<9;i++) {
-				if (mc.player.inventory.mainInventory.get(i).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
+				if (mc.player.inventory.items.get(i).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
 					hasNoFocusItem = false;
 					break;
 				};
@@ -97,11 +97,11 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		if (spellPrepared.equals("")) {
 			ItemStack focusStack = null;
-			if (mc.player.inventory.getCurrentItem().getItem() == ModItems.REDSTONE_FOCUS_ITEM)  {
-				focusStack = mc.player.inventory.getCurrentItem();
+			if (mc.player.inventory.getSelected().getItem() == ModItems.REDSTONE_FOCUS_ITEM)  {
+				focusStack = mc.player.inventory.getSelected();
 			}
-			if (mc.player.inventory.offHandInventory.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
-				focusStack = mc.player.inventory.offHandInventory.get(0);
+			if (mc.player.inventory.offhand.get(0).getItem() == ModItems.REDSTONE_FOCUS_ITEM) {
+				focusStack = mc.player.inventory.offhand.get(0);
 			}
 			if (focusStack != null) {
 				CompoundNBT compoundnbt = focusStack.getOrCreateTag();
@@ -115,12 +115,12 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		}
 
 				
-		mc.getTextureManager().bindTexture(bar);
+		mc.getTextureManager().bind(bar);
 		RenderSystem.pushMatrix();
 		long netSpellCastingTime = 0;
 
 		if (timerCastingSpell> 0) {
-			netSpellCastingTime = (mc.world.getGameTime()- timerCastingSpell +5)/10;
+			netSpellCastingTime = (mc.level.getGameTime()- timerCastingSpell +5)/10;
 			if (netSpellCastingTime > 4) netSpellCastingTime = 4;
 
 		}
@@ -140,9 +140,9 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.pushTextureAttributes();
 		RenderSystem.enableAlphaTest();
 		RenderSystem.enableBlend();
-		MainWindow manaScaled = mc.getMainWindow();
-		int manaWidth = manaScaled.getScaledWidth();
-		int manaHeight = manaScaled.getScaledHeight();
+		MainWindow manaScaled = mc.getWindow();
+		int manaWidth = manaScaled.getGuiScaledWidth();
+		int manaHeight = manaScaled.getGuiScaledHeight();
 		int displayScaledWidth = 128;
 		int displayScaledHeight = 128;
 		int displayLeftPosX = (manaWidth/2)-11; // confirmed location on screen.
@@ -180,18 +180,18 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		RenderSystem.popAttributes();
 		RenderSystem.popMatrix();
 
-		FontRenderer fontRender = mc.fontRenderer;
-		MainWindow scaled = mc.getMainWindow();
-		int width = scaled.getScaledWidth() - 1;
-		int height = scaled.getScaledHeight();
+		FontRenderer fontRender = mc.font;
+		MainWindow scaled = mc.getWindow();
+		int width = scaled.getGuiScaledWidth() - 1;
+		int height = scaled.getGuiScaledHeight();
 		String castingSpellString = ""; // xxxxxxxx
 		if (netSpellCastingTime >0) castingSpellString = castingTimeString.substring (0,(int)(netSpellCastingTime*2)+1);
-		int spellPreparedStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellPrepared())  / 2) + 1;
-		int spellManaPercentStartX = (width/2) - (fontRender.getStringWidth(manaPercentString)  / 2);
-		int spellCastTimeStartX = (width/2) - (fontRender.getStringWidth(castingSpellString)  / 2);
-		int spellCastTimeStartY = displayManaBarTopPosY + fontRender.FONT_HEIGHT -1;
-		int spellBeingCastStartX = (width/2) - (fontRender.getStringWidth(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
-		int spellBeingCastStartY = displayManaBarTopPosY - fontRender.FONT_HEIGHT*3;
+		int spellPreparedStartX = (width/2) - (fontRender.width(RedstoneMagicGuiEvent.getSpellPrepared())  / 2) + 1;
+		int spellManaPercentStartX = (width/2) - (fontRender.width(manaPercentString)  / 2);
+		int spellCastTimeStartX = (width/2) - (fontRender.width(castingSpellString)  / 2);
+		int spellCastTimeStartY = displayManaBarTopPosY + fontRender.lineHeight -1;
+		int spellBeingCastStartX = (width/2) - (fontRender.width(RedstoneMagicGuiEvent.getSpellBeingCast()) / 2) + 1;
+		int spellBeingCastStartY = displayManaBarTopPosY - fontRender.lineHeight*3;
 		long colorTime = netSpellCastingTime;
 		if (colorTime < 0) colorTime = 0;
 		if (colorTime > 4) colorTime = 4;
@@ -212,39 +212,39 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		Color colourBlack = new Color(0, 0, 0, 160);
 
 		Color colourPrepared = new Color(230, 90, 100, 110);
-		int lastSpellPreparedStartX = (width/2) - (fontRender.getStringWidth(spellPrepared)  / 2) + 1;
+		int lastSpellPreparedStartX = (width/2) - (fontRender.width(spellPrepared)  / 2) + 1;
 		
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
 		if (!(spellBeingCast.equals(""))) {
-			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
-			fontRender.drawString(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
-			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+2, (float)spellCastTimeStartY+2, colourBlack.getRGB());
-			fontRender.drawString(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, color.getRGB());
+			fontRender.draw(ms, spellBeingCast, (float)spellBeingCastStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
+			fontRender.draw(ms, spellBeingCast, (float)spellBeingCastStartX, (float)spellBeingCastStartY, color.getRGB());
+			fontRender.draw(ms, castingSpellString , (float)spellCastTimeStartX+2, (float)spellCastTimeStartY+2, colourBlack.getRGB());
+			fontRender.draw(ms, castingSpellString , (float)spellCastTimeStartX+1, (float)spellCastTimeStartY+1, color.getRGB());
 			timerDisplayPreparedSpell = 0;
 		} else {
 			if ((manaPercent >2) && (manaPercent<96 )) {
-				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+2, (float)spellCastTimeStartY+1, colourBlack.getRGB());
+				fontRender.draw(ms, manaPercentString, (float)spellManaPercentStartX+2, (float)spellCastTimeStartY+1, colourBlack.getRGB());
 				Color colourPercent = new Color(230, 160, 30, 190);
-				fontRender.drawString(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, colourPercent.getRGB());
+				fontRender.draw(ms, manaPercentString, (float)spellManaPercentStartX+1, (float)spellCastTimeStartY, colourPercent.getRGB());
 			}
 		}
 
 		if (timerDisplayPreparedSpell > 0) {
 			timerDisplayPreparedSpell--;
-			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
-			fontRender.drawString(ms, spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
+			fontRender.draw(ms, spellPrepared, (float)spellPreparedStartX+1, (float)spellBeingCastStartY+1, colourBlack.getRGB());
+			fontRender.draw(ms, spellPrepared, (float)spellPreparedStartX, (float)spellBeingCastStartY, colourPrepared.getRGB());
 		} 
 		
-		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
-		fontRender.drawString(ms, spellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
+		fontRender.draw(ms, spellPrepared, (float)lastSpellPreparedStartX+1, (float)lastSpellPreparedTopPosY+1, colourBlack.getRGB());
+		fontRender.draw(ms, spellPrepared, (float)lastSpellPreparedStartX, (float)lastSpellPreparedTopPosY, colourPrepared.getRGB());
 
 		
 		GL11.glPopMatrix();
 
 		//https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
-		mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
+		mc.getTextureManager().bind(AbstractGui.GUI_ICONS_LOCATION);
 	}
 
 	public static void setPreparedSpellNumber (int preparedSpellNumber) {
@@ -269,7 +269,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 				TextComponent msg = new TranslationTextComponent(spell.getSpellTranslationKey());
 				spellBeingCast= msg.getString();
 				timerDisplayPreparedSpell = 0;
-				timerCastingSpell = RedstoneMagicGuiEvent.mc.world.getGameTime();
+				timerCastingSpell = RedstoneMagicGuiEvent.mc.level.getGameTime();
 			}		
 	}
 

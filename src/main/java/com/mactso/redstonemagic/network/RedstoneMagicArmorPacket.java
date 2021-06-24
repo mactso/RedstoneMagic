@@ -50,17 +50,17 @@ public class RedstoneMagicArmorPacket
 		if (message.cmd == 1)
 		{
 			ctx.get().enqueueWork(() -> {
-				Container cont = player.openContainer;
-				if (message.windowId == cont.windowId && message.index >= 0)
+				Container cont = player.containerMenu;
+				if (message.windowId == cont.containerId && message.index >= 0)
 				{
 					Slot slot = cont.getSlot(message.index);
-					if (slot.getHasStack())
+					if (slot.hasItem())
 					{
-						ItemStack stack = slot.getStack();
+						ItemStack stack = slot.getItem();
 						if (stack.getItem() instanceof IGuiRightClick)
 						{
 							((IGuiRightClick)stack.getItem()).menuRightClick(stack);
-							slot.onSlotChanged();
+							slot.setChanged();
 						}
 					}
 				}

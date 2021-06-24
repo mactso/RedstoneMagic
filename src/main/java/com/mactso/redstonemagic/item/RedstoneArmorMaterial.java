@@ -24,28 +24,28 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 //  });
 
 	@Override
-	public int getDurability(EquipmentSlotType slotIn) {
-		return clone.getDurability(slotIn);
+	public int getDurabilityForSlot(EquipmentSlotType slotIn) {
+		return clone.getDurabilityForSlot(slotIn);
 	}
 
 	@Override
-	public int getDamageReductionAmount(EquipmentSlotType slotIn) {
-		return clone.getDamageReductionAmount(slotIn);
+	public int getDefenseForSlot(EquipmentSlotType slotIn) {
+		return clone.getDefenseForSlot(slotIn);
 	}
 
 	@Override
-	public int getEnchantability() {
-		return clone.getEnchantability();
+	public int getEnchantmentValue() {
+		return clone.getEnchantmentValue();
 	}
 
 	@Override
-	public SoundEvent getSoundEvent() {
-		return clone.getSoundEvent();
+	public SoundEvent getEquipSound() {
+		return clone.getEquipSound();
 	}
 
 	@Override
-	public Ingredient getRepairMaterial() {
-		return clone.getRepairMaterial();
+	public Ingredient getRepairIngredient() {
+		return clone.getRepairIngredient();
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 		return clone.getToughness();
 	}
 
-	// func_230304_f_,getKnockbackResistance,2,Gets the percentage of knockback resistance provided by armor of the material. 
+	// getKnockbackResistance,getKnockbackResistance,2,Gets the percentage of knockback resistance provided by armor of the material. 
 	@Override
 	public float getKnockbackResistance() {
 		return 0.11f;

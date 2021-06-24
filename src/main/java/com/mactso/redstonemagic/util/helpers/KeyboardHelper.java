@@ -8,7 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class KeyboardHelper {
-	private static long Window = Minecraft.getInstance().getMainWindow().getHandle();
+	private static long Window = Minecraft.getInstance().getWindow().getWindow();
 	@OnlyIn (Dist.CLIENT)
 	public static boolean isHoldingShift() {
 		return InputMappings.isKeyDown(Window,GLFW.GLFW_KEY_LEFT_SHIFT) || InputMappings.isKeyDown(Window,GLFW.GLFW_KEY_RIGHT_SHIFT);

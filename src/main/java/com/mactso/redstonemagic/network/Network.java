@@ -44,7 +44,7 @@ public class Network
 
 	public static <MSG> void sendToClient(MSG msg, ServerPlayerEntity player)
 	{
-		INSTANCE.sendTo(msg, player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+		INSTANCE.sendTo(msg, player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
 	}
 
 	public static <MSG> void sendToTarget(PacketDistributor.PacketTarget target, MSG msg)

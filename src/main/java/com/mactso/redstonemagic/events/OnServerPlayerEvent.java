@@ -35,7 +35,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 		    
 
 
-	 //	 String message = String.format("Hello there, you have §7%d§r mana left.", (int) mana.getMana());
+	 //	 String message = String.format("Hello there, you have ï¿½7%dï¿½r mana left.", (int) mana.getMana());
 	 //	 player.addChatMessage(new TextComponentString(message));
 	 }
 }

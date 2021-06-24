@@ -24,10 +24,12 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class RitualPylon extends ContainerBlock
 {
 //	public static final IntegerProperty POWER = BlockStateProperties.POWER_0_15;
-	protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
+	protected static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
 	   
 	public RitualPylon(Properties properties) {
 		super(properties);
@@ -37,15 +39,15 @@ public class RitualPylon extends ContainerBlock
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 
 		// StructureBlockTileEntity s;
-		worldIn.playSound(null, pos, SoundEvents.ENTITY_ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
 
-		if (worldIn.isRemote()) {
+		if (worldIn.isClientSide()) {
 			int iY = pos.getY() + 1;
-			int sX = worldIn.getChunk(pos).getPos().getXStart();
-			int sZ = worldIn.getChunk(pos).getPos().getZStart();
+			int sX = worldIn.getChunk(pos).getPos().getMinBlockX();
+			int sZ = worldIn.getChunk(pos).getPos().getMinBlockZ();
 
 			for (int iX = 0; iX <= 15; iX++) {
 				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.35D + iY, 0.5D + sZ,
@@ -72,7 +74,7 @@ public class RitualPylon extends ContainerBlock
 			}
 
 		}
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+		super.setPlacedBy(worldIn, pos, state, placer, stack);
 
 	}
 	
@@ -82,14 +84,14 @@ public class RitualPylon extends ContainerBlock
 	}
 	
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
+	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult result) {
 
-		if (!player.abilities.allowEdit) {
+		if (!player.abilities.mayBuild) {
 			return ActionResultType.PASS;
 		} else {
 			if ((worldIn instanceof ServerWorld)) {
-				TileEntity r = worldIn.getTileEntity(pos);
+				TileEntity r = worldIn.getBlockEntity(pos);
 				if (r instanceof RitualPylonTileEntity) {
 					if (((RitualPylonTileEntity) r).doRitualPylonInteraction(player, handIn) == false) {
 						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
@@ -104,13 +106,13 @@ public class RitualPylon extends ContainerBlock
 	}
 
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
+	public BlockRenderType getRenderShape(BlockState state) {
 		      return BlockRenderType.MODEL;
 	}	
 	
 	
 	@Override
-	public TileEntity createNewTileEntity(IBlockReader worldIn) {
+	public TileEntity newBlockEntity(IBlockReader worldIn) {
 		return new RitualPylonTileEntity();
 	}
 //

@@ -32,51 +32,53 @@ import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class Gatherer extends ContainerBlock
 {
 	static int incr = 3;
 	static long lastTime = 0;
 
-	public static final IntegerProperty POWER = BlockStateProperties.LEVEL_0_15;
+	public static final IntegerProperty POWER = BlockStateProperties.LEVEL;
 	
     
 	
 	private static VoxelShape SHAPE = VoxelShapes.or(
-			VoxelShapes.create(0, 0, 0, 1, 0.25, 1),
-			VoxelShapes.create(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
-			VoxelShapes.create(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
-			VoxelShapes.create(0.375, 0.75, 0.375, 0.625, 1, 0.625));
+			VoxelShapes.box(0, 0, 0, 1, 0.25, 1),
+			VoxelShapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
+			VoxelShapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
+			VoxelShapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
 	@Override // remove mana level indicator
-	public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
+	public void playerWillDestroy(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
 		if (player instanceof ServerPlayerEntity) {
 			for (int i=2; i<=8; i++) {
-				if (worldIn.getBlockState(pos.up(i)).getBlock() == ModBlocks.LIGHT_SPELL ){
-					worldIn.destroyBlock(pos.up(i), false);
+				if (worldIn.getBlockState(pos.above(i)).getBlock() == ModBlocks.LIGHT_SPELL ){
+					worldIn.destroyBlock(pos.above(i), false);
 				}
 			}
 		}
-		super.onBlockHarvested(worldIn, pos, state, player);
+		super.playerWillDestroy(worldIn, pos, state, player);
 	}	
 	
 	@Override
-	public boolean isValidPosition(BlockState state, IWorldReader worldIn, BlockPos pos) {
-		return super.isValidPosition(state, worldIn, pos);
+	public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos) {
+		return super.canSurvive(state, worldIn, pos);
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(IBlockReader worldIn) {
+	public TileEntity newBlockEntity(IBlockReader worldIn) {
 		return new GathererTileEntity();
 	}
 
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
+	public BlockRenderType getRenderShape(BlockState state) {
 	      return BlockRenderType.MODEL;
 	}	
 	
 	public Gatherer(Properties properties) {
 		super(properties);
-		setDefaultState(stateContainer.getBaseState().with(POWER, Integer.valueOf(0)));
+		registerDefaultState(stateDefinition.any().setValue(POWER, Integer.valueOf(0)));
 	}
 
 //	@Override
@@ -96,14 +98,14 @@ public class Gatherer extends ContainerBlock
 	}
 	
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
+	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
 			Hand handIn, BlockRayTraceResult result) {
 
-		if (!player.abilities.allowEdit) {
+		if (!player.abilities.mayBuild) {
 			return ActionResultType.PASS;
 		} else {
 			if ((worldIn instanceof ServerWorld)) {
-				TileEntity r = worldIn.getTileEntity(pos);
+				TileEntity r = worldIn.getBlockEntity(pos);
 				if (r instanceof GathererTileEntity) {
 					if (((GathererTileEntity) r).doGathererInteraction(player, handIn) == false) {
 						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
@@ -118,16 +120,16 @@ public class Gatherer extends ContainerBlock
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 
 		// StructureBlockTileEntity s;
 		// RedstoneParticleData pR = new RedstoneParticleData(1.0f, 1.0f, 1.0f, 2.0f);
-		worldIn.playSound(null, pos, SoundEvents.ENTITY_ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
 //		System.out.println("Gatherer Placed at ("+pos.getX()+", "+pos.getY()+", "+pos.getZ()+")");
-		if (worldIn.isRemote()) {
+		if (worldIn.isClientSide()) {
 			int iY = pos.getY() + 1;
-			int sX = worldIn.getChunk(pos).getPos().getXStart();
-			int sZ = worldIn.getChunk(pos).getPos().getZStart();
+			int sX = worldIn.getChunk(pos).getPos().getMinBlockX();
+			int sZ = worldIn.getChunk(pos).getPos().getMinBlockZ();
 
 			for (int iX = 0; iX <= 15; iX++) {
 				worldIn.addParticle(ParticleTypes.END_ROD, 0.5D + iX + sX, 0.35D + iY, 0.5D + sZ,
@@ -154,7 +156,7 @@ public class Gatherer extends ContainerBlock
 			}
 
 		}
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+		super.setPlacedBy(worldIn, pos, state, placer, stack);
 
 	}	
 	
@@ -164,13 +166,13 @@ public class Gatherer extends ContainerBlock
 	}
 
 	public static int colorMultiplier(BlockState state) {
-		int r = state.get(POWER) * 16;
+		int r = state.getValue(POWER) * 16;
 		return r << 16;
 	}
 
 	//@Override
 	public void TODOanimateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
-		int level = stateIn.get(POWER);
+		int level = stateIn.getValue(POWER);
 		long time = worldIn.getGameTime();
 		if (time - lastTime > 20L || time < lastTime)
 		{
@@ -192,12 +194,12 @@ public class Gatherer extends ContainerBlock
 					incr = 3;
 				}
 			}
-			worldIn.setBlockState(pos, stateIn.with(POWER, Integer.valueOf(level)));
+			worldIn.setBlockAndUpdate(pos, stateIn.setValue(POWER, Integer.valueOf(level)));
 		}
 	}
 
 	@Override
-	protected void fillStateContainer(Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
 		builder.add(POWER);
 	}
 }

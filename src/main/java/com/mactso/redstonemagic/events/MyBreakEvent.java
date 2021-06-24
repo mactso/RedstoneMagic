@@ -44,8 +44,8 @@ public class MyBreakEvent {
 			return;
 		}
 
-		int bonusLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE,
-				event.getPlayer().getHeldItemMainhand());
+		int bonusLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE,
+				event.getPlayer().getMainHandItem());
 
 		BlockPos pos = event.getPos();
 		IWorld world = event.getWorld();
