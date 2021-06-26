@@ -1,0 +1,21 @@
+{
+  "type": "redstonemagic:crafting_shapeless",
+  "ingredients": [
+
+    {
+      "item": "minecraft:leather_leggings"
+    },
+     {
+      "item": "minecraft:redstone_block"
+    }, 
+     {
+      "item": "minecraft:redstone"
+    }, 
+     {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "item": "redstonemagic:redstonemagic_leather_leggings"
+  }
+}

@@ -17,8 +17,11 @@ import net.minecraft.item.IArmorMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Rarity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.text.Color;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import net.minecraft.item.Item.Properties;
@@ -64,9 +67,9 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 						suitBonus += 1;
 					}
 				}
-				applyRedstoneArmorManaRegeneration(world, player, suitBonus);
-				if (suitBonus == 4) {
-					applyRedstoneArmorSuitBonusResistance(player);
+				doArmorManaRegeneration(world, player, suitBonus);
+				if (suitBonus == 4 ) {
+					doSuitBonuses(player);
 				} 
 
 			}
@@ -75,51 +78,59 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 	}
 
-	private void applyRedstoneArmorSuitBonusResistance(PlayerEntity player) {
+	private void doSuitBonuses(PlayerEntity player) {
 
+		if (this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
+			doASuitBonus(player,Effects.DAMAGE_RESISTANCE,160,0);
+		} else if (player.level.getGameTime()%6000 == 0 &&this.getMaterial() == ModItems.REDSTONEMAGIC_LEATHER_MATERIAL) {
+			doASuitBonus(player,Effects.ABSORPTION,6000,0);
+		}
+
+	}
+
+	private void doASuitBonus(PlayerEntity player, Effect effect, int effectDuration, int effectIntensity) {
 		boolean refreshSuitBonus = true;
-		int effectDuration = 160; // 8 seconds
-		int effectIntensity = 0;
-		EffectInstance ei = player.getEffect(Effects.DAMAGE_RESISTANCE);
+		EffectInstance ei = player.getEffect(effect);
 		if (ei != null) {
 			if (ei.getAmplifier() > effectIntensity) {
 				if (ei.getDuration() <= 15) {
-					player.removeEffectNoUpdate(Effects.DAMAGE_RESISTANCE);
+					player.removeEffectNoUpdate(effect);
 				} else {
 					refreshSuitBonus = false;
 				}
 			}
 		}
 		if (refreshSuitBonus) {
-			if (MyConfig.getDebugLevel() > 1) {
-				System.out
-						.println("Redstone Magic: " + player.getName().getString() + " Applying Suit Resistance Bonus");
-			}
-			player.addEffect(new EffectInstance(Effects.DAMAGE_RESISTANCE, effectDuration, effectIntensity, true, true));
+			MyConfig.dbgPrintln(1, "Redstone Magic: " + player.getName().getString() + " Apply Suit Bonus : " + effect.getRegistryName().getNamespace().toString());
+			player.addEffect(new EffectInstance(effect, effectDuration, effectIntensity, true, true));
 		}
-
 	}
 
-	private void applyRedstoneArmorManaRegeneration(World world, PlayerEntity player, int suitBonus) {
-		final int DEFAULT_MINIMUM_MANA = 60;
-		final int MANA_REGEN_PERIOD = 300; // 300 ticks... 15 seconds
-
+	private void doArmorManaRegeneration(World world, PlayerEntity player, int suitBonus) {
+		final int MANA_REGEN_PERIOD = 160; // 160 ticks... 8 seconds
 		if (world.getGameTime() % MANA_REGEN_PERIOD == 0) {
+			if (this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
+				doAnArmorManaRegeneration(player, suitBonus, 0.20f,3,05);
+			} else { // Leather
+				doAnArmorManaRegeneration(player, suitBonus, 0.06f,1,90);
+			}
 			
-			IMagicStorage cap = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
-			if (cap != null) {
-				float maxBonusRegenTotal = (MyConfig.getMaxPlayerRedstoneMagic() * 0.01f) * (4 + suitBonus);
-				if (suitBonus == 4) 
-					maxBonusRegenTotal = (int) (0.20f * MyConfig.getMaxPlayerRedstoneMagic());
-				
-				if (maxBonusRegenTotal == 0)
-					maxBonusRegenTotal = DEFAULT_MINIMUM_MANA + suitBonus * 4;
+		}
+	}
 
-				float manaRegenRate = MyConfig.getMaxPlayerRedstoneMagic() * 0.005f;
-				if (manaRegenRate < 2) {
-					manaRegenRate = 2;
-				}
-				if (cap.getManaStored() < maxBonusRegenTotal) {
+	private void doAnArmorManaRegeneration(PlayerEntity player, int suitBonus, float maxSuitManaPct, int manaRegenRate, int manaRegenChance) {
+		IMagicStorage cap = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
+		if (cap != null) {
+			float maxNaturalMana = (MyConfig.getMaxPlayerRedstoneMagic() * 0.01f) * (4 + suitBonus);
+
+			if (suitBonus == 4) 
+				maxNaturalMana = (int) (maxSuitManaPct * MyConfig.getMaxPlayerRedstoneMagic());
+			if (maxNaturalMana  == 0)
+				maxNaturalMana = (int) ((suitBonus*4) + (300 * maxSuitManaPct));
+
+			if (player.level.getRandom().nextInt(100) > manaRegenChance) {
+				if (cap.getManaStored() < maxNaturalMana) {
+					MyConfig.sendChat(player,"Regen Mana: "+ cap.getManaStored() + ", max:" +maxNaturalMana + ", regen:"+ manaRegenRate, Color.fromLegacyFormat(TextFormatting.RED));
 					cap.addMana((int)manaRegenRate);
 					Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
 							(ServerPlayerEntity) player);

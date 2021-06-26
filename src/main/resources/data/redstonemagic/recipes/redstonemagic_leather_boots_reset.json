@@ -1,0 +1,12 @@
+{
+  "type": "redstonemagic:crafting_shapeless",
+  "operation": "reset_color",
+  "ingredients": [
+    {
+      "item": "redstonemagic:redstonemagic_leather_boots"
+    }
+  ],
+  "result": {
+    "item": "redstonemagic:redstonemagic_leather_boots"
+  }
+}

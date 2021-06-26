@@ -1,0 +1,28 @@
+{
+	"parent": "minecraft:recipes/root",
+	"requirements": [
+		[
+			"has_made_focus"
+		]
+	],
+	"criteria": {
+		"has_made_focus": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "redstonemagic:redstone_focus"
+					}
+				]
+			}
+		}
+	},
+	"rewards": {
+		"recipes": [
+			"redstonemagic:redstonemagic_leather_chestplate",
+			"redstonemagic:redstonemagic_leather_leggings",
+			"redstonemagic:redstonemagic_leather_helmet",
+			"redstonemagic:redstonemagic_leather_boots"
+		]
+	}
+}

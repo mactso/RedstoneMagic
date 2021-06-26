@@ -70,7 +70,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
+import net.minecraft.item.Item;
 import net.minecraft.item.Item.Properties;
 
 public class RedstoneFocusItem extends ShieldItem {
@@ -723,7 +723,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		int flightTime = MyConfig.getFlightTime() * 20;
 		int manaCost = 11;
 		if ((flyingType == START_FLYING) || ((serverPlayer.getLevel().getGameTime() % flightTime) == 0)) {
-
+			// MyConfig.sendChat(serverPlayer, "Pay for flying", Color.fromLegacyFormat(TextFormatting.RED));
 			if (serverPlayer.getLevel().getBlockState(pos).getBlock() == Blocks.WATER) {
 				setIsFlying(serverPlayer, false, serverPlayer.getLevel().getChunk(pos).getInhabitedTime());
 				return false;
@@ -739,7 +739,7 @@ public class RedstoneFocusItem extends ShieldItem {
 
 			IMagicStorage chunkManaStorage = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (chunkManaStorage.useMana(manaCost)) {
-				MyConfig.dbgPrintln(1, "Pay from Chunk: " + manaCost + " of " + chunkManaStorage.getManaStored());
+				// MyConfig.sendChat(serverPlayer, "Pay Fly from Chunk: " + manaCost + " of " + chunkManaStorage.getManaStored(), Color.fromLegacyFormat(TextFormatting.RED));
 				setIsChunkFlying(serverPlayer, true);
 			} else {
 
@@ -748,12 +748,18 @@ public class RedstoneFocusItem extends ShieldItem {
 				if (manaCost > 0) {
 					manaCost = 1;
 				}
+				if ( playerManaStorage.getManaStored() < 120 ) {
+					manaCost = 2;
+				}
+
 				long chunkAgeFactor = Math.max((long) (10 - (getChunkAge(serverPlayer) / 500)), 0);
 				manaCost += chunkAgeFactor;
 
+				// distance to last seen mana gatherer.
+				
 				if (flyingType == START_FLYING) {
 					manaCost = (manaCost / 2) + 1;
-					MyConfig.dbgPrintln(1, "Start Flying-" + chunkAgeFactor);
+				//	MyConfig.sendChat(serverPlayer, "Start Flying", Color.fromLegacyFormat(TextFormatting.RED));
 				}
 
 				serverPlayer.causeFoodExhaustion(0.5f);
@@ -762,8 +768,8 @@ public class RedstoneFocusItem extends ShieldItem {
 					serverPlayer.causeFoodExhaustion(0.5f);
 				}
 				if (playerManaStorage.useMana(manaCost)) {
-					MyConfig.dbgPrintln(1,
-							"Pay from Player : " + manaCost + "  of " + playerManaStorage.getManaStored());
+					// MyConfig.sendChat(serverPlayer, "Pay Fly from Player : " + manaCost + "  of " + playerManaStorage.getManaStored(), Color.fromLegacyFormat(TextFormatting.RED));
+
 					Network.sendToClient(
 							new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),
 							serverPlayer);
@@ -817,16 +823,34 @@ public class RedstoneFocusItem extends ShieldItem {
 		
 		}
 
+		Iterable <ItemStack> ar = player.getArmorSlots();
+		float armorSpeedModifier = 0.88f;
+		for (ItemStack is : ar) {
+			if (is.getItem() instanceof RedstoneArmorItem) {
+				RedstoneArmorItem r = (RedstoneArmorItem) is.getItem();
+				if (r.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
+					armorSpeedModifier += 0.03f;
+				} else if (r.getMaterial() == ModItems.REDSTONEMAGIC_LEATHER_MATERIAL) {
+					armorSpeedModifier -= 0.05f;
+				} 
+			} else {
+				armorSpeedModifier -= 0.11f;
+			}
+		}
+		
+		maxFlightSpeed *= armorSpeedModifier;
+
 		if (currentSpeed < maxFlightSpeed) {
 			currentSpeed = (currentSpeed + (maxFlightSpeed) / 20) * 1.33f; // "magic" number that feels right.
 			float pitchmod = .0733f + (player.getViewXRot(1.0f) / 90) * 0.0004f;
-//			MyConfig.sendChat(player, "Speed: " + currentSpeed+ " Pitchmod: "+ pitchmod, Color.fromHex("0xFF3030"));
-			currentSpeed = currentSpeed + pitchmod;
-			if (currentSpeed > maxFlightSpeed) {
-				currentSpeed = maxFlightSpeed; // smooth slowdown
-			}
+		}
+		
+		if (currentSpeed > maxFlightSpeed) {
+			currentSpeed = maxFlightSpeed; // smooth slowdown
 		}
 
+		// MyConfig.sendChat(player, "Currentspeed:" + currentSpeed + ", ArmorMod:"+armorSpeedModifier+ ", MaxFlySpeed: " + maxFlightSpeed, Color.fromLegacyFormat(TextFormatting.RED));
+		
 		return currentSpeed;
 	}
 
