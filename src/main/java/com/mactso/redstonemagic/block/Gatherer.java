@@ -13,6 +13,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.particles.ItemParticleData;
+import net.minecraft.particles.ParticleType;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer.Builder;
@@ -38,10 +41,10 @@ public class Gatherer extends ContainerBlock
 {
 	static int incr = 3;
 	static long lastTime = 0;
+	static final ItemStack REDGLASS_STACK = new ItemStack(Items.RED_STAINED_GLASS, 1);
+	
 
 	public static final IntegerProperty POWER = BlockStateProperties.LEVEL;
-	
-    
 	
 	private static VoxelShape SHAPE = VoxelShapes.or(
 			VoxelShapes.box(0, 0, 0, 1, 0.25, 1),

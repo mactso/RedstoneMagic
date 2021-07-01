@@ -9,6 +9,8 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -20,6 +22,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -109,12 +112,16 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 	private void doArmorManaRegeneration(World world, PlayerEntity player, int suitBonus) {
 		final int MANA_REGEN_PERIOD = 160; // 160 ticks... 8 seconds
 		if (world.getGameTime() % MANA_REGEN_PERIOD == 0) {
-			if (this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
-				doAnArmorManaRegeneration(player, suitBonus, 0.20f,3,05);
-			} else { // Leather
-				doAnArmorManaRegeneration(player, suitBonus, 0.06f,1,90);
+			BlockPos pos = new BlockPos (player.getX(), player.getY(),player.getZ());
+			Block b = world.getBlockState(pos.below()).getBlock();
+			if (!RedstoneFocusItem.NO_FLY_LIST.contains(b) && b != Blocks.AIR) {
+				if (this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
+					doAnArmorManaRegeneration(player, suitBonus, 0.20f,2,05);
+				} else { // Leather
+					doAnArmorManaRegeneration(player, suitBonus, 0.06f,1,66);
+				}
+				
 			}
-			
 		}
 	}
 
@@ -130,7 +137,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 			if (player.level.getRandom().nextInt(100) > manaRegenChance) {
 				if (cap.getManaStored() < maxNaturalMana) {
-					MyConfig.sendChat(player,"Regen Mana: "+ cap.getManaStored() + ", max:" +maxNaturalMana + ", regen:"+ manaRegenRate, Color.fromLegacyFormat(TextFormatting.RED));
+//					MyConfig.sendChat(player,"Armor Regen Mana: "+ cap.getManaStored() + ", max:" +maxNaturalMana + ", regen:"+ manaRegenRate, Color.fromLegacyFormat(TextFormatting.RED));
 					cap.addMana((int)manaRegenRate);
 					Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
 							(ServerPlayerEntity) player);
