@@ -1,5 +1,5 @@
 {
-	"parent": "redstonemagic:rmroot/falderals",
+	"parent": "redstonemagic:rmroot/falderal_feather",
 	"display": {
 		"icon": {
 			"item": "minecraft:magma_cream"
@@ -13,8 +13,8 @@
 			"color": "white"
 		},
 		"frame": "task",
-		"show_toast": true,
-		"announce_to_chat": true,
+		"show_toast": false,
+		"announce_to_chat": false,
 		"hidden": false
 	},
 	"rewards": {

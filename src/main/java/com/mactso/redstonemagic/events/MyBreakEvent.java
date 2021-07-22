@@ -53,7 +53,7 @@ public class MyBreakEvent {
 		double randint = world.getRandom().nextDouble();
 		randint *= 3.0;
 		
-		int redstoneMagicIncrease = 3 + (int) randint + bonusLevel;
+		int redstoneMagicIncrease = 3 + (int) randint + (bonusLevel*2);
 		redstoneMagicIncrease = 30;
 		IMagicStorage cap = serverPlayerEntity.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (cap != null) {

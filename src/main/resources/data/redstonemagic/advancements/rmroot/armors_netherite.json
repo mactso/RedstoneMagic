@@ -1,32 +1,32 @@
 {
-	"parent": "redstonemagic:rmroot/falderals",
-		"display": {
+	"parent": "redstonemagic:rmroot/armors",
+	"display": {
 		"icon": {
-			"item": "minecraft:feather"
+			"item": "redstonemagic:redstonemagic_chestplate"
 		},
 		"title": {
-			"translate": "advancements.falderal.feather.title",
+			"translate": "advancements.armors.netherite.title",
 			"color": "red"
 		},
 		"description": {
-			"translate": "advancements.falderal.feather.description",
+			"translate": "advancements.armors.netherite.description",
 			"color": "white"
 		},
 		"frame": "task",
 		"show_toast": false,
-		"announce_to_chat": false,
+		"announce_to_chat": true,
 		"hidden": false
 	},
 	"rewards": {
 		"experience": 3
 	},
 	"criteria": {
-		"has_falderal_feather": {
+		"has_netherite_scrap": {
 			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
 					{
-						"item": "minecraft:feather"
+						"item": "minecraft:netherite_scrap"
 					}
 				]
 			}
@@ -34,7 +34,7 @@
 	},
 	"requirements": [
 		[
-			"has_falderal_feather"
+			"has_netherite_scrap"
 		]
 	]
 }

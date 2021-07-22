@@ -8,8 +8,6 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class LightSpell extends Block {
 	protected static final VoxelShape SHAPE = Block.box(6.0D, 6.0D, 6.0D, 9.0D, 9.0D, 9.0D);
 

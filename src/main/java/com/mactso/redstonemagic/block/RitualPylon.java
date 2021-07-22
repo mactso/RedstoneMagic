@@ -24,8 +24,6 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class RitualPylon extends ContainerBlock
 {
 //	public static final IntegerProperty POWER = BlockStateProperties.POWER_0_15;
@@ -95,6 +93,15 @@ public class RitualPylon extends ContainerBlock
 				if (r instanceof RitualPylonTileEntity) {
 					if (((RitualPylonTileEntity) r).doRitualPylonInteraction(player, handIn) == false) {
 						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						for (int i=0; i<6; i++) {
+							double oX = worldIn.getRandom().nextDouble()-0.5D;
+							double oY = worldIn.getRandom().nextDouble()-0.2D;
+							double oZ = worldIn.getRandom().nextDouble()-0.5D;
+							((ServerWorld) worldIn).sendParticles(ParticleTypes.SQUID_INK, 0.5D + (double) pos.getX(),
+									(double) pos.getY() + 0.35D , 0.5D + (double) pos.getZ(), 2, 0.0D+oX, 0.1D+ oY, 0.0D+oZ, -0.04D);
+
+						
+						}
 					}
 				}
 				

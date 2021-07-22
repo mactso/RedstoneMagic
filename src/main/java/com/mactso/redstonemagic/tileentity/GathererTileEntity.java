@@ -1,13 +1,8 @@
 package com.mactso.redstonemagic.tileentity;
 
-import org.omg.CORBA.NO_PERMISSION;
-
 import com.mactso.redstonemagic.block.ModBlocks;
-import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
-import com.mactso.redstonemagic.network.Network;
-import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
 import net.minecraft.block.BlockState;

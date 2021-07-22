@@ -1,19 +1,19 @@
 {
-	"parent": "redstonemagic:rmroot/falderals",
-		"display": {
+	"parent": "redstonemagic:rmroot/falderal_spidereye",
+	"display": {
 		"icon": {
-			"item": "minecraft:feather"
+			"item": "minecraft:turtle_helmet"
 		},
 		"title": {
-			"translate": "advancements.falderal.feather.title",
+			"translate": "advancements.falderal.turtle_helmet.title",
 			"color": "red"
 		},
 		"description": {
-			"translate": "advancements.falderal.feather.description",
+			"translate": "advancements.falderal.turtle_helmet.description",
 			"color": "white"
 		},
 		"frame": "task",
-		"show_toast": false,
+		"show_toast": true,
 		"announce_to_chat": false,
 		"hidden": false
 	},
@@ -21,12 +21,12 @@
 		"experience": 3
 	},
 	"criteria": {
-		"has_falderal_feather": {
+		"has_falderal_turtle_helmet": {
 			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
 					{
-						"item": "minecraft:feather"
+						"item": "minecraft:turtle_helmet"
 					}
 				]
 			}
@@ -34,7 +34,7 @@
 	},
 	"requirements": [
 		[
-			"has_falderal_feather"
+			"has_falderal_turtle_helmet"
 		]
 	]
 }

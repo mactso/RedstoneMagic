@@ -1,5 +1,5 @@
 {
-	"parent": "redstonemagic:rmroot/rm_root",
+	"parent": "redstonemagic:rmroot/items_redstonefocus",
 	"display": {
 		"icon": {
 			"item": "minecraft:redstone"
@@ -13,28 +13,8 @@
 			"color": "white"
 		},
 		"frame": "goal",
-		"show_toast": true,
-		"announce_to_chat": true,
+		"show_toast": false,
+		"announce_to_chat": false,
 		"hidden": false
-	},
-	"rewards": {
-		"experience": 3
-	},
-	"criteria": {
-		"has_redstone_reagent": {
-			"trigger": "minecraft:inventory_changed",
-			"conditions": {
-				"items": [
-					{
-						"item": "minecraft:redstone"
-					}
-				]
-			}
-		}
-	},
-	"requirements": [
-		[
-			"has_redstone_reagent"
-		]
-	]
+	}
 }

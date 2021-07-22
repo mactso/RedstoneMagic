@@ -196,13 +196,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			ItemStack handItemStack = player.getItemInHand(handIn);
-			Item newRitualItem = handItemStack.getItem();
 
-			if (getRitualID(newRitualItem) == RITUAL_NONE) {
-				return false;
-			}
-
-			if ((useRitualItem(handItemStack)) == false) { // damages or destroys
+			if (getRitualID(handItemStack.getItem()) == RITUAL_NONE) {
 				return false;
 			}
 
@@ -221,6 +216,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 				return false;
 			}
 
+			if ((useRitualItem(player, handItemStack)) == false) { // damages or destroys
+				return false;
+			}
+			
 			playerManaStorage.useMana(calcPlayerRitualManaCost());
 			chunkManaStorage.useMana(calcChunkRitualManaCost());
 
@@ -229,6 +228,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					serverPlayer);
 
 			chunk.markUnsaved();
+			Item newRitualItem = handItemStack.getItem();
+
 			ritualSpeed = getRitualSpeed(newRitualItem);
 			currentRitual = getRitualID(newRitualItem);
 			harvestWorkTotal = 0.0f;
@@ -659,7 +660,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	}
 
-	private boolean useRitualItem(ItemStack handItemStack) {
+	private boolean useRitualItem(PlayerEntity player, ItemStack handItemStack) {
+		if (player.isCreative()) {
+			return true;
+		}
 		Item ritualItem = handItemStack.getItem();
 		if (((ritualItem == Items.TORCH) || (ritualItem == Items.LANTERN)) ) {
 			handItemStack.setCount(handItemStack.getCount() - 1);
@@ -668,7 +672,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		if (isItemDamagingRitual(ritualItem)) {
 			int itemDamage = handItemStack.getMaxDamage() - handItemStack.getDamageValue();
 			if (itemDamage < 48) return false; // item is too weak to start ritual
-			if (handItemStack.hurt(64, level.random, null)) {
+			if (handItemStack.hurt(47, level.random, null)) {
 				handItemStack.setCount(handItemStack.getCount() - 1);
 			}
 			return true;

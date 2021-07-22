@@ -38,6 +38,7 @@ import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.Rarity;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.item.UseAction;
@@ -56,6 +57,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceContext.BlockMode;
 import net.minecraft.util.math.RayTraceContext.FluidMode;
 import net.minecraft.util.math.RayTraceResult.Type;
@@ -71,6 +73,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+
 
 public class RedstoneFocusItem extends ShieldItem {
 
@@ -99,27 +102,33 @@ public class RedstoneFocusItem extends ShieldItem {
 		double d0 = 30.0;
 		double d1 = d0 * d0;
 		Vector3d vector3d = clientPlayer.getEyePosition(1.0F);
-		Vector3d vector3d1 = clientPlayer.getViewVector(1.0F);
-		Vector3d vector3d2 = vector3d.add(vector3d1.x * d0, vector3d1.y * d0, vector3d1.z * d0);
+		Vector3d vector3d1 = clientPlayer.getViewVector(1.0F).scale(d0);
+		Vector3d vector3d2 = vector3d.add(vector3d1);
 
-		AxisAlignedBB axisalignedbb = clientPlayer.getBoundingBox().expandTowards(vector3d1.scale(d0)).inflate(1.0D,
-				1.0D, 1.0D);
+		AxisAlignedBB axisalignedbb = clientPlayer.getBoundingBox().expandTowards(vector3d1).inflate(1.0D);
 		EntityRayTraceResult entityRayTraceResult = ProjectileHelper.getEntityHitResult(clientPlayer, vector3d,
 				vector3d2, axisalignedbb, (p_215312_0_) -> {
 					return !p_215312_0_.isSpectator() && p_215312_0_.isPickable();
 				}, d1);
 		if (entityRayTraceResult != null) {
 			Entity entity1 = entityRayTraceResult.getEntity();
-			if (entity1 instanceof LivingEntity) {
-				LivingEntity livingEntity = (LivingEntity) entity1;
-				if (livingEntity.canSee(clientPlayer)) {
-					return livingEntity;
+			if (entity1 instanceof LivingEntity) { // if can see
+				if ( clientPlayer.level
+						.clip(new RayTraceContext(vector3d, entityRayTraceResult.getLocation(),
+								RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, clientPlayer))
+						.getType() == RayTraceResult.Type.MISS) {
+					return (LivingEntity) entity1;
 				}
 			}
 		}
 		return null;
 	}
 
+	@Override
+	public Rarity getRarity(ItemStack stack) {
+			// TODO Auto-generated method stub
+			return Rarity.RARE;
+	}
 	@OnlyIn(value = Dist.CLIENT)
 	public static BlockPos doLookForDistantBlock(PlayerEntity clientPlayer, int distance) {
 
@@ -171,15 +180,25 @@ public class RedstoneFocusItem extends ShieldItem {
 		super(builder);
 	}
 
+
 	@Override
 	public void appendHoverText(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-		CompoundNBT compoundnbt = stack.getOrCreateTag();
-		int spellNumberKey = compoundnbt != null && compoundnbt.contains("spellKeyNumber", NBT_NUMBER_FIELD)
-				? compoundnbt.getInt("spellKeyNumber")
-				: 0;
-		SpellManager.RedstoneMagicSpellItem spell = SpellManager
-				.getRedstoneMagicSpellItem(Integer.toString(spellNumberKey));
-		tooltip.add(new StringTextComponent("Spell Name : " + spell.getSpellComment()));
+		int preparedSpellNumber = 0;
+		CompoundNBT tag = stack.getTag();
+        if (tag != null) {
+        	if (tag.contains("ownerName")) {
+                 tooltip.add(new StringTextComponent("Owner: "+ tag.getString("ownerName")).withStyle(TextFormatting.GOLD));
+        	}
+        	if (tag.contains("preparedSpellNumber")) {
+        		preparedSpellNumber = tag.getInt("preparedSpellNumber");
+         	}
+        }
+   		SpellManager.RedstoneMagicSpellItem spellItem = SpellManager
+				.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
+		tooltip.add(new StringTextComponent("Spell: " + spellItem.getSpellComment()).withStyle(TextFormatting.RED));
+
+        // @TODO
+        // TranslationTextComponent("ca.hover.claim_block").withStyle(TextFormatting.DARK_GREEN));
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
 	}
 
@@ -249,7 +268,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			canUseRedstoneFocus = true;
 		}
 
-		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() instanceof ShovelItem)) {
+		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() == Items.BONE_MEAL) || (handItem.getItem() instanceof ShovelItem)) {
 			canUseRedstoneFocus = false;
 			return canUseRedstoneFocus;
 		}
@@ -514,7 +533,11 @@ public class RedstoneFocusItem extends ShieldItem {
 				// casting a spell
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);
 
+				long netTicks = stack.getUseDuration() - timeLeft;
+				System.out.println("netTicks = " + netTicks);
 				int preparedSpellNumber = compoundnbt.getInt("preparedSpellNumber");
+				
+				
 				RedstoneMagicSpellItem spell = SpellManager
 						.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 
@@ -605,6 +628,17 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		if ((entityIn instanceof ServerPlayerEntity)) {
 			ServerPlayerEntity sPlayer = (ServerPlayerEntity) entityIn;
+			CompoundNBT tag= stack.getOrCreateTag();
+        	if (!(tag.contains("ownerUUID"))) {
+        		tag.putUUID("ownerUUID", sPlayer.getUUID());
+        	}
+        	if (!(tag.contains("ownerName"))) {
+        		tag.putString("ownerName", sPlayer.getDisplayName().getString());
+        	}
+        	if (!(tag.contains("preparedSpellNumber"))) {
+        		tag.putInt("preparedSpellNumber", 0);
+        	}
+        	
 			if (!canUseRedstoneFocusItem(sPlayer)) {
 				if (getIsFlying(sPlayer)) {
 					doStopFlying(sPlayer);

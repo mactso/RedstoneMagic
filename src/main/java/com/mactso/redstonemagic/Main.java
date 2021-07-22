@@ -15,10 +15,9 @@ import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.crafting.RedstoneMagicRecipe;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.network.Register;
-import com.mactso.redstonemagic.proxy.IProxy;
 import com.mactso.redstonemagic.proxy.ClientProxy;
+import com.mactso.redstonemagic.proxy.IProxy;
 import com.mactso.redstonemagic.proxy.ServerProxy;
-
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.ModTileEntities;
 

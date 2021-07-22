@@ -14,8 +14,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.particles.ItemParticleData;
-import net.minecraft.particles.ParticleType;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer.Builder;
@@ -34,8 +32,6 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-
-import net.minecraft.block.AbstractBlock.Properties;
 
 public class Gatherer extends ContainerBlock
 {

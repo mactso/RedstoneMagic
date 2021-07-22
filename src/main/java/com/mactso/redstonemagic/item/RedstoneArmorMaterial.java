@@ -12,10 +12,13 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	private IArmorMaterial clone;
 	private String materialName;
+	private int enchantAbility;
 
-	public RedstoneArmorMaterial(ArmorMaterial inClone, String materialPrefix) {
+
+	public RedstoneArmorMaterial(ArmorMaterial inClone, String materialPrefix, int enchantAbility) {
 		clone = inClone;
 		materialName = materialPrefix;
+		this.enchantAbility = enchantAbility;
 	}
 	
 //  FYI stats of Netherite (for when I do possible diamond suit).
@@ -35,7 +38,7 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	@Override
 	public int getEnchantmentValue() {
-		return clone.getEnchantmentValue();
+		return this.enchantAbility;
 	}
 
 	@Override

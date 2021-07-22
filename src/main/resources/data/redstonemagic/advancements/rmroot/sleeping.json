@@ -1,15 +1,15 @@
 {
-	"parent": "redstonemagic:rmroot/falderals",
-		"display": {
+	"parent": "redstonemagic:rmroot/quickcastingspells",
+	"display": {
 		"icon": {
-			"item": "minecraft:feather"
+			"item": "minecraft:red_bed"
 		},
 		"title": {
-			"translate": "advancements.falderal.feather.title",
+			"translate": "advancements.items.bed.title",
 			"color": "red"
 		},
 		"description": {
-			"translate": "advancements.falderal.feather.description",
+			"translate": "advancements.items.bed.description",
 			"color": "white"
 		},
 		"frame": "task",
@@ -21,12 +21,12 @@
 		"experience": 3
 	},
 	"criteria": {
-		"has_falderal_feather": {
+		"has_falderal_redstone": {
 			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
 					{
-						"item": "minecraft:feather"
+						"item": "minecraft:redstone"
 					}
 				]
 			}
@@ -34,7 +34,7 @@
 	},
 	"requirements": [
 		[
-			"has_falderal_feather"
+			"has_falderal_redstone"
 		]
 	]
 }

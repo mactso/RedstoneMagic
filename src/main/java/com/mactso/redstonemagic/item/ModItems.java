@@ -28,13 +28,13 @@ public class ModItems
 	 = new BlockItem(ModBlocks.RITUAL_PYLON, new Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("ritual_pylon");
 	public static final Item REDSTONE_FOCUS_ITEM	
 	 = new RedstoneFocusItem(new Properties().tab(ItemGroup.TAB_REDSTONE).durability(484)).setRegistryName("redstone_focus");
-	public static final IArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.NETHERITE,"redstonemagic");
+	public static final IArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.NETHERITE,"redstonemagic", 17);
 	private static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.HEAD, new Properties().tab(ItemGroup.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_helmet");
 	private static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.CHEST, new Properties().tab(ItemGroup.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_chestplate");
 	private static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.LEGS, new Properties().tab(ItemGroup.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_leggings");
 	private static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlotType.FEET, new Properties().tab(ItemGroup.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_boots");
 
-	public static final IArmorMaterial REDSTONEMAGIC_LEATHER_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.LEATHER,"redstonemagic");
+	public static final IArmorMaterial REDSTONEMAGIC_LEATHER_MATERIAL = new RedstoneArmorMaterial(ArmorMaterial.LEATHER,"redstonemagic", 25);
 	private static final Item REDSTONEMAGIC_LEATHER_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlotType.HEAD, new Properties().tab(ItemGroup.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(160).defaultDurability(180), "redstonemagic_leather_helmet");
 	private static final Item REDSTONEMAGIC_LEATHER_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlotType.CHEST, new Properties().tab(ItemGroup.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(220).defaultDurability(240), "redstonemagic_leather_chestplate");
 	private static final Item REDSTONEMAGIC_LEATHER_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlotType.LEGS, new Properties().tab(ItemGroup.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(210).defaultDurability(220), "redstonemagic_leather_leggings");

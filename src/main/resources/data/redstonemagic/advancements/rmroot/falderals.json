@@ -2,7 +2,7 @@
 	"parent": "redstonemagic:rmroot/rm_root",
 	"display": {
 		"icon": {
-			"item": "minecraft:redstone"
+			"item": "minecraft:feather"
 		},
 		"title": {
 			"translate": "advancements.falderals.title",
@@ -13,7 +13,7 @@
 			"color": "white"
 		},
 		"frame": "goal",
-		"show_toast": true,
+		"show_toast": false,
 		"announce_to_chat": true,
 		"hidden": true
 	},
@@ -26,7 +26,7 @@
 			"conditions": {
 				"items": [
 					{
-						"item": "minecraft:redstone"
+						"item": "minecraft:feather"
 					}
 				]
 			}

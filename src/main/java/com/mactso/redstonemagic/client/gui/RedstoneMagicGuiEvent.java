@@ -195,8 +195,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			return;
 		}
 		int spellCastingBarWidth = 0;
-		if (timerCastingSpell > 0) {
-			spellCastingBarWidth = (int) ((gametime - timerCastingSpell) / 1.5f);
+		if (timerCastingSpell > 0) { // XXZZY casting bar speed.
+			spellCastingBarWidth = (int) ((gametime - timerCastingSpell) / 1.0f);
 			if (spellCastingBarWidth > 42) {
 				spellCastingBarWidth = 42;
 			}
@@ -209,7 +209,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int halfBarWidth = (int) (spellCastingBarWidth/2);
 //		Screen.blit(MatrixStack , int Screenx , int ScreenY, float PNGTop, float PNGLEFT, int PNGBottom, int PNGHeight, int ScaleX, int ScaleY);
 		
-			Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth - 1, displayCastingBarTopPosY,
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth - 1, displayCastingBarTopPosY,
 					21 - halfBarWidth, 94, (int) spellCastingBarWidth, 10, 256, 256);
 
 
