@@ -534,7 +534,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);
 
 				long netTicks = stack.getUseDuration() - timeLeft;
-				System.out.println("netTicks = " + netTicks);
+
 				int preparedSpellNumber = compoundnbt.getInt("preparedSpellNumber");
 				
 				

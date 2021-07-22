@@ -1,5 +1,5 @@
 {
-	"parent": "redstonemagic:items",
+	"parent": "redstonemagic:rmroot/items",
 	"display": {
 		"icon": {
 			"item": "redstonemagic:redstone_focus"
@@ -21,7 +21,7 @@
 		"experience": 23
 	},
 	"criteria": {
-		"has_falderal_redstone": {
+		"has_redstone_focus": {
 			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
@@ -34,7 +34,7 @@
 	},
 	"requirements": [
 		[
-			"has_falderal_redstone"
+			"has_redstone_focus"
 		]
 	]
 }

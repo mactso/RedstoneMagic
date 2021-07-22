@@ -16,5 +16,25 @@
 		"show_toast": false,
 		"announce_to_chat": false,
 		"hidden": false
-	}
+	},
+	"rewards": {
+		"experience": 3
+	},
+	"criteria": {
+		"has_reagent_redstone": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "minecraft:redstone"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_reagent_redstone"
+		]
+	]
 }
