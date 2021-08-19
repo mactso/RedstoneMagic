@@ -1,6 +1,7 @@
 {
 	"item.redstonemagic.redstone_focus": "Redfish",
 	"item.redstonemagic.gatherer": "Mana Gatherer",
+	"item.redstonemagic.flying_reagent": "Flying Reagent",
 	"item.redstonemagic.ritual_pylon": "Minor Ritual Pylon",
 	"item.redstonemagic.redstonemagic_chestplate": "Redstone Magic Chestplate",
 	"item.redstonemagic.redstonemagic_boots": "Redstone Magic Boots",
@@ -66,10 +67,11 @@
 	"advancements.quickcastingspells.title": "Quick Casting Spells",
 	"advancements.reagents.title": "Spell Upgrades at a Cost",
 	"advancements.reagent.redstone.title": "Redstone Dust Like Nitro",
+	"advancements.reagent.flying_reagent.title": "Flying Economy",
 	"advancements.rmroot.title": "An Ancient Power Revealed",
-	"advancements.armors.description": "Tivruski teaches you that you can craft leather and netherite redstone armor.  They can be dyed, increase maximum mana and mana regeneration, and have suit bonus.",
-	"advancements.armors.netherite.description": "You learn Redstone Enhanced Netherite Armor is fireproof, speeds mana regeneration more, and regenerates up to 20 percent of mana.  A full suit provides Ruby Shield 1.",
-	"advancements.armors.leather.description": "You learn Redstone Enhanced Leather Armor is durable, gives some knockback resistance, speeds mana regeneration some, and regenerates mana up to 6 percent. A full suit provides Absorption 1 every five minutes.",
+	"advancements.armors.description": "Tivruski teaches you that you can craft leather and netherite redstone armor.  They can be dyed, increase maximum mana and mana regeneration, can self-mend when enchantment glow is on, and have suit bonus.",
+	"advancements.armors.netherite.description": "You learn Redstone Enhanced Netherite Armor is fireproof, speeds mana regeneration more, and regenerates up to 20 percent of mana.  A full suit provides Ruby Shield 1.  It can be repaired with netherite.",
+	"advancements.armors.leather.description": "You learn Redstone Enhanced Leather Armor is durable, gives some knockback resistance, speeds mana regeneration some, and regenerates mana up to 6 percent. A full suit provides Absorption 1 every five minutes.  It can be repaired with leather.",
 	"advancements.devices.description": "The Wizard Shirayuki, teaches you that you can craft a Redstone Block to make Redstone Magic Devices.  See the Redstone Magic Advancement Tab for more details.",
 	"advancements.devices.gatherer.description": "Shirayuki says that a Gatherer infuses the area around it with redstone mana.  Areas with a lot of redstone magic sparkle with power.",
 	"advancements.devices.ritualpylon.description": "Shirayuki says using a tool, torch, or lantern on the Ritual Pylon will summon a Red Spirit to work with the tool.  Put a chest under the Ritual Pylon to collect results.",
@@ -95,5 +97,6 @@
 	"advancements.quickcastingspells.description": "Tivruski teaches you how to Quick Cast a spell for less mana and weaker effect by releasing before the spell casting bar is full.  Some spells, like Light and Remove curse, still give full effect when quick cast.",
 	"advancements.reagents.description": "Tivruski teaches you: Reagents must be in the hotbar and are destroyed to make spells more powerful.",
 	"advancements.reagent.redstone.description": "Tivruski teaches you: Redstone Dust is a reagent that adds damage to Redstone, Ice, and Fire Bolts.",
+	"advancements.reagent.flying_reagent.description": "You learn to craft a Flying Reagent from a feather, some redstone dust, and a gold nugget. You can fly for a few seconds until it is consumed.",
 	"advancements.rmroot.description": "A wise old Villager Tivruski, takes a liking to you and shares a bit of ancient secret magical lore about redstone dust.  New secrets revealed on the Redstone Magic Advancements Tab.  Press ESC and select the Advancements Button to see them."
 }

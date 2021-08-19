@@ -1,0 +1,17 @@
+{
+  "type": "redstonemagic:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:redstone"
+    },
+        {
+      "item": "minecraft:feather"
+    },
+    {
+      "item": "minecraft:gold_nugget"
+    }
+  ],
+  "result": {
+    "item": "redstonemagic:flying_reagent"
+  }
+}
