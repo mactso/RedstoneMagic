@@ -562,17 +562,23 @@ public class CastSpells {
 	}
 
 	public static boolean hasFalderal(ServerPlayerEntity serverPlayer, ItemStack falderalStack) {
-		int slot = findHotBarSlotWithItemType(serverPlayer, falderalStack);
-		if ((slot > 0) && (slot < 9)) {
+		if (findHotBarSlotWithItemType(serverPlayer, falderalStack)>=0) {
 			return true;
 		}
 		return false;
 	}
 
+	public static boolean hasReagent(ServerPlayerEntity serverPlayer, ItemStack reagentStack) {
+		if (findHotBarSlotWithItemType(serverPlayer, reagentStack)>=0) {
+			return true;
+		}
+		return false;
+	}
+	
 	public static boolean useReagent(ServerPlayerEntity serverPlayer, ItemStack reagentStack) {
 		int slot = findHotBarSlotWithItemType(serverPlayer, reagentStack);
-		if ((slot > 0) && (slot < 9)) {
-			serverPlayer.inventory.getItem(slot).shrink(2);
+		if (slot >= 0) {
+			serverPlayer.inventory.getItem(slot).shrink(1);
 			return true;
 		}
 		return false;

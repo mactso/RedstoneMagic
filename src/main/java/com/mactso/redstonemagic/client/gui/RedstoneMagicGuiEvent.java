@@ -109,6 +109,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int blitScaledWidth = 128;
 		int blitScaledHeight = 128;
 		int displayManaBarLeftPosX = (guiScaledWidth / 2) - 11; // confirmed location on screen.
+		MyConfig.setGuiManaDisplayHeight(72);
 		int displayManaBarTopPosY = (int) (guiScaledHeight * MyConfig.getGuiManaDisplayHeight()); // confirmed location
 
 		if (personalMana < 0) {
@@ -125,12 +126,12 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		}
 
 		doAlphaTransparencyPulse();
-
-		showManaBar(event, blitScaledWidth, blitScaledHeight, displayManaBarLeftPosX, displayManaBarTopPosY,
-				blueChannel, manaPercent);
+		showNewManaBar (event, manaPercent, displayManaBarLeftPosX, displayManaBarTopPosY );
+		// showManaBar(event, blitScaledWidth, blitScaledHeight, displayManaBarLeftPosX, displayManaBarTopPosY,
+		//		blueChannel, manaPercent);
 
 		showSpellCastingBar(event, gametime, guiScaledCenterX, guiScaledHeight, 256,
-				256, displayManaBarTopPosY);
+				256, displayManaBarTopPosY );
 
 		RenderSystem.popAttributes();
 		RenderSystem.popMatrix();
@@ -139,17 +140,15 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 		int spellCastTimeStartY = displayManaBarTopPosY + fontRenderer.lineHeight - 1;
 
-
-
 		RenderSystem.blendFunc(SourceFactor.CONSTANT_COLOR, DestFactor.ONE_MINUS_DST_COLOR);
 		GL11.glPushMatrix();
 		MatrixStack ms = new MatrixStack();
 
-		if ((manaPercent > 1) && (manaPercent < 97)) {
-			fontRenderer.draw(ms, manaPercentString, (float) spellManaPercentStartX + 1, (float) spellCastTimeStartY + 1,
+		if ((manaPercent < 6)) {
+			fontRenderer.draw(ms, manaPercentString, (float) spellManaPercentStartX + 1, (float) displayManaBarTopPosY +1 ,
 					RGB_BLACK);
 			Color colourPercent = new Color(230, 160, 30, 190);
-			fontRenderer.draw(ms, manaPercentString, (float) spellManaPercentStartX , (float) spellCastTimeStartY,
+			fontRenderer.draw(ms, manaPercentString, (float) spellManaPercentStartX , (float) displayManaBarTopPosY ,
 					colourPercent.getRGB());
 		}
 
@@ -161,6 +160,38 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		mc.getTextureManager().bind(AbstractGui.GUI_ICONS_LOCATION);
 	}
 
+	private void showNewManaBar(RenderGameOverlayEvent.Post event, 
+			int manaPercent, int guiScaledCenterX, int displayManaBarTopPosY) {
+		int guiScaledHeight;
+
+		int manaBarFrameWidth  = 86;
+		int manaBarFrameTextureLeftX = 85;
+		int manaBarFrameTextureTopY = 89;
+		int manaBarFrameHeight = 8;
+
+		int manaBarWidth = (86 * manaPercent) / 100;
+		if ((personalMana > 2) && (manaBarWidth < 2)) {
+			manaBarWidth = 2;
+		}
+		int leftManaBarTextureStartX = 86;
+		int rightManaBarTextureStartX = 170 - (manaBarWidth/2)+1;
+				
+		int manaBarTextureTopY = 97;
+		int manabarHeight = 16;
+		int manaBarLeftEdgeX = 85;
+		RenderSystem.color4f(9.0F, 5.0F, 5.0F, 0.9F);
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX - 32, displayManaBarTopPosY,
+				manaBarFrameTextureLeftX, manaBarFrameTextureTopY, manaBarFrameWidth, manaBarFrameHeight , 256, 256);
+		// left and right half copy from far left and far right so tips of bar are rounded.
+		// left half of mana
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX + 10 - (manaBarWidth/2), displayManaBarTopPosY,
+					leftManaBarTextureStartX, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
+		// right half of mana
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX+ 10   , displayManaBarTopPosY,
+				rightManaBarTextureStartX-3	, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
+
+	}
+	
 	private void doAlphaTransparencyPulse() {
 		alphaPulseModifier = alphaPulseModifier + cycleDirection;
 		if (alphaPulseModifier > 0.8) {
@@ -202,6 +233,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			}
 		}
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 0.8F);
+		MyConfig.setGuiSpellCastingBarHeight(67.0);
 		int displayCastingBarTopPosY = (int) (guiScaledHeight * MyConfig.getGuiSpellCastingBarHeight());
 		if (displayCastingBarTopPosY == 0.0) {
 			displayCastingBarTopPosY = displayManaBarTopPosY - 7;
@@ -216,10 +248,10 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			if (guiPreparedSpellTranslationKey.equals("redstonemagic.tele")) {
 				if (mc.player.xRot >= 0) {
 					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
-							21 - (halfBarWidth), 105, (int) spellCastingBarWidth, 11, 256, 256);
+							21 - (halfBarWidth), 105, (int) spellCastingBarWidth, 10, 256, 256);
 				} else {
 					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
-							21 - (halfBarWidth) +42, 105, (int) spellCastingBarWidth, 11, 256, 256);
+							21 - (halfBarWidth) +42, 105, (int) spellCastingBarWidth, 10, 256, 256);
 				}
 			
 			}
@@ -228,6 +260,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 	private void showPreparedSpellInfo(MatrixStack ms, FontRenderer fontRender, long gametime, int guiScaledWidth,
 			int guiScaledHeight) {
 
+		// upper permanent line
 		final int RGB_PREPARED_SPELL = new Color(240, 90, 100, 170).getRGB();
 		int lastSpellPreparedStartX = (guiScaledWidth / 2) - (fontRender.width(guiSpellPrepared) / 2) + 1;
 		int lastSpellPreparedTopPosY = (int) (guiScaledHeight * MyConfig.getGuiPreparedSpellDisplayHeight()); // confirmed
@@ -237,7 +270,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		fontRender.draw(ms, guiSpellPrepared, (float) lastSpellPreparedStartX, (float) lastSpellPreparedTopPosY,
 				RGB_PREPARED_SPELL);
 
-		// short term display
+		// short term display lines
 		long elapsed_ticks = (gametime - getTimerDisplayPreparedSpellOptions());
 
 		if (elapsed_ticks > 80) {
@@ -248,8 +281,8 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 		int alpha_fade = (int) (elapsed_ticks - 30) / 2;
 		if (alpha_fade < 1)
 			alpha_fade = 1;
-//		MyConfig.sendChat(mc.player, "alpha_fade:" + alpha_fade);
-//		MyConfig.sendChat(mc.player, "elapsed_ticks" + elapsed_ticks);
+
+		// upper temporary display of up/down spell options
 		int RGB_FADING_BLACK = new Color(0, 0, 0, 150 / alpha_fade).getRGB();
 		int RGB_TEMP_PREPARED_SPELL = new Color(240, 90, 100, 150 / alpha_fade).getRGB();
 		int RGB_PREPARED_SPELL_OPTIONS = new Color(210, 180, 180, 150 / alpha_fade).getRGB();
@@ -264,11 +297,13 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 				(float) lastSpellPreparedTopPosY + fontRender.lineHeight + 3, RGB_FADING_BLACK);
 		fontRender.draw(ms, spellDownPrepareOption, (float) lastSpellDownPreparedStartX,
 				(float) lastSpellPreparedTopPosY + fontRender.lineHeight + 3, RGB_PREPARED_SPELL_OPTIONS);
+		
+		// lower temporary display of prepared spell
 		fontRender.draw(ms, guiSpellPrepared, (float) lastSpellPreparedStartX + 1,
-				(float) (guiScaledHeight * MyConfig.getGuiManaDisplayHeight() - fontRender.lineHeight - 3),
+				(float) (guiScaledHeight * MyConfig.getGuiManaDisplayHeight() - fontRender.lineHeight - 9),
 				RGB_FADING_BLACK);
 		fontRender.draw(ms, guiSpellPrepared, (float) lastSpellPreparedStartX,
-				(float) (guiScaledHeight * MyConfig.getGuiManaDisplayHeight() - fontRender.lineHeight - 3),
+				(float) (guiScaledHeight * MyConfig.getGuiManaDisplayHeight() - fontRender.lineHeight - 9),
 				RGB_TEMP_PREPARED_SPELL);
 
 	}

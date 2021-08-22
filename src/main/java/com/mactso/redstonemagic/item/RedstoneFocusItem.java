@@ -36,6 +36,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.HoeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.Rarity;
@@ -87,7 +88,8 @@ public class RedstoneFocusItem extends ShieldItem {
 	static final int MANA_REGENERATION_DURATION = 300;
 
 	static final ItemStack GHAST_TEAR_STACK = new ItemStack(Items.GHAST_TEAR);
-
+	static ItemStack FLYING_REAGENT_STACK;
+	
 	static final int START_FLYING = 1;
 	static final int KEEP_FLYING = 2;
 	static final int STOP_FLYING = 3;
@@ -126,7 +128,6 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	@Override
 	public Rarity getRarity(ItemStack stack) {
-			// TODO Auto-generated method stub
 			return Rarity.RARE;
 	}
 	@OnlyIn(value = Dist.CLIENT)
@@ -268,13 +269,18 @@ public class RedstoneFocusItem extends ShieldItem {
 			canUseRedstoneFocus = true;
 		}
 
-		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() == Items.BONE_MEAL) || (handItem.getItem() instanceof ShovelItem)) {
+		if ((handItem.getItem() == Items.LADDER) || (handItem.getItem() == Items.BONE_MEAL) || (handItem.getItem() instanceof ShovelItem) || (handItem.getItem() instanceof HoeItem)) {
 			canUseRedstoneFocus = false;
 			return canUseRedstoneFocus;
 		}
-
+		
+		// replace this with the item being clicked!  (waystones) but hand device should work.
 		// replace this with a list later but hard coded for now.
 		String modName = handItem.getItem().getRegistryName().getNamespace();
+//		if (playerIn.level.getGameTime()%20 == 0) {
+//			MyConfig.dbgPrintln(0, "modname of item in hand:"+ modName);
+//		}
+		
 		if (ModExclusionListDataManager.getModExclusionListItem(modName) != null) {
 			canUseRedstoneFocus = false;
 			return canUseRedstoneFocus;
@@ -293,7 +299,6 @@ public class RedstoneFocusItem extends ShieldItem {
 				break;
 			}
 		}
-
 		return canUseRedstoneFocus;
 	}
 
@@ -444,7 +449,6 @@ public class RedstoneFocusItem extends ShieldItem {
 	public ActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn) {
 
 		if (playerIn instanceof ServerPlayerEntity) {
-
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) playerIn;
 			ItemStack stack = serverPlayer.getItemInHand(handIn);
 			CompoundNBT compoundnbt = stack.getOrCreateTag();
@@ -456,8 +460,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			if (canUseRedstoneFocusItem(serverPlayer)) {
 				if (serverPlayer.isShiftKeyDown()) { // change spell
 					doChangePreparedSpell(serverPlayer, stack);
-				} else if ((playerCanFly(serverPlayer) && (preparedSpellNumber == 0)
-						&& (CastSpells.hasFalderal(serverPlayer, GHAST_TEAR_STACK)))) {
+				} else if ((playerCanFly(serverPlayer) && (preparedSpellNumber == 0))) {
 					if (doPayFlyingCost(serverPlayer, START_FLYING)) {
 						ServerWorld sWorld = serverPlayer.getLevel();
 						BlockPos pos = serverPlayer.blockPosition();
@@ -476,13 +479,19 @@ public class RedstoneFocusItem extends ShieldItem {
 	}
 
 	private boolean playerCanFly(ServerPlayerEntity serverPlayer) {
+		if (FLYING_REAGENT_STACK == null) {
+			FLYING_REAGENT_STACK = new ItemStack(ModItems.FLYING_REAGENT);
+		}
+
 		ServerWorld sWorld = serverPlayer.getLevel();
 		BlockPos pos = serverPlayer.blockPosition();
 		if (MyConfig.getMaxFlightSpeed() == 0) {
 			return false;
 		}
 		if (!CastSpells.hasFalderal(serverPlayer, GHAST_TEAR_STACK)) {
-			return false;
+			if (!CastSpells.hasReagent(serverPlayer, FLYING_REAGENT_STACK)) {
+				return false;
+			}
 		}
 		if ((sWorld.getBlockState(pos).getBlock() == Blocks.WATER)
 				|| (NO_FLY_LIST.contains(sWorld.getBlockState(pos.below()).getBlock()))) {
@@ -528,79 +537,89 @@ public class RedstoneFocusItem extends ShieldItem {
 				if (stack == offStack) {
 					handIndex = 2;
 				}
-
 				SoundEvent soundEvent = ModSounds.SPELL_FAILS;
 				// casting a spell
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);
-
+				
 				long netTicks = stack.getUseDuration() - timeLeft;
-
+				MyConfig.sendChat((PlayerEntity) entityLiving, "netTicks:"+netTicks);
 				int preparedSpellNumber = compoundnbt.getInt("preparedSpellNumber");
 				
 				
 				RedstoneMagicSpellItem spell = SpellManager
 						.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 
+				// Hack for mods that do not consume the click, maximum casting time.
+				int maxCastingTime = 350;
+				if (preparedSpellNumber == 0) maxCastingTime = 900;
+				if (preparedSpellNumber == 1) maxCastingTime = 900;
+
 				int minimumCastingTime = 1;
 				if (spell.getSpellTranslationKey().equals("redstonemagic.tele")) {
 					minimumCastingTime = 4;
+					maxCastingTime = 300;
 				}
+				
 
-				if (netSpellCastingTime < minimumCastingTime) {
-					if (RedstoneMagicGuiEvent.getFizzleSpamLimiter() < 0) {
-						RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
-						TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
-						if (!MyConfig.getGuiSpamChatFilter()) {
-							MyConfig.sendChat(clientPlayer, msg.getString(), Color.fromLegacyFormat((TextFormatting.RED)));
-						}
-						clientPlayer.level.playSound(clientPlayer, clientPlayer.blockPosition(), soundEvent,
-								SoundCategory.AMBIENT, 0.6f, 0.3f);
-					}
-				} else {
-
-					float volume = 0.4f + (0.1f * netSpellCastingTime);
-					float pitch = 0.3f;
-
-					Entity targetEntity = null;
-					BlockPos targetPos = null;
-					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_OTHER)) {
-						targetEntity = doLookForDistantTarget(clientPlayer);
-						if (targetEntity != null) {
-							soundEvent = SoundEvents.FIREWORK_ROCKET_LAUNCH;
-						}
-					}
-
-					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_BOTH)) {
-						targetEntity = doLookForDistantTarget(clientPlayer);
-						if (targetEntity == null) {
-							targetEntity = clientPlayer;
-						}
-						int distance = 10 + (int) (7 * clientPlayer.level.random.nextFloat());
-						targetPos = doLookForDistantBlock(clientPlayer, distance);
-						soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
-					}
-
-					if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_SELF)) {
-						targetEntity = clientPlayer;
-						targetPos = targetEntity.blockPosition();
-						soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
-					}
-
-					if (targetEntity != null) {
-						clientPlayer.level.playSound(null, targetEntity.blockPosition(), soundEvent,
-								SoundCategory.PLAYERS, volume, pitch);
-						if (targetPos != null) {
-							Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber, targetEntity.getId(),
-									(int) netSpellCastingTime, handIndex, targetPos.getX(), targetPos.getY(),
-									targetPos.getZ()));
-						} else {
-							Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber, targetEntity.getId(),
-									(int) netSpellCastingTime, handIndex, -1, -99999, -1));
+				if (netTicks < maxCastingTime) {
+					
+					if (netSpellCastingTime < minimumCastingTime) {
+						if (RedstoneMagicGuiEvent.getFizzleSpamLimiter() < 0) {
+							RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
+							TextComponent msg = new TranslationTextComponent("redstonemagic.fizz");
+							if (!MyConfig.getGuiSpamChatFilter()) {
+								MyConfig.sendChat(clientPlayer, msg.getString(), Color.fromLegacyFormat((TextFormatting.RED)));
+							}
+							clientPlayer.level.playSound(clientPlayer, clientPlayer.blockPosition(), soundEvent,
+									SoundCategory.AMBIENT, 0.6f, 0.3f);
 						}
 					} else {
-						clientPlayer.level.playSound(null, clientPlayer.blockPosition(), soundEvent,
-								SoundCategory.PLAYERS, volume, pitch);
+
+						float volume = 0.4f + (0.1f * netSpellCastingTime);
+						float pitch = 0.3f;
+
+						Entity targetEntity = null;
+						BlockPos targetPos = null;
+						if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_OTHER)) {
+							targetEntity = doLookForDistantTarget(clientPlayer);
+							if (targetEntity != null) {
+								soundEvent = SoundEvents.FIREWORK_ROCKET_LAUNCH;
+							}
+						}
+
+						if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_BOTH)) {
+							targetEntity = doLookForDistantTarget(clientPlayer);
+							if (targetEntity == null) {
+								targetEntity = clientPlayer;
+							}
+							int distance = 10 + (int) (7 * clientPlayer.level.random.nextFloat());
+							targetPos = doLookForDistantBlock(clientPlayer, distance);
+							soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
+						}
+
+						if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_SELF)) {
+							targetEntity = clientPlayer;
+							targetPos = targetEntity.blockPosition();
+							soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
+						}
+
+						if (targetEntity != null) {
+							clientPlayer.level.playSound(null, targetEntity.blockPosition(), soundEvent,
+									SoundCategory.PLAYERS, volume, pitch);
+							if (targetPos != null) {
+								Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber, targetEntity.getId(),
+										(int) netSpellCastingTime, handIndex, targetPos.getX(), targetPos.getY(),
+										targetPos.getZ()));
+							} else {
+								Network.sendToServer(new RedstoneMagicPacket(preparedSpellNumber, targetEntity.getId(),
+										(int) netSpellCastingTime, handIndex, -1, -99999, -1));
+							}
+						} else {
+							clientPlayer.level.playSound(null, clientPlayer.blockPosition(), soundEvent,
+									SoundCategory.PLAYERS, volume, pitch);
+						}
 					}
+					
 				}
 
 			}
@@ -626,6 +645,7 @@ public class RedstoneFocusItem extends ShieldItem {
 	public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
 
+		long gameTime = worldIn.getGameTime();
 		if ((entityIn instanceof ServerPlayerEntity)) {
 			ServerPlayerEntity sPlayer = (ServerPlayerEntity) entityIn;
 			CompoundNBT tag= stack.getOrCreateTag();
@@ -644,7 +664,7 @@ public class RedstoneFocusItem extends ShieldItem {
 					doStopFlying(sPlayer);
 				}
 			}
-			long gameTime = worldIn.getGameTime();
+
 			int chunkMana = NO_CHUNK_MANA_UPDATE;
 			// update client with current chunk mana twice per second.
 			if (gameTime%10==0) {
@@ -673,10 +693,10 @@ public class RedstoneFocusItem extends ShieldItem {
 							0.2D);
 				}
 			}
-			if (worldIn.getGameTime() % MANA_REGENERATION_DURATION == 0) { // every 300 ticks / 15 seconds.
+			if (gameTime % MANA_REGENERATION_DURATION == 0) { // every 300 ticks / 15 seconds.
 				IMagicStorage playerManaStorage = sPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
-
+				MyConfig.sendChat (sPlayer, "Manalevel:" + manaLevel);
 				if (manaLevel < 20) {
 					int maxMana = MyConfig.getMaxPlayerRedstoneMagic();
 					if (maxMana < 1) {
@@ -723,10 +743,6 @@ public class RedstoneFocusItem extends ShieldItem {
 				}
 			
 
-//			MyConfig.sendChat(p, "add particle at x:" + xOffset +" z:"+ zOffset + " y:" + yOffset);
-//			worldIn.addParticle(p_195590_1_, p_195590_2_, p_195590_3_, p_195590_5_, p_195590_7_, p_195590_9_, p_195590_11_, p_195590_13_);articles(ParticleTypes.WITCH, 0.5D + (double) x,
-//					0.75D + (double) y, 0.5D + (double) z, 3, 0.5D, -1.15D, 0.5D, 0.2D);
-// xxzzy
 			if (gametime % 5 == 0) {
 
 				ItemStack mainHand = p.getMainHandItem();
@@ -776,7 +792,10 @@ public class RedstoneFocusItem extends ShieldItem {
 								: 0;
 				doPlayCastingTickSounds(serverPlayer, stack, spellCastingStartTime, preparedSpellNumber);
 			}
-
+			IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+			if (gameTime %20 == 0) {
+			MyConfig.dbgPrintln(0, "mana:" + playerManaStorage.getManaStored());
+			}
 			if (getIsFlying((PlayerEntity) serverPlayer)) {
 				if (gameTime % 2 == 0) {
 					doServerPlayerFlying(serverPlayer, stack);
@@ -808,6 +827,9 @@ public class RedstoneFocusItem extends ShieldItem {
 	}
 
 	private boolean doPayFlyingCost(ServerPlayerEntity serverPlayer, int flyingType) {
+		if (FLYING_REAGENT_STACK == null) {
+			FLYING_REAGENT_STACK = new ItemStack(ModItems.FLYING_REAGENT);
+		}
 		BlockPos pos = serverPlayer.blockPosition();
 		ServerWorld sw = serverPlayer.getLevel();
 		Chunk chunk = (Chunk) sw.getChunk(serverPlayer.blockPosition());
@@ -815,14 +837,27 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		int flightTime = MyConfig.getFlightTime() * 20;
 		int manaCost = 11;
+		
+		if (!playerCanFly(serverPlayer)) {
+			return false;
+		}
+
 		if ((flyingType == START_FLYING) || ((serverPlayer.getLevel().getGameTime() % flightTime) == 0)) {
 			// MyConfig.sendChat(serverPlayer, "Pay for flying",
 			// Color.fromLegacyFormat(TextFormatting.RED));
+			
 			if (serverPlayer.getLevel().getBlockState(pos).getBlock() == Blocks.WATER) {
 				setIsFlying(serverPlayer, false, serverPlayer.getLevel().getChunk(pos).getInhabitedTime());
 				return false;
 			}
 
+			if (CastSpells.hasFalderal(serverPlayer, GHAST_TEAR_STACK)) {
+				// 
+			} else if (!CastSpells.useReagent(serverPlayer, FLYING_REAGENT_STACK)){
+				// stop flying when out of flight reagents.
+				return false;
+			}
+			
 			if (flyingType == START_FLYING) {
 				manaCost = 1;
 			}
@@ -845,6 +880,9 @@ public class RedstoneFocusItem extends ShieldItem {
 
 				setIsChunkFlying(serverPlayer, false);
 				IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
+				if (playerManaStorage == null) {
+					return false;
+				}
 				if (manaCost > 0) {
 					manaCost = 2;
 				}
@@ -855,20 +893,25 @@ public class RedstoneFocusItem extends ShieldItem {
 				// distance to last seen mana gatherer.
 
 				if (flyingType == START_FLYING) {
+					// prevent scam flying.
+					if (playerManaStorage.getManaStored() < 4) {
+						doStopFlying(serverPlayer);
+						return false;
+					}
 					manaCost = (manaCost / 2) + 1;
-					// MyConfig.sendChat(serverPlayer, "Start Flying",
-					// Color.fromLegacyFormat(TextFormatting.RED));
 				}
 
 				serverPlayer.causeFoodExhaustion(0.5f);
 				ItemStack stack = serverPlayer.getMainHandItem();
+				
+				// pay some food exhaustion for super fast flying.
 				if (stack.getItem() == GHAST_TEAR_STACK.getItem()) {
 					serverPlayer.causeFoodExhaustion(0.5f);
 				}
+
+				MyConfig.dbgPrintln(0, "playerManaStorage.getMana() : "+playerManaStorage.getManaStored() + "  Flying manaCost: " + manaCost);
+
 				if (playerManaStorage.useMana(manaCost)) {
-					// MyConfig.sendChat(serverPlayer, "Pay Fly from Player : " + manaCost + " of "
-					// + playerManaStorage.getManaStored(),
-					// Color.fromLegacyFormat(TextFormatting.RED));
 
 					Network.sendToClient(
 							new SyncClientManaPacket(playerManaStorage.getManaStored(), NO_CHUNK_MANA_UPDATE),

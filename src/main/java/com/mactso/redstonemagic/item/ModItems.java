@@ -23,6 +23,7 @@ public class ModItems
 	 = new BlockItem(ModBlocks.GATHERER, new Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("gatherer");
 	public static final Item TEST_BLOCK2
 	 = new BlockItem(ModBlocks.TEST_BLOCK2, new Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("test_block2");
+	public static final Item FLYING_REAGENT =  new Item((new Item.Properties()).tab(ItemGroup.TAB_MATERIALS)).setRegistryName("flying_reagent");
 
 	public static final Item RITUAL_PYLON 
 	 = new BlockItem(ModBlocks.RITUAL_PYLON, new Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("ritual_pylon");
@@ -47,6 +48,7 @@ public class ModItems
 		forgeRegistry.register(RITUAL_PYLON );
 		forgeRegistry.register(REDSTONE_FOCUS_ITEM );
 		forgeRegistry.register(GATHERER);	
+		forgeRegistry.register(FLYING_REAGENT);
 //		forgeRegistry.register(TEST_BLOCK2);	
 		forgeRegistry.registerAll(REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
 		forgeRegistry.registerAll(REDSTONEMAGIC_LEATHER_HELMET, REDSTONEMAGIC_LEATHER_CHESTPLATE, REDSTONEMAGIC_LEATHER_LEGGINGS, REDSTONEMAGIC_LEATHER_BOOTS);

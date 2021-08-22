@@ -42,8 +42,10 @@ public class MyConfig
 		public final String defaultModExclusionList6464 = 
 				  "customquests;"
 				+ "simplybackpacks;"
+				+ "storagenetwork;"
+				+ "waystones;"
 				;
-		
+
 		public Common(ForgeConfigSpec.Builder builder)
 		{
 			builder.push("Redstone Magic Control Values");
@@ -56,7 +58,7 @@ public class MyConfig
 			wakeupManaRegenPercent = builder
 					.comment("GUI wakeupManaRegenPercent: 0 = Off, 0.001-10% = % to add on waking")
 					.translation(Main.MODID + ".config." + "wakeupManaRegenPercent")
-					.defineInRange("wakeupManaRegenPercent", () -> 3.3, 0.0, 100.0);
+					.defineInRange("wakeupManaRegenPercent", () -> 5.0, 0.0, 100.0);
 
 			guiPreparedSpellDisplayHeight = builder
 					.comment("guiPreparedSpellDisplayHeight: 8%, 0.0-50% ")
@@ -64,14 +66,14 @@ public class MyConfig
 					.defineInRange("guiPreparedSpellDisplayHeight", () -> 08.0, 0.0, 50.0);
 
 			guiSpellCastingBarHeight = builder
-					.comment("guiSpellCastingBarHeight: 70%, 0.0-75%")
+					.comment("guiSpellCastingBarHeight: 70%, 5.0-75%")
 					.translation(Main.MODID + ".config." + "guiSpellCastingBarHeight")
-					.defineInRange("guiSpellCastingBarHeight", () -> 70.0,  0.0, 75.0);
+					.defineInRange("guiSpellCastingBarHeight", () -> 67.0,  5.0, 75.0);
 
 			guiManaDisplayHeight = builder
 					.comment("guiManaDisplayHeight: 80%, 0.0-80%")
 					.translation(Main.MODID + ".config." + "guiManaDisplayHeight")
-					.defineInRange("guiManaDisplayHeight", () -> 75.0, 0.0, 80.0);
+					.defineInRange("guiManaDisplayHeight", () -> 72.0, 0.0, 80.0);
 			
 			guiChatSpamFilter = builder
 					.comment("guiChatSpamFilter : true-supress casting and fizzle text messages.")
@@ -104,7 +106,7 @@ public class MyConfig
 					.defineInRange("maxPlayerRedstoneMagic", () -> 400, 0, 511);
 			builder.pop();
 			
-			builder.push ("Regrowth Wall Foundations 6464");
+			builder.push ("Mod Exclusion List (ignore Redfish if clicking on items from these mods");
 			
 			defaultModExclusionListActual = builder
 					.comment("Mod Exclusion List String 6464")
@@ -182,6 +184,10 @@ public class MyConfig
 
 	public static double getGuiSpellCastingBarHeight() {
 		return guiSpellCastingBarHeight/100.0;
+	}
+
+	public static void setGuiSpellCastingBarHeight(double height) {
+		guiSpellCastingBarHeight = height;
 	}
 	
 	public static void setGuiManaDisplayHeight(double guiManaDisplayHeight) {
