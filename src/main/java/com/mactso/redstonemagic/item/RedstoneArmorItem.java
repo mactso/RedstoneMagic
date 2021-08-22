@@ -31,6 +31,11 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		super(material, slot, prop);
 		setRegistryName(Main.MODID, name);
 	}
+	
+	@Override
+	public boolean isRepairable(ItemStack stack) {
+		return true;
+	}
 
 	@Override
 	public int getColor(ItemStack stack) {
