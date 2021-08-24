@@ -542,7 +542,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				long netSpellCastingTime = (((stack.getUseDuration() - timeLeft) + 5) / 10);
 				
 				long netTicks = stack.getUseDuration() - timeLeft;
-				MyConfig.sendChat((PlayerEntity) entityLiving, "netTicks:"+netTicks);
+				// MyConfig.sendChat((PlayerEntity) entityLiving, "netTicks:"+netTicks);
 				int preparedSpellNumber = compoundnbt.getInt("preparedSpellNumber");
 				
 				
@@ -550,14 +550,14 @@ public class RedstoneFocusItem extends ShieldItem {
 						.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
 
 				// Hack for mods that do not consume the click, maximum casting time.
-				int maxCastingTime = 350;
-				if (preparedSpellNumber == 0) maxCastingTime = 900;
-				if (preparedSpellNumber == 1) maxCastingTime = 900;
+				int maxCastingTime = 160;
+				if (preparedSpellNumber == 0) maxCastingTime = 500;
+				if (preparedSpellNumber == 1) maxCastingTime = 400;
 
 				int minimumCastingTime = 1;
 				if (spell.getSpellTranslationKey().equals("redstonemagic.tele")) {
 					minimumCastingTime = 4;
-					maxCastingTime = 300;
+					maxCastingTime = 180;
 				}
 				
 
@@ -696,7 +696,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			if (gameTime % MANA_REGENERATION_DURATION == 0) { // every 300 ticks / 15 seconds.
 				IMagicStorage playerManaStorage = sPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 				int manaLevel = playerManaStorage.getManaStored();
-				MyConfig.sendChat (sPlayer, "Manalevel:" + manaLevel);
+				// MyConfig.sendChat (sPlayer, "Manalevel:" + manaLevel);
 				if (manaLevel < 20) {
 					int maxMana = MyConfig.getMaxPlayerRedstoneMagic();
 					if (maxMana < 1) {
@@ -794,7 +794,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			}
 			IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (gameTime %20 == 0) {
-			MyConfig.dbgPrintln(0, "mana:" + playerManaStorage.getManaStored());
+			// MyConfig.dbgPrintln(0, "mana:" + playerManaStorage.getManaStored());
 			}
 			if (getIsFlying((PlayerEntity) serverPlayer)) {
 				if (gameTime % 2 == 0) {

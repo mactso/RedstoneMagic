@@ -510,13 +510,13 @@ public class CastSpells {
 		nukeDamage += damageModifierForTarget;
 		
 		if (useReagent(serverPlayer, REDSTONE_STACK))
-			nukeDamage = nukeDamage + 2;
+			nukeDamage = nukeDamage + 3;
 
 
 		if (hasFalderal(serverPlayer, BLUE_ICE_STACK)) {
 			if (targetEntity.fireImmune()) {
 				double coldBonus = nukeDamage * 0.1d;
-				if (coldBonus < 2.0) coldBonus = 2.0;
+				if (coldBonus < 3.0) coldBonus = 3.0;
 				nukeDamage += coldBonus;
 			}
 			targetEntity.hurt(myDamageSource, nukeDamage);

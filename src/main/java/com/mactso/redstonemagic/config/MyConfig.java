@@ -63,21 +63,21 @@ public class MyConfig
 			guiPreparedSpellDisplayHeight = builder
 					.comment("guiPreparedSpellDisplayHeight: 8%, 0.0-50% ")
 					.translation(Main.MODID + ".config." + "guiPreparedSpellDisplayHeight")
-					.defineInRange("guiPreparedSpellDisplayHeight", () -> 08.0, 0.0, 50.0);
+					.defineInRange("guiPreparedSpellDisplayHeight", () -> 12.0, 0.0, 50.0);
 
 			guiSpellCastingBarHeight = builder
 					.comment("guiSpellCastingBarHeight: 70%, 5.0-75%")
 					.translation(Main.MODID + ".config." + "guiSpellCastingBarHeight")
-					.defineInRange("guiSpellCastingBarHeight", () -> 67.0,  5.0, 75.0);
+					.defineInRange("guiSpellCastingBarHeight", () -> 62.0,  5.0, 75.0);
 
 			guiManaDisplayHeight = builder
 					.comment("guiManaDisplayHeight: 80%, 0.0-80%")
 					.translation(Main.MODID + ".config." + "guiManaDisplayHeight")
-					.defineInRange("guiManaDisplayHeight", () -> 72.0, 0.0, 80.0);
+					.defineInRange("guiManaDisplayHeight", () -> 65.0, 0.0, 80.0);
 			
 			guiChatSpamFilter = builder
 					.comment("guiChatSpamFilter : true-supress casting and fizzle text messages.")
-					.translation(Main.MODID + ".config." + "spellCastingBarHeight")
+					.translation(Main.MODID + ".config." + "guiChatSpamFilter")
 					.define("guiChatSpamFilter", true);
 				
 			neverBreakTools = builder

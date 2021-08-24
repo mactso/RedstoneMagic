@@ -33,6 +33,24 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	@Override
 	public int getDefenseForSlot(EquipmentSlotType slotIn) {
+		// Leather 1, 2, 3, 1
+		// Chain: 1, 4, 5, 2 
+		// RML : 2, 4, 5, 2
+		// Iron: 2, 5, 6, 2
+		if (this.clone == ArmorMaterial.LEATHER) {
+			if (slotIn == EquipmentSlotType.HEAD) {
+				return 2;
+			}
+			if (slotIn == EquipmentSlotType.CHEST) {
+				return 5;
+			}
+			if (slotIn == EquipmentSlotType.LEGS) {
+				return 5;
+			}
+			if (slotIn == EquipmentSlotType.FEET) {
+				return 2;
+			}
+		}
 		return clone.getDefenseForSlot(slotIn);
 	}
 

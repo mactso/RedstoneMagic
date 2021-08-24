@@ -162,32 +162,32 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 
 	private void showNewManaBar(RenderGameOverlayEvent.Post event, 
 			int manaPercent, int guiScaledCenterX, int displayManaBarTopPosY) {
-		int guiScaledHeight;
 
-		int manaBarFrameWidth  = 86;
-		int manaBarFrameTextureLeftX = 85;
-		int manaBarFrameTextureTopY = 89;
+
+		int manaBarFrameWidth  = 102;
+		int manaBarFrameTextureLeftX = 84;
+		int manaBarFrameTextureTopY = 87;
 		int manaBarFrameHeight = 8;
 
-		int manaBarWidth = (86 * manaPercent) / 100;
-		if ((personalMana > 2) && (manaBarWidth < 2)) {
-			manaBarWidth = 2;
+		int manaBarWidth = manaPercent;
+		if ((personalMana > 2) && (manaBarWidth < 1)) {
+			manaBarWidth = 1;
 		}
-		int leftManaBarTextureStartX = 86;
-		int rightManaBarTextureStartX = 170 - (manaBarWidth/2)+1;
+		int leftManaBarTextureStartX = 85;
+		int rightManaBarTextureStartX = 186 - (manaBarWidth/2)+1;
 				
-		int manaBarTextureTopY = 97;
+		int manaBarTextureTopY = 95;
 		int manabarHeight = 16;
-		int manaBarLeftEdgeX = 85;
+		int manaBarLeftEdgeX = 90;
 		RenderSystem.color4f(9.0F, 5.0F, 5.0F, 0.9F);
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX - 32, displayManaBarTopPosY,
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX - 42, displayManaBarTopPosY,
 				manaBarFrameTextureLeftX, manaBarFrameTextureTopY, manaBarFrameWidth, manaBarFrameHeight , 256, 256);
 		// left and right half copy from far left and far right so tips of bar are rounded.
 		// left half of mana
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX + 10 - (manaBarWidth/2), displayManaBarTopPosY,
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX  + 9 - (manaBarWidth/2), displayManaBarTopPosY,
 					leftManaBarTextureStartX, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 		// right half of mana
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX+ 10   , displayManaBarTopPosY,
+		Screen.blit(event.getMatrixStack(), guiScaledCenterX  + 9 , displayManaBarTopPosY,
 				rightManaBarTextureStartX-3	, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 
 	}
@@ -248,10 +248,10 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 			if (guiPreparedSpellTranslationKey.equals("redstonemagic.tele")) {
 				if (mc.player.xRot >= 0) {
 					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
-							21 - (halfBarWidth), 105, (int) spellCastingBarWidth, 10, 256, 256);
+							21 - (halfBarWidth), 104, (int) spellCastingBarWidth, 8, 256, 256);
 				} else {
 					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
-							21 - (halfBarWidth) +42, 105, (int) spellCastingBarWidth, 10, 256, 256);
+							21 - (halfBarWidth) +42, 104, (int) spellCastingBarWidth, 8, 256, 256);
 				}
 			
 			}
