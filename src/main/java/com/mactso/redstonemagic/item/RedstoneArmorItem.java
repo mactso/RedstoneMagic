@@ -188,13 +188,13 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		int d100Roll = sPlayer.level.getRandom().nextInt(100);
 		int manaRegenRate = 0;
 		if (this.getMaterial() == ModItems.REDSTONEMAGIC_LEATHER_MATERIAL) {
-			if (d100Roll <= 40) {
+			if (d100Roll <= 45) {
 				return;
 			}
 			manaRegenRate = 1;
 		}
 		if (this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
-			if (d100Roll <= 5) {
+			if (d100Roll <= 7) {
 				return;
 			}
 			manaRegenRate = 2;

@@ -63,6 +63,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	static final int RITUAL_LIGHTING_TORCH = 94;
 	static final int RITUAL_LIGHTING_LANTERN = 95;
 	static final int RITUAL_CLEARING = 96;
+	static final int RITUAL_BUILDING = 98;
 
 	static final int RITUAL_WARMUP_TIME = 100; // 5 seconds
 	static final ItemStack GLOWSTONE_STACK = new ItemStack(Items.GLOWSTONE, 1);
@@ -355,6 +356,12 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			if (c.isMaxAge(tBS)) {
 				return true;
 			}
+		} else if (tBlock instanceof MelonBlock) {
+			return true;
+		} else if (tBlock instanceof PumpkinBlock) {
+			return true;
+		} else if (tBlock instanceof SugarCaneBlock) {
+			return true;
 		}
 		return false;
 	}
@@ -418,6 +425,7 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					dropsStack.setCount(v);
 					;
 				}
+				level.destroyBlock(cursorPos, false);
 				IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
 				if (chestInv != null) {
 					HopperTileEntity.addItem(null, chestInv, dropsStack, null);
@@ -426,15 +434,20 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		} else if ((tBlock instanceof SugarCaneBlock)){
 			mustPayChunkCost = true;
 			for (int i = 2; i>0; i--) {
-				for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos.above(i)))) {
-					if (dropsStack.getItem() instanceof BlockNamedItem) {
-						int v = Math.max((dropsStack.getCount() - 2), 0);
-						dropsStack.setCount(v);
-						;
-					}
-					IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
-					if (chestInv != null) {
-						HopperTileEntity.addItem(null, chestInv, dropsStack, null);
+				BlockState sctBS = level.getBlockState(cursorPos.above(i));
+				Block sctBlock = sctBS.getBlock();
+				if (sctBlock instanceof SugarCaneBlock) {
+					for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos.above(i)))) {
+						if (dropsStack.getItem() instanceof BlockNamedItem) {
+							int v = Math.max((dropsStack.getCount() - 2), 0);
+							dropsStack.setCount(v);
+							;
+						}
+						level.destroyBlock(cursorPos.above(i), false);
+						IInventory chestInv = HopperTileEntity.getContainerAt(this.level, worldPosition.below());
+						if (chestInv != null) {
+							HopperTileEntity.addItem(null, chestInv, dropsStack, null);
+						}
 					}
 				}
 			}
@@ -613,9 +626,19 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					}
 				}
 				cursorPos = new BlockPos(cursorRitualX, cursorRitualY, cursorRitualZ);
-				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + cursorRitualX, 0.35D + cursorRitualY,
-						0.5D + cursorRitualZ, 3, 0.0D, 0.1D, 0.0D, -0.04D);
-				utilCreateNonBasicParticle(cursorPos, 1, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
+				if (currentRitual == RITUAL_TESTING) {
+					if (cursorRitualX == minRitualX +1 
+							|| cursorRitualZ == minRitualZ +1 
+							|| cursorRitualX == minRitualX + 15 
+							|| cursorRitualZ == minRitualZ + 15) {
+						((ServerWorld) level).sendParticles(ParticleTypes.END_ROD, 1.5D + cursorRitualX, 0.35D + cursorRitualY,
+								-0.5D + cursorRitualZ, (int) 1, 0.0D, 0.0D, 0.001D, 0.00D);
+					}
+				} else {
+					((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + cursorRitualX, 0.35D + cursorRitualY,
+							0.5D + cursorRitualZ, 3, 0.0D, 0.1D, 0.0D, -0.04D);
+					utilCreateNonBasicParticle(cursorPos, 1, new ItemParticleData(ParticleTypes.ITEM, GLOWSTONE_STACK));
+				}
 
 				if ((currentRitual == RITUAL_LIGHTING_TORCH) || (currentRitual == RITUAL_LIGHTING_LANTERN)) {
 					if (isLightable(cursorPos)) {
@@ -666,10 +689,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
 						(double) worldPosition.getY() + cursorRitualY + 0.10D,
 						0.5D + (double) minRitualZ + cursorRitualZ, (int) 3, 0.0D, 0.1D, 0.0D, 0.04D);
-			} else {
-				((ServerWorld) level).sendParticles(ParticleTypes.POOF, 0.5D + (double) minRitualX + cursorRitualX,
+			} else if (cursorRitualX == 0 || cursorRitualZ == 0 || cursorRitualX == 15 || cursorRitualZ == 15) {
+				((ServerWorld) level).sendParticles(ParticleTypes.END_ROD, 0.5D + (double) minRitualX + cursorRitualX,
 						(double) worldPosition.getY() + cursorRitualY + 0.10D,
-						0.5D + (double) minRitualZ + cursorRitualZ, (int) 1, 0.0D, 0.1D, 0.0D, 0.04D);
+						0.5D + (double) minRitualZ + cursorRitualZ, (int) 1, 0.0D, 0.0D, 0.001D, 0.00D);
 
 			}
 

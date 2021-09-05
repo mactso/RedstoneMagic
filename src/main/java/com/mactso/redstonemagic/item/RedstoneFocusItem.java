@@ -277,9 +277,9 @@ public class RedstoneFocusItem extends ShieldItem {
 		// replace this with the item being clicked!  (waystones) but hand device should work.
 		// replace this with a list later but hard coded for now.
 		String modName = handItem.getItem().getRegistryName().getNamespace();
-//		if (playerIn.level.getGameTime()%20 == 0) {
-//			MyConfig.dbgPrintln(0, "modname of item in hand:"+ modName);
-//		}
+		if (playerIn.level.getGameTime()%20 == 0) {
+			MyConfig.dbgPrintln(1, "modname of item in hand:"+ modName);
+		}
 		
 		if (ModExclusionListDataManager.getModExclusionListItem(modName) != null) {
 			canUseRedstoneFocus = false;
@@ -304,10 +304,13 @@ public class RedstoneFocusItem extends ShieldItem {
 
 	@Override
 	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+		CompoundNBT tag = stack.getTag();
 		if (amount > 9) {
 			amount = 3;
+			tag.putLong("stopDamageSound", 2);
 		} else if (amount > 2) {
 			amount = 2;
+			tag.putLong("stopDamageSound", 1);
 		}
 		return super.damageItem(stack, amount, entity, onBroken);
 	}
@@ -646,6 +649,8 @@ public class RedstoneFocusItem extends ShieldItem {
 		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
 
 		long gameTime = worldIn.getGameTime();
+		BlockPos pos = entityIn.blockPosition();
+		int stopDamageSound = 0;
 		if ((entityIn instanceof ServerPlayerEntity)) {
 			ServerPlayerEntity sPlayer = (ServerPlayerEntity) entityIn;
 			CompoundNBT tag= stack.getOrCreateTag();
@@ -658,6 +663,20 @@ public class RedstoneFocusItem extends ShieldItem {
         	if (!(tag.contains("preparedSpellNumber"))) {
         		tag.putInt("preparedSpellNumber", 0);
         	}
+        	
+//			Put this on hold until I record a custom sound.
+//        	if (tag.contains("stopDamageSound")) {
+//        		stopDamageSound = tag.getInt("stopDamageSound");
+//        		tag.putInt("stopDamageSound", 0);
+//        	}
+//
+//        	if (stopDamageSound == 1) {
+//    			sPlayer.level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.NOTE_BLOCK_COW_BELL, SoundCategory.BLOCKS,
+//    					1.0F, 0.6F );
+//        	} else if (stopDamageSound == 2) {
+//        		sPlayer.level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.SHIELD_BREAK, SoundCategory.BLOCKS,
+//    					0.50F, 0.5F );
+//        	}
         	
 			if (!canUseRedstoneFocusItem(sPlayer)) {
 				if (getIsFlying(sPlayer)) {
@@ -682,7 +701,7 @@ public class RedstoneFocusItem extends ShieldItem {
 				}
 			}
 			
-			BlockPos pos = sPlayer.blockPosition();
+
 			Block b = worldIn.getBlockState(pos.below()).getBlock();
 			boolean fasterManaRegen = false;
 			if (FREE_FLY_LIST.contains(b)) {
@@ -726,7 +745,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			long gametime = worldIn.getGameTime();
 			PlayerEntity p = (PlayerEntity) entityIn;
 			Random rand = p.level.random;
-			BlockPos pos = p.blockPosition();
+
 			
 			// show redstone sparkles if the chunk has over 64 mana.
 				long chunkMana = RedstoneMagicGuiEvent.getCurrentChunkRedstoneMana();

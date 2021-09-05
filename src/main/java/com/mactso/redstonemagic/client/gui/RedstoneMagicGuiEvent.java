@@ -188,7 +188,7 @@ public class RedstoneMagicGuiEvent extends IngameGui {
 					leftManaBarTextureStartX, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 		// right half of mana
 		Screen.blit(event.getMatrixStack(), guiScaledCenterX  + 9 , displayManaBarTopPosY,
-				rightManaBarTextureStartX-3	, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
+				rightManaBarTextureStartX-2	, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 
 	}
 	

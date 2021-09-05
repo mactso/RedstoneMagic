@@ -97,6 +97,6 @@
 	"advancements.quickcastingspells.description": "Tivruski teaches you how to Quick Cast a spell for less mana and weaker effect by releasing before the spell casting bar is full.  Some spells, like Light and Remove curse, still give full effect when quick cast.",
 	"advancements.reagents.description": "Tivruski teaches you: Reagents must be in the hotbar and are destroyed to make spells more powerful.",
 	"advancements.reagent.redstone.description": "Tivruski teaches you: Redstone Dust is a reagent that adds damage to Redstone, Ice, and Fire Bolts.",
-	"advancements.reagent.flying_reagent.description": "You learn to craft a Flying Reagent from a feather, some redstone dust, and a gold nugget. You can fly for a few seconds until it is consumed.",
+	"advancements.reagent.flying_reagent.description": "Tivruski shows you how to fly using Redstone Bolt and a Flying Reagent.    You learn to craft a Flying Reagent from a feather, some redstone dust, and a gold nugget.  until the flying reagent is consumed.",
 	"advancements.rmroot.description": "A wise old Villager Tivruski, takes a liking to you and shares a bit of ancient secret magical lore about redstone dust.  New secrets revealed on the Redstone Magic Advancements Tab.  Press ESC and select the Advancements Button to see them."
 }
