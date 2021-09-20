@@ -928,7 +928,7 @@ public class RedstoneFocusItem extends ShieldItem {
 					serverPlayer.causeFoodExhaustion(0.5f);
 				}
 
-				MyConfig.dbgPrintln(0, "playerManaStorage.getMana() : "+playerManaStorage.getManaStored() + "  Flying manaCost: " + manaCost);
+				MyConfig.dbgPrintln(1, "playerManaStorage.getMana() : "+playerManaStorage.getManaStored() + "  Flying manaCost: " + manaCost);
 
 				if (playerManaStorage.useMana(manaCost)) {
 

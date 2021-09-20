@@ -79,6 +79,7 @@ public class CastSpells {
 	static final ItemStack SPIDER_EYE_STACK = new ItemStack(Items.SPIDER_EYE);
 	static final ItemStack TURTLE_HELMET = new ItemStack(Items.TURTLE_HELMET);
 	static final ItemStack GLOWSTONE_DUST_STACK = new ItemStack(Items.GLOWSTONE_DUST);
+	static final ItemStack TRIDENT_STACK = new ItemStack(Items.TRIDENT);
 	static final ItemStack NETHER_STAR_STACK = new ItemStack(Items.NETHER_STAR);
 	static final ItemStack DRAGON_EGG_STACK = new ItemStack(Items.DRAGON_EGG);
 	static int total_calls = 0;
@@ -382,7 +383,7 @@ public class CastSpells {
 			}
 		}
 		if (ei == null) {
-			if (isUnderwater(serverWorld, pos) || (hasFalderal(serverPlayer, PUFFERFISH_STACK))) {
+			if (isUnderwater(serverWorld, pos) || (hasFalderal(serverPlayer, PUFFERFISH_STACK))|| (hasFalderal(serverPlayer, TRIDENT_STACK))) {
 				drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.BUBBLE);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT);
 				serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.BUBBLE_COLUMN_UP);
@@ -393,6 +394,9 @@ public class CastSpells {
 				int falderalBoost = 0;
 				if (hasFalderal(serverPlayer, new ItemStack(Items.PUFFERFISH))) {
 					falderalBoost = THIRTY_SECONDS / 2;
+				}
+				if (hasFalderal(serverPlayer, new ItemStack(Items.TRIDENT))) {
+					falderalBoost += THIRTY_SECONDS;
 				}
 				int secondsDuration = (spellTime * (THIRTY_SECONDS + falderalBoost)) + durationBoosts;
 				int effectIntensity = 1;

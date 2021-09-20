@@ -26,10 +26,12 @@ import net.minecraft.item.BlockNamedItem;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTier;
 import net.minecraft.item.Items;
 import net.minecraft.item.PickaxeItem;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.item.SwordItem;
+import net.minecraft.item.TieredItem;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
@@ -40,6 +42,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tileentity.HopperTileEntity;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -55,6 +58,7 @@ import net.minecraftforge.common.Tags;
 public class RitualPylonTileEntity extends TileEntity implements ITickableTileEntity {
 	static final int RITUAL_PLAYER_COST = 5;
 	static final int RITUAL_CHUNK_COST = 16;
+	static final int RITUAL_REDSTONE_COST = 256;
 	static final int RITUAL_NONE = -1;
 	static final int RITUAL_TESTING = 90;
 	static final int RITUAL_FARMING = 91;
@@ -63,20 +67,25 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	static final int RITUAL_LIGHTING_TORCH = 94;
 	static final int RITUAL_LIGHTING_LANTERN = 95;
 	static final int RITUAL_CLEARING = 96;
-	static final int RITUAL_BUILDING = 98;
-
+	static final int RITUAL_REDSTONE = 98;
+	static final int RITUAL_BUILDING = 99;
+	
 	static final int RITUAL_WARMUP_TIME = 100; // 5 seconds
 	static final ItemStack GLOWSTONE_STACK = new ItemStack(Items.GLOWSTONE, 1);
 	static final ItemStack REDSTONE_BLOCK_STACK = new ItemStack(Items.REDSTONE_BLOCK, 1);
 
 	int ritualSpeed = 0;
+	Item activationItem = null;
+	int activationToolTier;
 	int currentRitual = RITUAL_NONE;
 	float harvestWorkTotal = 0.0f;
+
 	int minRitualX = 0;
 	int minRitualZ = 0;
 	int cursorRitualX = 0;
 	int cursorRitualY = 0;
 	int cursorRitualZ = 0;
+	float luck = 0.0f;
 
 	boolean mustPayChunkCost = false;
 	int timeRitualWarmup = 0;
@@ -95,6 +104,13 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		}
 		if (worldPosition.getY() < 11) {
 			newRitualChunkCost += RITUAL_CHUNK_COST;
+		}
+		if (currentRitual == RITUAL_REDSTONE) {
+			newRitualChunkCost = RITUAL_REDSTONE_COST;
+			
+			if (this.activationItem == Items.REDSTONE_ORE)
+			newRitualChunkCost = RITUAL_REDSTONE_COST * 4;
+
 		}
 		return newRitualChunkCost;
 	}
@@ -134,7 +150,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 		}
 		if (eastPos == null && westPos == null) {
-			cursorRitualX = minRitualX = level.getChunk(worldPosition).getPos().getMinBlockX() - 1;
+			cursorRitualX = minRitualX = level.getChunk(worldPosition).getPos().getMinBlockX();
+			if (minRitualX >0 ) {
+				minRitualX--;
+				cursorRitualX--;
+			}
 		}
 
 		BlockPos southPos = null;
@@ -159,7 +179,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			}
 		}
 		if (southPos == null && northPos == null) {
-			cursorRitualZ = minRitualZ = level.getChunk(worldPosition).getPos().getMinBlockZ();
+			cursorRitualZ = minRitualZ = level.getChunk(worldPosition).getPos().getMinBlockZ()-1;
+			if (minRitualZ >0 ) {
+				minRitualZ--;
+				cursorRitualZ--;
+			}
 		}
 
 		cursorRitualY = worldPosition.getY();
@@ -199,9 +223,19 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			ItemStack handItemStack = player.getItemInHand(handIn);
 
+			this.activationToolTier = ItemTier.WOOD.getLevel();
+			if (handItemStack.getItem() instanceof TieredItem) {
+				TieredItem ti = (TieredItem) handItemStack.getItem();
+				this.activationToolTier = ti.getTier().getLevel();
+			}
+
 			if (getRitualID(handItemStack.getItem()) == RITUAL_NONE) {
 				return false;
 			}
+
+			this.activationItem = handItemStack.getItem();
+			Item newRitualItem = handItemStack.getItem();	
+			this.currentRitual = getRitualID(newRitualItem);
 
 			IMagicStorage playerManaStorage = player.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			Chunk chunk = (Chunk) level.getChunk(worldPosition);
@@ -210,15 +244,18 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			if (playerManaStorage == null) {
 				MyConfig.sendChat(player, "Impossible Error: You do not have a mana pool.",
 						Color.fromLegacyFormat((TextFormatting.YELLOW)));
+				this.currentRitual = RITUAL_NONE;
 				return false;
 			}
 
 			if ((playerManaStorage.getManaStored() < calcPlayerRitualManaCost())
 					|| (chunkManaStorage.getManaStored() < calcChunkRitualManaCost())) {
+				this.currentRitual = RITUAL_NONE;
 				return false;
 			}
 
 			if ((useRitualItem(player, handItemStack)) == false) { // damages or destroys
+				this.currentRitual = RITUAL_NONE;
 				return false;
 			}
 
@@ -230,13 +267,16 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 					serverPlayer);
 
 			chunk.markUnsaved();
-			Item newRitualItem = handItemStack.getItem();
 
 			ritualSpeed = getRitualSpeed(newRitualItem);
-			currentRitual = getRitualID(newRitualItem);
 			harvestWorkTotal = 0.0f;
 			mustPayChunkCost = false;
+			luck = player.getLuck();
 			level.playSound(null, worldPosition, ModSounds.RITUAL_BEGINS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+			if (getRitualID(handItemStack.getItem()) == RITUAL_REDSTONE) {
+				player.hurt(DamageSource.GENERIC, 19.0f);
+				level.playSound(null, worldPosition, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundCategory.HOSTILE, 0.5f, 0.2f);
+			}
 			calcRitualArea();
 			timeRitualWarmup = 40;
 			return true;
@@ -250,6 +290,12 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		if (ritualID == RITUAL_TESTING) {
 			return 2;
 		} else if (ritualID == RITUAL_CLEARING) {
+			if (this.activationToolTier == ItemTier.NETHERITE.getLevel()) {
+				return 3;
+			}
+			if (this.activationToolTier == ItemTier.DIAMOND.getLevel()) {
+				return 2;
+			}
 			return 1;
 		} else if (ritualID == RITUAL_FARMING) {
 			return 0;
@@ -268,6 +314,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	private int getRitualID(Item ritualItem) {
 		if (ritualItem instanceof SwordItem) {
 			return RITUAL_TESTING;
+		} else if (ritualItem == Items.NETHER_STAR) {
+			return RITUAL_REDSTONE;
+		} else if (ritualItem == Items.REDSTONE_ORE) {
+			return RITUAL_REDSTONE;
 		} else if (ritualItem instanceof ShovelItem) {
 			return RITUAL_CLEARING;
 		} else if (ritualItem instanceof HoeItem) {
@@ -304,6 +354,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private boolean isClearable(BlockPos cursorPos) {
 		BlockState bS = level.getBlockState(cursorPos);
+		if (this.activationToolTier == ItemTier.NETHERITE.getLevel()) {
+			if (bS.getBlock() == Blocks.SOUL_SAND) return true;
+			if (bS.getBlock() == Blocks.SOUL_SOIL) return true;
+		}
 		return (BlockTags.FLOWERS.contains(bS.getBlock()) || (bS.getBlock() instanceof TallGrassBlock)
 				|| (bS.getBlock() instanceof DoublePlantBlock) || Tags.Blocks.DIRT.contains(bS.getBlock())
 				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock()))));
@@ -311,6 +365,8 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private boolean isItemDamagingRitual(Item ritualItem) {
 		if (getRitualID(ritualItem) == RITUAL_TESTING) {
+			return false;
+		} if (getRitualID(ritualItem) == RITUAL_REDSTONE) {
 			return false;
 		} else if (getRitualID(ritualItem) == RITUAL_CLEARING) {
 			return true;
@@ -343,6 +399,14 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 	private boolean isMineable(BlockPos cursorPos) {
 		BlockState bS = level.getBlockState(cursorPos);
+
+		if (this.activationToolTier == ItemTier.NETHERITE.getLevel()) {
+			if (bS.getBlock() == Blocks.BLACKSTONE) return true;
+			if (bS.getBlock() == Blocks.BASALT) return true;
+			if (bS.getBlock() == Blocks.SOUL_SAND) return true;
+			if (bS.getBlock() == Blocks.SOUL_SOIL) return true;
+		}
+
 		return (bS.getBlock() == Blocks.NETHERRACK) || (Tags.Blocks.STONE.contains(bS.getBlock()))
 				|| (Tags.Blocks.DIRT.contains(bS.getBlock()))
 				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock())));
@@ -517,6 +581,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 	}
 
 	private void processRitualWarmup() {
+		if (currentRitual == RITUAL_REDSTONE) {
+			((ServerWorld) level).sendParticles(ParticleTypes.SOUL_FIRE_FLAME, 0.5D + (double) this.worldPosition.getX(),
+					(double) this.worldPosition.getY() + 0.10D, 0.5D + (double) this.worldPosition.getZ(),
+					(int) timeRitualWarmup / 8, 0.0D, 0.1D, 0.0D, 0.04D);
+		}
 		((ServerWorld) level).sendParticles(ParticleTypes.WITCH, 0.5D + (double) this.worldPosition.getX(),
 				(double) this.worldPosition.getY() + 0.10D, 0.5D + (double) this.worldPosition.getZ(),
 				(int) timeRitualWarmup / 8, 0.0D, 0.1D, 0.0D, 0.04D);
@@ -576,6 +645,11 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 		}
 
 		if (IsRitualRunning()) {
+			if (currentRitual == RITUAL_REDSTONE) {
+				processRedstoneRitual();
+				processEndRitual();
+				return;
+			}
 			long speed = ritualSpeed;
 			if (speed < 8)
 				speed = 8L;
@@ -599,10 +673,10 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 			while (noValidRitualBlockFound) {
 //				System.out.println("looping " +cursorRitualX +", " +cursorRitualZ);
 				cursorRitualX++;
-				if (cursorRitualX > minRitualX + 15) {
+				if (cursorRitualX > minRitualX + 16) {
 					cursorRitualX = minRitualX;
 					cursorRitualZ++;
-					if (cursorRitualZ > minRitualZ + 15) {
+					if (cursorRitualZ > minRitualZ + 16) {
 						cursorRitualZ = minRitualZ;
 						cursorRitualY++;
 						if (cursorRitualY > worldPosition.getY() + getRitualHeight(currentRitual)) {
@@ -712,6 +786,28 @@ public class RitualPylonTileEntity extends TileEntity implements ITickableTileEn
 
 		}
 
+	}
+
+	private void processRedstoneRitual() {
+		int iy = this.getBlockPos().getY();
+		int yCtr = 1;
+		int num = this.level.getRandom().nextInt(3) + 1;
+		while (iy-yCtr>0) {
+			int depthY = iy-yCtr;
+			int spread = yCtr/2;
+			int eastOffset = this.level.getRandom().nextInt(yCtr) - spread;
+			int northOffset = this.level.getRandom().nextInt(yCtr) - spread;
+			BlockPos bpos = this.getBlockPos();
+			BlockState b = this.level.getBlockState(this.getBlockPos().below(yCtr).east(eastOffset).north(northOffset));
+			if ((b != null) && (b == Blocks.STONE.defaultBlockState())) {
+				this.level.setBlockAndUpdate(this.getBlockPos().below(yCtr).east(eastOffset).north(northOffset),Blocks.REDSTONE_ORE.defaultBlockState());
+				level.playSound(null, worldPosition, ModSounds.RED_SPIRIT_WORKS, SoundCategory.HOSTILE, 0.5f, 0.2f);
+				num--;
+				if (num <1) 
+					return;
+			}
+			yCtr++;
+		}
 	}
 
 	private boolean useRitualItem(PlayerEntity player, ItemStack handItemStack) {

@@ -1,0 +1,40 @@
+{
+	"parent": "redstonemagic:rmroot/devices.ritualpylon",
+	"display": {
+		"icon": {
+			"item": "redstonemagic:ritual_pylon"
+		},
+		"title": {
+			"translate": "advancements.devices.ritualpylon.netherstar.title",
+			"color": "red"
+		},
+		"description": {
+			"translate": "advancements.devices.ritualpylon.netherstar.description",
+			"color": "white"
+		},
+		"frame": "task",
+		"show_toast": false,
+		"announce_to_chat": false,
+		"hidden": false
+	},
+	"rewards": {
+		"experience": 13
+	},
+	"criteria": {
+		"has_redstone_ore": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"item": "redstonemagic:ritual_pylon"
+					}
+				]
+			}
+		}
+	},
+	"requirements": [
+		[
+			"has_redstone_ore"
+		]
+	]
+}

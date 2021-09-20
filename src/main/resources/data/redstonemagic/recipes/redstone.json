@@ -1,0 +1,12 @@
+{
+  "type": "redstonemagic:crafting_shapeless",
+  "ingredients": [
+
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "item": "minecraft:redstone"
+  }
+}

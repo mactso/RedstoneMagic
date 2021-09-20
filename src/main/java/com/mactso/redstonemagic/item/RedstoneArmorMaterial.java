@@ -76,12 +76,18 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	@Override
 	public float getToughness() {
-		return clone.getToughness();
+		if (this.clone == ArmorMaterial.LEATHER) {
+			return 1.0f;
+		}		
+		return 3.2f;
 	}
 
 	// getKnockbackResistance,getKnockbackResistance,2,Gets the percentage of knockback resistance provided by armor of the material. 
 	@Override
 	public float getKnockbackResistance() {
-		return 0.11f;
+		if (this.clone == ArmorMaterial.LEATHER) {
+			return 0.11f;
+		}
+		return 0.13f;
 	}
 }
