@@ -3,8 +3,8 @@ import java.util.function.Supplier;
 
 import com.mactso.redstonemagic.Main;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 public class SyncClientFlyingPacket {
 
@@ -33,7 +33,7 @@ public class SyncClientFlyingPacket {
 			ctx.get().setPacketHandled(true);
 		}
 
-		public static SyncClientFlyingPacket readPacketData(PacketBuffer buf)
+		public static SyncClientFlyingPacket readPacketData(FriendlyByteBuf buf)
 		{
 			boolean isFlying = buf.readBoolean();
 			boolean isChunkFlying = buf.readBoolean();
@@ -42,12 +42,12 @@ public class SyncClientFlyingPacket {
 			return new SyncClientFlyingPacket(isFlying, isChunkFlying, chunkAge);
 		}
 
-		public static void writePacketData(SyncClientFlyingPacket msg, PacketBuffer buf)
+		public static void writePacketData(SyncClientFlyingPacket msg, FriendlyByteBuf buf)
 		{
 			msg.encode(buf);
 		}
 		
-		public void encode(PacketBuffer buf)
+		public void encode(FriendlyByteBuf buf)
 		{
 
 			buf.writeBoolean(isFlying);

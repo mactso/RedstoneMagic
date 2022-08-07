@@ -4,12 +4,12 @@ import java.util.function.Supplier;
 
 import com.mactso.redstonemagic.item.IGuiRightClick;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class RedstoneMagicArmorPacket
 {
@@ -24,14 +24,14 @@ public class RedstoneMagicArmorPacket
 		this.index = index;
 	}
 	
-	public void encode(PacketBuffer buf)
+	public void encode(FriendlyByteBuf buf)
 	{
 		buf.writeByte(cmd);
 		buf.writeByte(windowId);
 		buf.writeShort(index);
 	}
 
-	public static RedstoneMagicArmorPacket readPacketData(PacketBuffer buf)
+	public static RedstoneMagicArmorPacket readPacketData(FriendlyByteBuf buf)
 	{
 		int cmd = buf.readByte();
 		int windowId = buf.readByte();
@@ -39,18 +39,18 @@ public class RedstoneMagicArmorPacket
 		return new RedstoneMagicArmorPacket(cmd, windowId, index);
 	}
 
-	public static void writePacketData(RedstoneMagicArmorPacket msg, PacketBuffer buf)
+	public static void writePacketData(RedstoneMagicArmorPacket msg, FriendlyByteBuf buf)
 	{
 		msg.encode(buf);
 	}
 
 	public static void processPacket(RedstoneMagicArmorPacket message, Supplier<NetworkEvent.Context> ctx)
 	{
-		ServerPlayerEntity player = ctx.get().getSender();
+		ServerPlayer player = ctx.get().getSender();
 		if (message.cmd == 1)
 		{
 			ctx.get().enqueueWork(() -> {
-				Container cont = player.containerMenu;
+				AbstractContainerMenu cont = player.containerMenu;
 				if (message.windowId == cont.containerId && message.index >= 0)
 				{
 					Slot slot = cont.getSlot(message.index);

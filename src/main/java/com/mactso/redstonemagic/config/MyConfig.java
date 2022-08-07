@@ -5,10 +5,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.mactso.redstonemagic.Main;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.Color;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
@@ -17,6 +17,7 @@ import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 @Mod.EventBusSubscriber(modid = Main.MODID, bus=Mod.EventBusSubscriber.Bus.MOD)
 // @Mod.EventBusSubscriber(modid = Main.MODID, bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -125,10 +126,10 @@ public class MyConfig
 
 	public static final int NO_CHUNK_MANA_UPDATE = -1;
 	public static final int NO_PLAYER_MANA_UPDATE = -1;
-	public static final Color RED = Color.fromLegacyFormat(TextFormatting.RED);
-	public static final Color GREEN = Color.fromLegacyFormat(TextFormatting.GREEN);
-	public static final Color YELLOW= Color.fromLegacyFormat(TextFormatting.YELLOW);
-	public static final Color DEBUG = Color.fromRgb(34234142);
+	public static final TextColor RED = TextColor.fromLegacyFormat(ChatFormatting.RED);
+	public static final TextColor GREEN = TextColor.fromLegacyFormat(ChatFormatting.GREEN);
+	public static final TextColor YELLOW= TextColor.fromLegacyFormat(ChatFormatting.YELLOW);
+	public static final TextColor DEBUG = TextColor.fromRgb(34234142);
 
 	static
 	{
@@ -237,7 +238,7 @@ public class MyConfig
 	}
 
 	@SubscribeEvent
-	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent)
+	public static void onModConfigEvent(final ModConfigEvent configEvent)
 	{
 		if (configEvent.getConfig().getSpec() == MyConfig.COMMON_SPEC)
 		{
@@ -272,7 +273,7 @@ public class MyConfig
 		}
 	}
 
-	public static void dbgPrintln(PlayerEntity p, String dbgMsg, int dbgLevel) {
+	public static void dbgPrintln(Player p, String dbgMsg, int dbgLevel) {
 		if (dbgLevel <= debugLevel ) {
 			sendChat (p, dbgMsg);
 		}
@@ -280,8 +281,8 @@ public class MyConfig
 
 	
 	// support for any color, optionally bold text.
-	public static void sendBoldChat(PlayerEntity p, String chatMessage, Color color) {
-		StringTextComponent component = new StringTextComponent (chatMessage);
+	public static void sendBoldChat(Player p, String chatMessage, TextColor color) {
+		TextComponent component = new TextComponent (chatMessage);
 
 		component.getStyle().withBold(true);
 		component.getStyle().withColor(color);
@@ -290,13 +291,13 @@ public class MyConfig
 	}
 
 	// support for any color chattext
-	public static void sendChat(PlayerEntity p, String chatMessage, Color color) {
-		StringTextComponent component = new StringTextComponent (chatMessage);
+	public static void sendChat(Player p, String chatMessage, TextColor color) {
+		TextComponent component = new TextComponent (chatMessage);
 		component.getStyle().withColor(color);
 		p.sendMessage(component, p.getUUID());
 	}
 
-	public static void sendChat(PlayerEntity p, String chatMessage ) {
+	public static void sendChat(Player p, String chatMessage ) {
 		sendChat (p, chatMessage, DEBUG);
 	}
 	

@@ -2,8 +2,8 @@ package com.mactso.redstonemagic.mana;
 
 import com.mactso.redstonemagic.config.MyConfig;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class MagicStorage implements IMagicStorage
 {
@@ -31,11 +31,11 @@ public class MagicStorage implements IMagicStorage
 		String objectType = "";
 		
 		this.manaStored += amount;
-		if (object instanceof ServerPlayerEntity) {
+		if (object instanceof ServerPlayer) {
 			max = MyConfig.getMaxPlayerRedstoneMagic();
 			objectType = "Player";
 		} else 
-		if (object instanceof Chunk ){
+		if (object instanceof LevelChunk ){
 			max = MyConfig.getMaxChunkRedstoneMagic();
 			objectType = "Chunk";
 		}

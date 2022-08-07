@@ -3,7 +3,7 @@ package com.mactso.redstonemagic.proxy;
 import com.mactso.redstonemagic.item.RedstoneFocusItem;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class ClientProxy implements IProxy{
 
@@ -11,7 +11,7 @@ public class ClientProxy implements IProxy{
 	public void setFlyingValues(boolean isFlying, boolean isChunkFlying, long chunkAge) {
 		
 		Minecraft mc = Minecraft.getInstance();
-		PlayerEntity player = mc.player;
+		Player player = mc.player;
 		
 		RedstoneFocusItem.setIsFlying(player, isFlying, chunkAge);
 		RedstoneFocusItem.setIsChunkFlying(player, isChunkFlying);

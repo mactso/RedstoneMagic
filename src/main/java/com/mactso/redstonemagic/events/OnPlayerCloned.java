@@ -5,7 +5,7 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -14,12 +14,12 @@ public class OnPlayerCloned {
     public void onPlayerCloned(Clone event)
     {
 
-		if (!(event.getPlayer() instanceof ServerPlayerEntity)) {
+		if (!(event.getPlayer() instanceof ServerPlayer)) {
 			return;
 		}
 	
-    	ServerPlayerEntity newPlayer = (ServerPlayerEntity) event.getPlayer();
-    	ServerPlayerEntity oldPlayer = (ServerPlayerEntity) event.getOriginal();
+    	ServerPlayer newPlayer = (ServerPlayer) event.getPlayer();
+    	ServerPlayer oldPlayer = (ServerPlayer) event.getOriginal();
     	IMagicStorage capNew = newPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
     	IMagicStorage capOld = oldPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
     	int manaStored = capOld.getManaStored();

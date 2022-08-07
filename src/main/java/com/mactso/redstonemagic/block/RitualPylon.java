@@ -1,30 +1,35 @@
 package com.mactso.redstonemagic.block;
 
+import javax.annotation.Nullable;
+
 import com.mactso.redstonemagic.sounds.ModSounds;
+import com.mactso.redstonemagic.tileentity.ModTileEntities;
 import com.mactso.redstonemagic.tileentity.RitualPylonTileEntity;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ContainerBlock;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
-public class RitualPylon extends ContainerBlock
+public class RitualPylon extends BaseEntityBlock
 {
 //	public static final IntegerProperty POWER = BlockStateProperties.POWER_0_15;
 	protected static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
@@ -37,10 +42,10 @@ public class RitualPylon extends ContainerBlock
 	}
 	
 	@Override
-	public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 
 		// StructureBlockTileEntity s;
-		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundSource.BLOCKS, 0.5f, 0.2f);
 
 		if (worldIn.isClientSide()) {
 			int iY = pos.getY() + 1;
@@ -77,27 +82,27 @@ public class RitualPylon extends ContainerBlock
 	}
 	
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
 	     return SHAPE;
 	}
 	
 	@Override
-	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
-			Hand handIn, BlockRayTraceResult result) {
+	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player,
+			InteractionHand handIn, BlockHitResult result) {
 
-		if (!player.abilities.mayBuild) {
-			return ActionResultType.PASS;
+		if (!player.getAbilities().mayBuild) {
+			return InteractionResult.PASS;
 		} else {
-			if ((worldIn instanceof ServerWorld)) {
-				TileEntity r = worldIn.getBlockEntity(pos);
+			if ((worldIn instanceof ServerLevel)) {
+				BlockEntity r = worldIn.getBlockEntity(pos);
 				if (r instanceof RitualPylonTileEntity) {
 					if (((RitualPylonTileEntity) r).doRitualPylonInteraction(player, handIn) == false) {
-						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundSource.BLOCKS, 0.5f, 0.2f);
 						for (int i=0; i<6; i++) {
 							double oX = worldIn.getRandom().nextDouble()-0.5D;
 							double oY = worldIn.getRandom().nextDouble()-0.2D;
 							double oZ = worldIn.getRandom().nextDouble()-0.5D;
-							((ServerWorld) worldIn).sendParticles(ParticleTypes.SQUID_INK, 0.5D + (double) pos.getX(),
+							((ServerLevel) worldIn).sendParticles(ParticleTypes.SQUID_INK, 0.5D + (double) pos.getX(),
 									(double) pos.getY() + 0.35D , 0.5D + (double) pos.getZ(), 2, 0.0D+oX, 0.1D+ oY, 0.0D+oZ, -0.04D);
 
 						
@@ -108,20 +113,32 @@ public class RitualPylon extends ContainerBlock
 			}
 				
 
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 	}
 
 	@Override
-	public BlockRenderType getRenderShape(BlockState state) {
-		      return BlockRenderType.MODEL;
+	public RenderShape getRenderShape(BlockState state) {
+		      return RenderShape.MODEL;
 	}	
 	
 	
 	@Override
-	public TileEntity newBlockEntity(IBlockReader worldIn) {
-		return new RitualPylonTileEntity();
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new RitualPylonTileEntity(pos, state);
 	}
+
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
+			BlockEntityType<T> type) {
+		return !level.isClientSide ? createTickerHelper(type, ModTileEntities.RITUAL_PYLON, RitualPylon::tickEntity) : null;
+	}
+
+	private static void tickEntity(Level world, BlockPos pos, BlockState state, RitualPylonTileEntity blockEntity) {
+		blockEntity.serverTick();
+	}
+
 //
 //	@Override
 //	public boolean canProvidePower(BlockState state) {

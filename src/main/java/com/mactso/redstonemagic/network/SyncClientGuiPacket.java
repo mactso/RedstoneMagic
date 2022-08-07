@@ -4,8 +4,8 @@ import java.util.function.Supplier;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 // carries # of new prepared spell (-1 if no spell prepared)
 // carries # of spell being cast (-1 if no spell cast/ spell cancelled)
@@ -34,19 +34,19 @@ public class SyncClientGuiPacket {
 		ctx.get().setPacketHandled(true);
 	}
 	
-	public static SyncClientGuiPacket readPacketData(PacketBuffer buf)
+	public static SyncClientGuiPacket readPacketData(FriendlyByteBuf buf)
 	{
 		int preparedSpelLNumber = buf.readVarInt();
 		int castingSpellNumber = buf.readVarInt();
 		return new SyncClientGuiPacket(preparedSpelLNumber, castingSpellNumber);
 	}
 	
-	public static void writePacketData(SyncClientGuiPacket msg, PacketBuffer buf)
+	public static void writePacketData(SyncClientGuiPacket msg, FriendlyByteBuf buf)
 	{
 		msg.encode(buf);
 	}
 	
-	public void encode(PacketBuffer buf)
+	public void encode(FriendlyByteBuf buf)
 	{
 		buf.writeVarInt(preparedSpellNumber);
 		buf.writeVarInt(castingSpellNumber);

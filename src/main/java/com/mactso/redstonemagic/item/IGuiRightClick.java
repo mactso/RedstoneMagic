@@ -6,16 +6,16 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.RedstoneMagicArmorPacket;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.gui.screen.inventory.CreativeScreen.CreativeContainer;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.RecipeBookContainer;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.ItemPickerMenu;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent.MouseClickedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -28,25 +28,25 @@ public interface IGuiRightClick  {
 	{
         @OnlyIn(Dist.CLIENT)
 	    @SubscribeEvent
-	    public static void onMouseScreenEvent(GuiScreenEvent.MouseClickedEvent.Pre event)
+	    public static void onMouseScreenEvent(MouseClickedEvent.Pre event)
 	    {
 	    	if (event.isCanceled())
 	    		return;
 	    	if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT)
 	    		return;
-	    	Screen gui = event.getGui();
-	    	if (gui == null || !(gui instanceof ContainerScreen<?>))
+	    	Screen gui = event.getScreen();
+	    	if (gui == null || !(gui instanceof AbstractContainerScreen<?>))
 	    		return;
-			ContainerScreen<?> cg = (ContainerScreen<?>) gui;
+			AbstractContainerScreen<?> cg = (AbstractContainerScreen<?>) gui;
 			Slot slot = cg.getSlotUnderMouse();
 			if (slot != null && slot.hasItem())
 			{
 				ItemStack stack = slot.getItem();
 				if (stack.getItem() instanceof IGuiRightClick)
 				{
-					Container cont = cg.getMenu();
+					AbstractContainerMenu cont = cg.getMenu();
 					int index = -1;
-					if (cont.containerId == 0 && cont instanceof CreativeContainer)
+					if (cont.containerId == 0 && cont instanceof ItemPickerMenu)
 					{
 						// need to remap to what the server side is using
 						Minecraft mc = gui.getMinecraft();
@@ -61,10 +61,10 @@ public interface IGuiRightClick  {
 					}
 					else
 						index = slot.index;
-					if (cont instanceof RecipeBookContainer<?>)
+					if (cont instanceof RecipeBookMenu<?>)
 					{
 						// skip if in the crafting section
-						if (index < ((RecipeBookContainer<?>)cont).getSize())
+						if (index < ((RecipeBookMenu<?>)cont).getSize())
 							return;
 					}
 					if (index >= 0)

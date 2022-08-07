@@ -2,24 +2,25 @@ package com.mactso.redstonemagic.block;
 
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.StateContainer.Builder;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.TickPriority;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.ticks.ScheduledTick;
+import net.minecraft.world.ticks.TickPriority;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 public class TestBlock2 extends Block
 {
@@ -29,11 +30,11 @@ public class TestBlock2 extends Block
 	public static final IntegerProperty POWER = BlockStateProperties.LEVEL;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
-	private static VoxelShape SHAPE = VoxelShapes.or(
-			VoxelShapes.box(0, 0, 0, 1, 0.25, 1),
-			VoxelShapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
-			VoxelShapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
-			VoxelShapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
+	private static VoxelShape SHAPE = Shapes.or(
+			Shapes.box(0, 0, 0, 1, 0.25, 1),
+			Shapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
+			Shapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
+			Shapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
 	public TestBlock2(Properties properties) {
 		super(properties);
@@ -43,30 +44,30 @@ public class TestBlock2 extends Block
 	}
 
 	@Override
-	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
-			Hand handIn, BlockRayTraceResult hit) {
+	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player,
+			InteractionHand handIn, BlockHitResult hit) {
 		if (!state.getValue(POWERED))
 		{
-			worldIn.getBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
+			worldIn.getBlockTicks().schedule(new ScheduledTick<Block>(this, pos, delay, TickPriority.VERY_HIGH, worldIn.nextSubTickCount()));
 		}
 		worldIn.setBlockAndUpdate(pos, state.cycle(POWERED));
-		return ActionResultType.SUCCESS;
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return VoxelShapes.block();
+	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+		return Shapes.block();
 		//return SHAPE;
 	}
 
 	@Override
-	public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos,
-			ISelectionContext context) {
+	public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos,
+			CollisionContext context) {
 		return SHAPE;
 	}
 
 	@Override
-	public VoxelShape getOcclusionShape(BlockState state, IBlockReader worldIn, BlockPos pos) {
+	public VoxelShape getOcclusionShape(BlockState state, BlockGetter worldIn, BlockPos pos) {
 		return SHAPE;
 	}
 
@@ -76,7 +77,7 @@ public class TestBlock2 extends Block
 	}
 
 	@Override
-	public void tick(BlockState stateIn, ServerWorld worldIn, BlockPos pos, Random rand) {
+	public void tick(BlockState stateIn, ServerLevel worldIn, BlockPos pos, Random rand) {
 		int level = stateIn.getValue(POWER);
 		level += incr;
 		if (incr > 0)
@@ -97,7 +98,7 @@ public class TestBlock2 extends Block
 		}
 		worldIn.setBlockAndUpdate(pos, stateIn.setValue(POWER, Integer.valueOf(level)));
 		if (stateIn.getValue(POWERED))
-			worldIn.getBlockTicks().scheduleTick(pos, this, delay, TickPriority.VERY_HIGH);
+			worldIn.getBlockTicks().schedule(new ScheduledTick<Block>(this, pos, delay, TickPriority.VERY_HIGH, worldIn.nextSubTickCount()));
 	}
 
 	@Override

@@ -1,23 +1,23 @@
 package com.mactso.redstonemagic.mana;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class MagicProvider implements ICapabilityProvider, ICapabilitySerializable<CompoundNBT>
+public class MagicProvider implements ICapabilityProvider, ICapabilitySerializable<CompoundTag>
 {
 	IMagicStorage storage;
 
-	public MagicProvider(Chunk chunk) {
+	public MagicProvider(LevelChunk chunk) {
 		storage = new MagicStorage(chunk);
 	}
 
-	public MagicProvider (ServerPlayerEntity serverPlayerEntity) {
+	public MagicProvider (ServerPlayer serverPlayerEntity) {
 		storage = new MagicStorage(serverPlayerEntity);
 	}
 	
@@ -30,14 +30,14 @@ public class MagicProvider implements ICapabilityProvider, ICapabilitySerializab
 	}
 
 	@Override
-	public CompoundNBT serializeNBT() {
-		CompoundNBT ret = new CompoundNBT();
+	public CompoundTag serializeNBT() {
+		CompoundTag ret = new CompoundTag();
 		ret.putInt("magicStored", storage.getManaStored());
 		return ret;
 	}
 
 	@Override
-	public void deserializeNBT(CompoundNBT nbt) {
+	public void deserializeNBT(CompoundTag nbt) {
 		int magic = nbt.getInt("magicStored");
 		storage.addMana(magic);
 	}

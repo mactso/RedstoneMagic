@@ -2,38 +2,42 @@ package com.mactso.redstonemagic.block;
 
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.GathererTileEntity;
+import com.mactso.redstonemagic.tileentity.ModTileEntities;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ContainerBlock;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.StateContainer.Builder;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
-public class Gatherer extends ContainerBlock
+public class Gatherer extends BaseEntityBlock
 {
 	static int incr = 3;
 	static long lastTime = 0;
@@ -42,15 +46,15 @@ public class Gatherer extends ContainerBlock
 
 	public static final IntegerProperty POWER = BlockStateProperties.LEVEL;
 	
-	private static VoxelShape SHAPE = VoxelShapes.or(
-			VoxelShapes.box(0, 0, 0, 1, 0.25, 1),
-			VoxelShapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
-			VoxelShapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
-			VoxelShapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
+	private static VoxelShape SHAPE = Shapes.or(
+			Shapes.box(0, 0, 0, 1, 0.25, 1),
+			Shapes.box(0.125, 0.25, 0.125, 0.875, 0.5, 0.875),
+			Shapes.box(0.25, 0.5, 0.25, 0.75, 0.75, 0.75),
+			Shapes.box(0.375, 0.75, 0.375, 0.625, 1, 0.625));
 
 	@Override // remove mana level indicator
-	public void playerWillDestroy(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
-		if (player instanceof ServerPlayerEntity) {
+	public void playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
+		if (player instanceof ServerPlayer) {
 			for (int i=2; i<=8; i++) {
 				if (worldIn.getBlockState(pos.above(i)).getBlock() == ModBlocks.LIGHT_SPELL ){
 					worldIn.destroyBlock(pos.above(i), false);
@@ -60,19 +64,30 @@ public class Gatherer extends ContainerBlock
 		super.playerWillDestroy(worldIn, pos, state, player);
 	}	
 	
+//	@Override
+//	public boolean canSurvive(BlockState state, LevelReader worldIn, BlockPos pos) {
+//		return super.canSurvive(state, worldIn, pos);
+//	}
+
 	@Override
-	public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos) {
-		return super.canSurvive(state, worldIn, pos);
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new GathererTileEntity(pos, state);
+	}
+
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
+			BlockEntityType<T> type) {
+		return !level.isClientSide ? createTickerHelper(type, ModTileEntities.GATHERER, Gatherer::tickEntity) : null;
+	}
+
+	private static void tickEntity(Level world, BlockPos pos, BlockState state, GathererTileEntity blockEntity) {
+		blockEntity.serverTick();
 	}
 
 	@Override
-	public TileEntity newBlockEntity(IBlockReader worldIn) {
-		return new GathererTileEntity();
-	}
-
-	@Override
-	public BlockRenderType getRenderShape(BlockState state) {
-	      return BlockRenderType.MODEL;
+	public RenderShape getRenderShape(BlockState state) {
+	      return RenderShape.MODEL;
 	}	
 	
 	public Gatherer(Properties properties) {
@@ -80,50 +95,34 @@ public class Gatherer extends ContainerBlock
 		registerDefaultState(stateDefinition.any().setValue(POWER, Integer.valueOf(0)));
 	}
 
-//	@Override
-//	public Class<GathererTileEntity> getTileEntityClass() {
-//		return GatherTileEntity.class;
-//	}
-	
 	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
-	
-	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		// TODO Auto-generated method stub
-		return super.createTileEntity(state, world);
-	}
-	
-	@Override
-	public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
-			Hand handIn, BlockRayTraceResult result) {
+	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player,
+			InteractionHand handIn, BlockHitResult result) {
 
-		if (!player.abilities.mayBuild) {
-			return ActionResultType.PASS;
+		if (!player.getAbilities().mayBuild) {
+			return InteractionResult.PASS;
 		} else {
-			if ((worldIn instanceof ServerWorld)) {
-				TileEntity r = worldIn.getBlockEntity(pos);
+			if ((worldIn instanceof ServerLevel)) {
+				BlockEntity r = worldIn.getBlockEntity(pos);
 				if (r instanceof GathererTileEntity) {
 					if (((GathererTileEntity) r).doGathererInteraction(player, handIn) == false) {
-						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundCategory.BLOCKS, 0.5f, 0.2f);
+						worldIn.playSound(null, pos, ModSounds.SPELL_FAILS, SoundSource.BLOCKS, 0.5f, 0.2f);
 					}
 				}
 				
 			}
 				
 
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 	}
 	
 	@Override
-	public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 
 		// StructureBlockTileEntity s;
 		// RedstoneParticleData pR = new RedstoneParticleData(1.0f, 1.0f, 1.0f, 2.0f);
-		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundCategory.BLOCKS, 0.5f, 0.2f);
+		worldIn.playSound(null, pos, SoundEvents.ENDER_EYE_DEATH, SoundSource.BLOCKS, 0.5f, 0.2f);
 //		System.out.println("Gatherer Placed at ("+pos.getX()+", "+pos.getY()+", "+pos.getZ()+")");
 		if (worldIn.isClientSide()) {
 			int iY = pos.getY() + 1;
@@ -160,7 +159,7 @@ public class Gatherer extends ContainerBlock
 	}	
 	
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
 		return SHAPE;
 	}
 
@@ -170,7 +169,7 @@ public class Gatherer extends ContainerBlock
 	}
 
 	//@Override
-	public void TODOanimateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
+	public void TODOanimateTick(BlockState stateIn, Level worldIn, BlockPos pos, Random rand) {
 		int level = stateIn.getValue(POWER);
 		long time = worldIn.getGameTime();
 		if (time - lastTime > 20L || time < lastTime)

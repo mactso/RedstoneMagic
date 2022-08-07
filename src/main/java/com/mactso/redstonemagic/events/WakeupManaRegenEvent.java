@@ -8,9 +8,9 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,7 +20,7 @@ public class WakeupManaRegenEvent {
 
 	@SubscribeEvent
 	public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
-		if (event.getPlayer().level instanceof ServerWorld) {
+		if (event.getPlayer().level instanceof ServerLevel) {
 
 			Iterable<ItemStack> ar = event.getPlayer().getArmorSlots();
 			float armorModifier = 1.0f;
@@ -45,7 +45,7 @@ public class WakeupManaRegenEvent {
 			}
 			pMS.addMana((int) wakeupManaRegenAmount );
 			Network.sendToClient(new SyncClientManaPacket(pMS.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
-					(ServerPlayerEntity) event.getPlayer());
+					(ServerPlayer) event.getPlayer());
 //			MyConfig.sendChat(event.getPlayer(),  "Wakeup Regen:" + wakeupManaRegenAmount +
 //					" ArmorModifier:" + armorModifier +
 //					" netModifier:" + netModifier);

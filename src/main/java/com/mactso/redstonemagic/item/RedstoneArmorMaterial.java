@@ -2,20 +2,20 @@ package com.mactso.redstonemagic.item;
 
 import com.mactso.redstonemagic.Main;
 
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.item.IArmorMaterial;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.sounds.SoundEvent;
 
-public class RedstoneArmorMaterial implements IArmorMaterial {
+public class RedstoneArmorMaterial implements ArmorMaterial {
 
-	private IArmorMaterial clone;
+	private ArmorMaterial clone;
 	private String materialName;
 	private int enchantAbility;
 
 
-	public RedstoneArmorMaterial(ArmorMaterial inClone, String materialPrefix, int enchantAbility) {
+	public RedstoneArmorMaterial(ArmorMaterials inClone, String materialPrefix, int enchantAbility) {
 		clone = inClone;
 		materialName = materialPrefix;
 		this.enchantAbility = enchantAbility;
@@ -27,27 +27,27 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 //  });
 
 	@Override
-	public int getDurabilityForSlot(EquipmentSlotType slotIn) {
+	public int getDurabilityForSlot(EquipmentSlot slotIn) {
 		return clone.getDurabilityForSlot(slotIn);
 	}
 
 	@Override
-	public int getDefenseForSlot(EquipmentSlotType slotIn) {
+	public int getDefenseForSlot(EquipmentSlot slotIn) {
 		// Leather 1, 2, 3, 1
 		// Chain: 1, 4, 5, 2 
 		// RML : 2, 4, 5, 2
 		// Iron: 2, 5, 6, 2
-		if (this.clone == ArmorMaterial.LEATHER) {
-			if (slotIn == EquipmentSlotType.HEAD) {
+		if (this.clone == ArmorMaterials.LEATHER) {
+			if (slotIn == EquipmentSlot.HEAD) {
 				return 2;
 			}
-			if (slotIn == EquipmentSlotType.CHEST) {
+			if (slotIn == EquipmentSlot.CHEST) {
 				return 5;
 			}
-			if (slotIn == EquipmentSlotType.LEGS) {
+			if (slotIn == EquipmentSlot.LEGS) {
 				return 5;
 			}
-			if (slotIn == EquipmentSlotType.FEET) {
+			if (slotIn == EquipmentSlot.FEET) {
 				return 2;
 			}
 		}
@@ -76,7 +76,7 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 
 	@Override
 	public float getToughness() {
-		if (this.clone == ArmorMaterial.LEATHER) {
+		if (this.clone == ArmorMaterials.LEATHER) {
 			return 1.0f;
 		}		
 		return 3.2f;
@@ -85,7 +85,7 @@ public class RedstoneArmorMaterial implements IArmorMaterial {
 	// getKnockbackResistance,getKnockbackResistance,2,Gets the percentage of knockback resistance provided by armor of the material. 
 	@Override
 	public float getKnockbackResistance() {
-		if (this.clone == ArmorMaterial.LEATHER) {
+		if (this.clone == ArmorMaterials.LEATHER) {
 			return 0.11f;
 		}
 		return 0.13f;

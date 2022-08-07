@@ -13,7 +13,6 @@ import com.mactso.redstonemagic.events.OnPlayerLoggedIn;
 import com.mactso.redstonemagic.events.OnServerPlayerEvent;
 import com.mactso.redstonemagic.item.ModItems;
 import com.mactso.redstonemagic.item.crafting.RedstoneMagicRecipe;
-import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.network.Register;
 import com.mactso.redstonemagic.proxy.ClientProxy;
 import com.mactso.redstonemagic.proxy.IProxy;
@@ -21,12 +20,12 @@ import com.mactso.redstonemagic.proxy.ServerProxy;
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.tileentity.ModTileEntities;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.Item;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -85,7 +84,6 @@ public class Main {
 			MinecraftForge.EVENT_BUS.register(new MyPlaceBlockEvent());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerCloned());
 			MinecraftForge.EVENT_BUS.register(new OnPlayerLoggedIn());
-			CapabilityMagic.register();
 		}   
 
 	    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -121,14 +119,14 @@ public class Main {
 	        }
 
 	        @SubscribeEvent
-	        public static void onRecipeRegistry(final RegistryEvent.Register<IRecipeSerializer<?>> event)
+	        public static void onRecipeRegistry(final RegistryEvent.Register<RecipeSerializer<?>> event)
 	        {
 				System.out.println("RedStoneMagic: Registering Shapeless Recipe");
 	        	event.getRegistry().register(RedstoneMagicRecipe.CRAFTING_REDSTONEMAGIC);
 	        }
 	        
 		    @SubscribeEvent
-		    public static void onTileEntitiesRegistry(final RegistryEvent.Register<TileEntityType<?>> event)
+		    public static void onTileEntitiesRegistry(final RegistryEvent.Register<BlockEntityType<?>> event)
 		    {
 		        ModTileEntities.register(event.getRegistry());
 		    }
