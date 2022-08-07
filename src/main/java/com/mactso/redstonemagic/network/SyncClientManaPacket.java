@@ -4,8 +4,8 @@ import java.util.function.Supplier;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 public class SyncClientManaPacket {
 
@@ -31,19 +31,19 @@ public class SyncClientManaPacket {
 		ctx.get().setPacketHandled(true);
 	}
 
-	public static SyncClientManaPacket readPacketData(PacketBuffer buf)
+	public static SyncClientManaPacket readPacketData(FriendlyByteBuf buf)
 	{
 		int playerMana = buf.readVarInt();
 		int chunkMana = buf.readVarInt();
 		return new SyncClientManaPacket(playerMana, chunkMana);
 	}
 
-	public static void writePacketData(SyncClientManaPacket msg, PacketBuffer buf)
+	public static void writePacketData(SyncClientManaPacket msg, FriendlyByteBuf buf)
 	{
 		msg.encode(buf);
 	}
 	
-	public void encode(PacketBuffer buf)
+	public void encode(FriendlyByteBuf buf)
 	{
 
 		buf.writeVarInt(playerMana);

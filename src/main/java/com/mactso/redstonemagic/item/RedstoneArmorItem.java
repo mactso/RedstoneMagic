@@ -9,30 +9,30 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.DyeableArmorItem;
-import net.minecraft.item.IArmorMaterial;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Rarity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.DyeableArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClick {
-	private final EquipmentSlotType slotType;
+	private final EquipmentSlot slotType;
 	private final boolean isChestSlotType;
 
-	public RedstoneArmorItem(IArmorMaterial material, EquipmentSlotType slotType, Properties prop, String name) {
+	public RedstoneArmorItem(ArmorMaterial material, EquipmentSlot slotType, Properties prop, String name) {
 		super(material, slotType, prop);
 		this.slotType = slotType;
-		if (slotType == EquipmentSlotType.CHEST) {
+		if (slotType == EquipmentSlot.CHEST) {
 			isChestSlotType = true;
 		} else {
 			isChestSlotType = false;
@@ -47,7 +47,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 	@Override
 	public int getColor(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getTagElement("display");
+		CompoundTag compoundnbt = stack.getTagElement("display");
 		return compoundnbt != null && compoundnbt.contains("color", 99) ? compoundnbt.getInt("color") : 0xCAC8C8;
 	}
 
@@ -57,13 +57,13 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 	}
 
 	@Override
-	public void onArmorTick(ItemStack stack, World world, PlayerEntity player) {
+	public void onArmorTick(ItemStack stack, Level world, Player player) {
 		final int ONE_SECOND = 20;  
 		final int MANA_REGEN_PERIOD = 160; // 160 ticks... 8 seconds
 		final int ARMOR_MEND_PERIOD = 80; // 80 ticks... 4 seconds
 
-		if ((player instanceof ServerPlayerEntity)) {
-			ServerPlayerEntity sPlayer = (ServerPlayerEntity) player;
+		if ((player instanceof ServerPlayer)) {
+			ServerPlayer sPlayer = (ServerPlayer) player;
 
 			long gameTime = sPlayer.level.getGameTime();
 			boolean isFullSuit = isFullSuit(stack, sPlayer);
@@ -92,7 +92,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		super.onArmorTick(stack, world, player);
 	}
 
-	private boolean isFullSuit(ItemStack stack, ServerPlayerEntity sPlayer) {
+	private boolean isFullSuit(ItemStack stack, ServerPlayer sPlayer) {
 		int suitBonus = 0;
 		if (stack.getItem().getDescriptionId().contains("redstonemagic")) {
 			Iterable<ItemStack> playerArmorSet = sPlayer.getArmorSlots();
@@ -110,7 +110,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		return false;
 	}
 
-	private int maxManaRegenAmount(ItemStack stack, ServerPlayerEntity sPlayer) {
+	private int maxManaRegenAmount(ItemStack stack, ServerPlayer sPlayer) {
 		int amt = 0;
 		if (stack.getItem().getDescriptionId().contains("redstonemagic")) {
 			Iterable<ItemStack> playerArmorSet = sPlayer.getArmorSlots();
@@ -129,9 +129,9 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		return amt;
 	}
 
-	private void doArmorMending(ItemStack stack, ServerPlayerEntity sPlayer) {
+	private void doArmorMending(ItemStack stack, ServerPlayer sPlayer) {
 		if (stack.isDamaged()) {
-			Chunk baseChunk = sPlayer.level.getChunkAt(sPlayer.blockPosition());
+			LevelChunk baseChunk = sPlayer.level.getChunkAt(sPlayer.blockPosition());
 			IMagicStorage cap = baseChunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {
 				int chunkMana = cap.getManaStored();
@@ -144,22 +144,22 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		}
 	}
 
-	private void doSuitBonuses(ServerPlayerEntity sPlayer, long gameTime) {
+	private void doSuitBonuses(ServerPlayer sPlayer, long gameTime) {
 		final int RESISTANCE_DURATION = 160;
 		final int ABSORPTION_DURATION = 6000;
 
 		if (gameTime % RESISTANCE_DURATION == 0 && this.getMaterial() == ModItems.REDSTONEMAGIC_MATERIAL) {
-			doASuitBonus(sPlayer, Effects.DAMAGE_RESISTANCE, RESISTANCE_DURATION, 0);
+			doASuitBonus(sPlayer, MobEffects.DAMAGE_RESISTANCE, RESISTANCE_DURATION, 0);
 		}
 		if (gameTime % ABSORPTION_DURATION == 0 && this.getMaterial() == ModItems.REDSTONEMAGIC_LEATHER_MATERIAL) {
-			doASuitBonus(sPlayer, Effects.ABSORPTION, ABSORPTION_DURATION, 0);
+			doASuitBonus(sPlayer, MobEffects.ABSORPTION, ABSORPTION_DURATION, 0);
 		}
 
 	}
 
-	private void doASuitBonus(ServerPlayerEntity sPlayer, Effect effect, int effectDuration, int effectIntensity) {
+	private void doASuitBonus(ServerPlayer sPlayer, MobEffect effect, int effectDuration, int effectIntensity) {
 		boolean refreshSuitBonus = true;
-		EffectInstance ei = sPlayer.getEffect(effect);
+		MobEffectInstance ei = sPlayer.getEffect(effect);
 		if (ei != null) {
 			if (ei.getAmplifier() > effectIntensity) {
 				if (ei.getDuration() <= 15) {
@@ -172,18 +172,18 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		if (refreshSuitBonus) {
 			MyConfig.dbgPrintln(1, "Redstone Magic: " + sPlayer.getName().getString() + " Apply Suit Bonus : "
 					+ effect.getRegistryName().getNamespace().toString());
-			sPlayer.addEffect(new EffectInstance(effect, effectDuration, effectIntensity, true, true));
+			sPlayer.addEffect(new MobEffectInstance(effect, effectDuration, effectIntensity, true, true));
 		}
 	}
 
-	private void doArmorManaRegeneration(ServerPlayerEntity sPlayer, boolean isFullSuit, int suitMaxRegenLevel) {
+	private void doArmorManaRegeneration(ServerPlayer sPlayer, boolean isFullSuit, int suitMaxRegenLevel) {
 		float maxManaRegenPct = (float) suitMaxRegenLevel / 100;
 
 		doAnArmorManaRegeneration(sPlayer, maxManaRegenPct, isFullSuit);
 
 	}
 
-	private void doAnArmorManaRegeneration(ServerPlayerEntity sPlayer, float maxSuitManaPct, boolean isFullSuit) {
+	private void doAnArmorManaRegeneration(ServerPlayer sPlayer, float maxSuitManaPct, boolean isFullSuit) {
 
 		int d100Roll = sPlayer.level.getRandom().nextInt(100);
 		int manaRegenRate = 0;
@@ -213,14 +213,14 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 			if (cap.getManaStored() < maxNaturalTotalMana) {
 				cap.addMana((int) manaRegenRate);
 				Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
-						(ServerPlayerEntity) sPlayer);
+						(ServerPlayer) sPlayer);
 			}
 		}
 	}
 
 	@Override
 	public boolean isFoil(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getTagElement("display");
+		CompoundTag compoundnbt = stack.getTagElement("display");
 		boolean glint = compoundnbt != null && compoundnbt.contains("glint", 1) ? compoundnbt.getBoolean("glint")
 				: false;
 		return glint && super.isFoil(stack);
@@ -228,7 +228,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 	@Override
 	public void menuRightClick(ItemStack stack) {
-		CompoundNBT compoundnbt = stack.getOrCreateTagElement("display");
+		CompoundTag compoundnbt = stack.getOrCreateTagElement("display");
 		boolean glint = compoundnbt.contains("glint", 1) && compoundnbt.getBoolean("glint");
 		if (glint)
 			compoundnbt.remove("glint");

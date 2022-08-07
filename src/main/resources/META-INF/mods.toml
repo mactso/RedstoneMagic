@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[34,36)"
+loaderVersion="[39,)"
 license="MIT License"
 [[mods]]
 modId="redstonemagic"
@@ -13,13 +13,13 @@ description='''Redstone Magic.'''
 [[dependencies.redstonemagic]]
     modId="forge"
     mandatory=true
-    versionRange="[34,36)"
+    versionRange="[39,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.redstonemagic]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.3,1.17.0)"
+    versionRange="[1.18.1,1.19)"
     ordering="NONE"
     side="BOTH"

@@ -6,16 +6,16 @@ import java.util.function.Supplier;
 
 import com.mactso.redstonemagic.Main;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent.Context;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent.Context;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public class Network
 {
@@ -29,8 +29,8 @@ public class Network
 	private static int id = 0;
 
 	public static <MSG> void registerMessage(Class<MSG> msg,
-			BiConsumer<MSG, PacketBuffer> encoder,
-			Function<PacketBuffer, MSG> decoder,
+			BiConsumer<MSG, FriendlyByteBuf> encoder,
+			Function<FriendlyByteBuf, MSG> decoder,
 			BiConsumer<MSG, Supplier<Context>> handler)
 	{
 		INSTANCE.registerMessage(id++, msg, encoder, decoder, handler);
@@ -42,7 +42,7 @@ public class Network
 		INSTANCE.sendToServer(msg);
 	}
 
-	public static <MSG> void sendToClient(MSG msg, ServerPlayerEntity player)
+	public static <MSG> void sendToClient(MSG msg, ServerPlayer player)
 	{
 		INSTANCE.sendTo(msg, player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
 	}

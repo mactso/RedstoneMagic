@@ -6,16 +6,16 @@ import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -38,9 +38,9 @@ public class MyBreakEvent {
 		if (event.getPlayer() == null) {
 			return;
 		}
-		ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) event.getPlayer();
+		ServerPlayer serverPlayerEntity = (ServerPlayer) event.getPlayer();
 
-		if (!(serverPlayerEntity instanceof ServerPlayerEntity)) {
+		if (!(serverPlayerEntity instanceof ServerPlayer)) {
 			return;
 		}
 
@@ -48,8 +48,8 @@ public class MyBreakEvent {
 				event.getPlayer().getMainHandItem());
 
 		BlockPos pos = event.getPos();
-		IWorld world = event.getWorld();
-		IChunk ichunk = world.getChunk(pos);
+		LevelAccessor world = event.getWorld();
+		ChunkAccess ichunk = world.getChunk(pos);
 		double randint = world.getRandom().nextDouble();
 		randint *= 3.0;
 		
@@ -62,9 +62,9 @@ public class MyBreakEvent {
 			manaChanged = true;
 		}
 
-		if (ichunk instanceof Chunk) {
+		if (ichunk instanceof LevelChunk) {
 			int debug = 6;
-			Chunk chunk = (Chunk) ichunk;
+			LevelChunk chunk = (LevelChunk) ichunk;
 			cap = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {
 				if (cap.getManaStored() + redstoneMagicIncrease <= MyConfig.getMaxChunkRedstoneMagic()) {

@@ -6,11 +6,11 @@ import com.mactso.redstonemagic.spells.CastSpells;
 
 //import com.lupicus.bk.Mobs;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class RedstoneMagicPacket 
 {
@@ -34,7 +34,7 @@ public class RedstoneMagicPacket
 		this.targetPosZ = targetPosZ;
 		}
 	
-	public void encode(PacketBuffer buf)
+	public void encode(FriendlyByteBuf buf)
 	{
 		buf.writeByte(cmd);
 		buf.writeVarInt(id);
@@ -46,7 +46,7 @@ public class RedstoneMagicPacket
 
 	}
 
-	public static RedstoneMagicPacket readPacketData(PacketBuffer buf)
+	public static RedstoneMagicPacket readPacketData(FriendlyByteBuf buf)
 	{
 		int cmd = buf.readByte();
 		int id = buf.readVarInt();
@@ -58,14 +58,14 @@ public class RedstoneMagicPacket
 		return new RedstoneMagicPacket(cmd, id, timeLeft, slotIndex, targetPosX, targetPosY, targetPosZ);
 	}
 
-	public static void writePacketData(RedstoneMagicPacket msg, PacketBuffer buf)
+	public static void writePacketData(RedstoneMagicPacket msg, FriendlyByteBuf buf)
 	{
 		msg.encode(buf);
 	}
 
 	public static void processRedstoneMagicPacket(RedstoneMagicPacket message, Supplier<NetworkEvent.Context> ctx)
 	{
-		ServerPlayerEntity serverPlayer = ctx.get().getSender();
+		ServerPlayer serverPlayer = ctx.get().getSender();
 		Entity targetEntity = serverPlayer.level.getEntity(message.id);
 
 		ctx.get().enqueueWork( () -> 
