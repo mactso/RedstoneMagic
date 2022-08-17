@@ -169,7 +169,7 @@ public class RedstoneMagicGuiEvent extends Gui {
 		int manaBarTextureTopY = 95;
 		int manabarHeight = 16;
 		int manaBarLeftEdgeX = 90;
-		RenderSystem.setShaderColor(9.0F, 5.0F, 5.0F, 0.9F);
+		RenderSystem.setShaderColor(1.00F, 1.00F, 1.00F, 0.75F);
 		Screen.blit(event.getMatrixStack(), guiScaledCenterX - 42, displayManaBarTopPosY,
 				manaBarFrameTextureLeftX, manaBarFrameTextureTopY, manaBarFrameWidth, manaBarFrameHeight , 256, 256);
 		// left and right half copy from far left and far right so tips of bar are rounded.

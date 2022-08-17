@@ -791,7 +791,7 @@ public class CastSpells {
 		if ((headPitch == -90.0) || (headPitch == 90)) {
 			return false;
 		}
-		if (headPitch > 0) { // looking down- teleport to personal spawn instead.
+		if ((headPitch > 0) && (personalSpawnPos != null)) { // looking down- teleport to personal spawn instead.
 			wX = personalSpawnPos.getX();
 			wY = personalSpawnPos.getY() + 1;
 			wZ = personalSpawnPos.getZ();
