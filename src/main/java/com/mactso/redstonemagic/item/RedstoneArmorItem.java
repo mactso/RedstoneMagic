@@ -2,34 +2,33 @@ package com.mactso.redstonemagic.item;
 
 import java.util.Iterator;
 
-import com.mactso.redstonemagic.Main;
 import com.mactso.redstonemagic.config.MyConfig;
 import com.mactso.redstonemagic.mana.CapabilityMagic;
 import com.mactso.redstonemagic.mana.IMagicStorage;
 import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.DyeableArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.DyeableArmorItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClick {
 	private final EquipmentSlot slotType;
 	private final boolean isChestSlotType;
 
-	public RedstoneArmorItem(ArmorMaterial material, EquipmentSlot slotType, Properties prop, String name) {
+	public RedstoneArmorItem(ArmorMaterial material, EquipmentSlot slotType, Properties prop) {
 		super(material, slotType, prop);
 		this.slotType = slotType;
 		if (slotType == EquipmentSlot.CHEST) {
@@ -37,7 +36,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		} else {
 			isChestSlotType = false;
 		}
-		setRegistryName(Main.MODID, name);
+
 	}
 
 	@Override
@@ -58,7 +57,7 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 
 	@Override
 	public void onArmorTick(ItemStack stack, Level world, Player player) {
-		final int ONE_SECOND = 20;  
+		final int ONE_SECOND = 20;
 		final int MANA_REGEN_PERIOD = 160; // 160 ticks... 8 seconds
 		final int ARMOR_MEND_PERIOD = 80; // 80 ticks... 4 seconds
 
@@ -73,15 +72,12 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 					doSuitBonuses(sPlayer, gameTime);
 				}
 
-
-				if ((gameTime % MANA_REGEN_PERIOD == 0) 
-						&& (!RedstoneFocusItem.getIsFlying(player))) {
+				if ((gameTime % MANA_REGEN_PERIOD == 0) && (!RedstoneFocusItem.getIsFlying(player))) {
 					Block blockBelow = sPlayer.level.getBlockState(sPlayer.blockPosition().below()).getBlock();
 					if (!RedstoneFocusItem.NO_FLY_LIST.contains(blockBelow) && blockBelow != Blocks.AIR) {
 						doArmorManaRegeneration(sPlayer, isFullSuit, maxManaRegenAmount(stack, sPlayer));
 					}
 				}
-
 
 				if (gameTime % ARMOR_MEND_PERIOD == 0 && isFoil(stack)) {
 					doArmorMending(stack, sPlayer);
@@ -99,9 +95,8 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 			Iterator<ItemStack> i = playerArmorSet.iterator();
 			while (i.hasNext()) {
 				ItemStack armorpiece = i.next();
-				if (armorpiece.getItem().getRegistryName().getNamespace().toString().equals("redstonemagic")) {
+				if (armorpiece.getItem() instanceof RedstoneArmorItem)
 					suitBonus += 1;
-				}
 			}
 		}
 		if (suitBonus >= 4) {
@@ -117,11 +112,9 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 			Iterator<ItemStack> i = playerArmorSet.iterator();
 			while (i.hasNext()) {
 				ItemStack armorpiece = i.next();
-				if (armorpiece.getItem().getRegistryName().getNamespace().toString().equals("redstonemagic")) {
-					if (armorpiece.getItem() instanceof RedstoneArmorItem) {
-						RedstoneArmorItem r = (RedstoneArmorItem) armorpiece.getItem();
-						amt += r.getDefense();
-					}
+				if (armorpiece.getItem() instanceof RedstoneArmorItem) {
+					RedstoneArmorItem r = (RedstoneArmorItem) armorpiece.getItem();
+					amt += r.getDefense();
 				}
 			}
 
@@ -170,8 +163,8 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 			}
 		}
 		if (refreshSuitBonus) {
-			MyConfig.dbgPrintln(1, "Redstone Magic: " + sPlayer.getName().getString() + " Apply Suit Bonus : "
-					+ effect.getRegistryName().getNamespace().toString());
+
+			MyConfig.dbgPrintln(1, "Redstone Magic: " + sPlayer.getName().getString() + " Apply Suit Bonus.");
 			sPlayer.addEffect(new MobEffectInstance(effect, effectDuration, effectIntensity, true, true));
 		}
 	}
@@ -203,13 +196,12 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 			manaRegenRate += 1;
 		}
 
-
-		
 		IMagicStorage cap = sPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (cap != null) {
 			int currentMana = cap.getManaStored();
 			int maxNaturalTotalMana = (int) (MyConfig.getMaxPlayerRedstoneMagic() * maxSuitManaPct);
-			// MyConfig.sendChat(sPlayer, "Armor Regen: " + manaRegenRate + " maxNaturalRate:" + maxNaturalTotalMana);
+			// MyConfig.sendChat(sPlayer, "Armor Regen: " + manaRegenRate + "
+			// maxNaturalRate:" + maxNaturalTotalMana);
 			if (cap.getManaStored() < maxNaturalTotalMana) {
 				cap.addMana((int) manaRegenRate);
 				Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),

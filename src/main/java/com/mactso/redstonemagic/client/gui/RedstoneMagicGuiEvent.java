@@ -17,24 +17,23 @@ import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 //https://github.com/KurodaAkira/RPG-Hud/tree/MC-Forge-1.16.1/src/main/java/net/spellcraftgaming/rpghud
 //https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/modification-development/3028795-1-15-2-render-overlay-blit-behaving-weirdly		
 @OnlyIn(value = Dist.CLIENT)
-public class RedstoneMagicGuiEvent extends Gui {
+public class RedstoneMagicGuiEvent extends ForgeGui {
 
 	private static Minecraft mc;
 	private final int frameTextureHeight = 42, frameTextureWidth = 42;
@@ -67,12 +66,12 @@ public class RedstoneMagicGuiEvent extends Gui {
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void renderOverlay(RenderGameOverlayEvent.Post event) {
+	public void renderOverlay(RenderGuiOverlayEvent.Post event) {
 
-		ElementType type = event.getType();
-		if (type != ElementType.ALL) {
-			return;
-		}
+//		ElementType type = event.getType();
+//		if (type != ElementType.ALL) {
+//			return;
+//		}
 
 		if (!hasRedstoneFocusItem()) {
 			return;
@@ -150,7 +149,7 @@ public class RedstoneMagicGuiEvent extends Gui {
 		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 	}
 
-	private void showNewManaBar(RenderGameOverlayEvent.Post event, 
+	private void showNewManaBar(RenderGuiOverlayEvent.Post event, 
 			int manaPercent, int guiScaledCenterX, int displayManaBarTopPosY) {
 
 
@@ -170,14 +169,14 @@ public class RedstoneMagicGuiEvent extends Gui {
 		int manabarHeight = 16;
 		int manaBarLeftEdgeX = 90;
 		RenderSystem.setShaderColor(1.00F, 1.00F, 1.00F, 0.75F);
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX - 42, displayManaBarTopPosY,
+		Screen.blit(event.getPoseStack(), guiScaledCenterX - 42, displayManaBarTopPosY,
 				manaBarFrameTextureLeftX, manaBarFrameTextureTopY, manaBarFrameWidth, manaBarFrameHeight , 256, 256);
 		// left and right half copy from far left and far right so tips of bar are rounded.
 		// left half of mana
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX  + 9 - (manaBarWidth/2), displayManaBarTopPosY,
+		Screen.blit(event.getPoseStack(), guiScaledCenterX  + 9 - (manaBarWidth/2), displayManaBarTopPosY,
 					leftManaBarTextureStartX, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 		// right half of mana
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX  + 9 , displayManaBarTopPosY,
+		Screen.blit(event.getPoseStack(), guiScaledCenterX  + 9 , displayManaBarTopPosY,
 				rightManaBarTextureStartX-2	, manaBarTextureTopY, (manaBarWidth/2), manabarHeight, 256, 256);
 
 	}
@@ -192,10 +191,10 @@ public class RedstoneMagicGuiEvent extends Gui {
 		}
 	}
 
-	private void showManaBar(RenderGameOverlayEvent.Post event, int blitScaledWidth, int blitScaledHeight,
+	private void showManaBar(RenderGuiOverlayEvent.Post event, int blitScaledWidth, int blitScaledHeight,
 			int displayManaBarLeftPosX, int displayManaBarTopPosY, float blueChannel, int manaPercent) {
 		RenderSystem.setShaderColor(1.0F, 1.0F, blueChannel, 0.8f + alphaPulseModifier / 10.0f);
-		Screen.blit(event.getMatrixStack(), displayManaBarLeftPosX, displayManaBarTopPosY, 0.0f, 0.0f, 23, 22,
+		Screen.blit(event.getPoseStack(), displayManaBarLeftPosX, displayManaBarTopPosY, 0.0f, 0.0f, 23, 22,
 				blitScaledWidth, blitScaledHeight);
 
 		int colorValue6 = (manaPercent * 176 / 100);
@@ -206,11 +205,11 @@ public class RedstoneMagicGuiEvent extends Gui {
 			redChannel = 0.0f;
 		}
 		RenderSystem.setShaderColor(redChannel, 1.0F, blueChannel, alphaPulseModifier + 0.05f);
-		Screen.blit(event.getMatrixStack(), displayManaBarLeftPosX, displayManaBarTopPosY + 2, 0.0f, 23.0f, 24, 24,
+		Screen.blit(event.getPoseStack(), displayManaBarLeftPosX, displayManaBarTopPosY + 2, 0.0f, 23.0f, 24, 24,
 				blitScaledWidth, blitScaledHeight);
 	}
 
-	private void showSpellCastingBar(RenderGameOverlayEvent.Post event, long gametime, int guiScaledCenterX, int guiScaledHeight,
+	private void showSpellCastingBar(RenderGuiOverlayEvent.Post event, long gametime, int guiScaledCenterX, int guiScaledHeight,
 			int blitScaledWidth, int blitScaledHeight, int displayManaBarTopPosY) {
 		if (timerCastingSpell == 0) {
 			return;
@@ -231,16 +230,16 @@ public class RedstoneMagicGuiEvent extends Gui {
 		int halfBarWidth = (int) (spellCastingBarWidth/2);
 //		Screen.blit(MatrixStack , int Screenx , int ScreenY, float PNGTop, float PNGLEFT, int PNGBottom, int PNGHeight, int ScaleX, int ScaleY);
 		
-		Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth - 1, displayCastingBarTopPosY,
+		Screen.blit(event.getPoseStack(), guiScaledCenterX - halfBarWidth - 1, displayCastingBarTopPosY,
 					21 - halfBarWidth, 94, (int) spellCastingBarWidth, 10, 256, 256);
 
 
 			if (guiPreparedSpellTranslationKey.equals("redstonemagic.tele")) {
 				if (mc.player.getXRot() >= 0) {
-					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
+					Screen.blit(event.getPoseStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
 							21 - (halfBarWidth), 104, (int) spellCastingBarWidth, 8, 256, 256);
 				} else {
-					Screen.blit(event.getMatrixStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
+					Screen.blit(event.getPoseStack(), guiScaledCenterX - halfBarWidth , displayCastingBarTopPosY+2,
 							21 - (halfBarWidth) +42, 104, (int) spellCastingBarWidth, 8, 256, 256);
 				}
 			
@@ -352,15 +351,15 @@ public class RedstoneMagicGuiEvent extends Gui {
 		if ((preparedSpellNumber >= 0) && (preparedSpellNumber <= 7)) {
 			RedstoneMagicSpellItem spell = SpellManager
 					.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
-			BaseComponent msg = new TranslatableComponent(spell.getSpellTranslationKey());
+			MutableComponent msg = Component.translatable(spell.getSpellTranslationKey());
 			guiSpellPrepared = msg.getString();
 			guiPreparedSpellNumber = preparedSpellNumber;
 			guiPreparedSpellTranslationKey = spell.getSpellTranslationKey();
 			spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString((preparedSpellNumber + 7) % 8));
-			msg = new TranslatableComponent(spell.getSpellTranslationKey());
+			msg = Component.translatable(spell.getSpellTranslationKey());
 			spellUpPrepareOption = msg.getString();
 			spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString((preparedSpellNumber + 9) % 8));
-			msg = new TranslatableComponent(spell.getSpellTranslationKey());
+			msg = Component.translatable(spell.getSpellTranslationKey());
 			spellDownPrepareOption = msg.getString();
 
 			if (!(guiSpellPrepared.equals(currentlyPreparedSpell))) {
@@ -374,8 +373,9 @@ public class RedstoneMagicGuiEvent extends Gui {
 
 	public static void setCastPreparedSpellNumber(int castingSpellNumber) {
 		if ((castingSpellNumber >= 0) && (castingSpellNumber <= 7)) {
+
 			RedstoneMagicSpellItem spell = SpellManager.getRedstoneMagicSpellItem(Integer.toString(castingSpellNumber));
-			BaseComponent msg = new TranslatableComponent(spell.getSpellTranslationKey());
+			MutableComponent msg = Component.translatable(spell.getSpellTranslationKey());
 			spellBeingCast = msg.getString();
 
 			timerCastingSpell = RedstoneMagicGuiEvent.mc.level.getGameTime();

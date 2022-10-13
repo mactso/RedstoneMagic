@@ -24,7 +24,8 @@ import net.minecraft.resources.ResourceLocation;
 public class RedstoneMagicRecipe extends ShapelessRecipe {
 	protected final String operation;
 	private final boolean copyDamage;
-	public static final Serializer CRAFTING_REDSTONEMAGIC = (Serializer) new Serializer().setRegistryName(Serializer.NAME);
+	public static final Serializer SERIALIZER = new Serializer();
+	public static final ResourceLocation NAME = new ResourceLocation(Main.MODID, "crafting_shapeless");
 
 	public RedstoneMagicRecipe(ResourceLocation idIn, String groupIn, ItemStack recipeOutputIn,
 			NonNullList<Ingredient> recipeItemsIn, String operationIn) {
@@ -46,7 +47,7 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 
 	@Override
 	public RecipeSerializer<?> getSerializer() {
-		return CRAFTING_REDSTONEMAGIC;
+		return SERIALIZER;
 	}
 
 	@Override

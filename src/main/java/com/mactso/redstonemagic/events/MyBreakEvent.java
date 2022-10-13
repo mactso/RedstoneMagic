@@ -16,7 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.level.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class MyBreakEvent {
@@ -48,7 +48,7 @@ public class MyBreakEvent {
 				event.getPlayer().getMainHandItem());
 
 		BlockPos pos = event.getPos();
-		LevelAccessor world = event.getWorld();
+		LevelAccessor world = event.getLevel();
 		ChunkAccess ichunk = world.getChunk(pos);
 		double randint = world.getRandom().nextDouble();
 		randint *= 3.0;
@@ -63,7 +63,6 @@ public class MyBreakEvent {
 		}
 
 		if (ichunk instanceof LevelChunk) {
-			int debug = 6;
 			LevelChunk chunk = (LevelChunk) ichunk;
 			cap = chunk.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {

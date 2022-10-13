@@ -35,31 +35,39 @@ public class ModSounds {
 	{
 		ResourceLocation res = new ResourceLocation(Main.MODID, key);
 		SoundEvent ret = new SoundEvent(res);
-		ret.setRegistryName(res);
 		return ret;
 	}
 
+	
+	
+	public static void registerHelper(IForgeRegistry<SoundEvent> registry, SoundEvent s)
+	{
+		registry.register(s.getLocation(), s);
+	}
+
+	
+	
 	public static void register(IForgeRegistry<SoundEvent> registry)
 	{
-		registry.register(REDSTONEMAGIC_NUKE);
-		registry.register(REDSTONEMAGIC_NUKE_ICY);
-		registry.register(REDSTONEMAGIC_HEAL);
-		registry.register(REDSTONEMAGIC_DOT);
-		registry.register(REDSTONEMAGIC_SDOT);
-		registry.register(REDSTONEMAGIC_RESI);
-		registry.register(REDSTONEMAGIC_TELE);
-		registry.register(REDSTONEMAGIC_TELE_START);
-		registry.register(REDSTONEMAGIC_BUFF);
-		registry.register(REDSTONEMAGIC_RCRS);
-		registry.register(REDSTONEMAGIC_FLY);
+		registerHelper(registry,REDSTONEMAGIC_NUKE);
+		registerHelper(registry,REDSTONEMAGIC_NUKE_ICY);
+		registerHelper(registry,REDSTONEMAGIC_HEAL);
+		registerHelper(registry,REDSTONEMAGIC_DOT);
+		registerHelper(registry,REDSTONEMAGIC_SDOT);
+		registerHelper(registry,REDSTONEMAGIC_RESI);
+		registerHelper(registry,REDSTONEMAGIC_TELE);
+		registerHelper(registry,REDSTONEMAGIC_TELE_START);
+		registerHelper(registry,REDSTONEMAGIC_BUFF);
+		registerHelper(registry,REDSTONEMAGIC_RCRS);
+		registerHelper(registry,REDSTONEMAGIC_FLY);
 
-		registry.register(SPELL_RESONATES);
-		registry.register(SPELL_FAILS);
-		registry.register(GATHERER_HUMS);		
-		registry.register(GATHERER_GATHERS);	
-		registry.register(RITUAL_PYLON_THRUMS);	
-		registry.register(RITUAL_BEGINS);	
-		registry.register(RITUAL_ENDS);	
-		registry.register(RED_SPIRIT_WORKS);	
+		registerHelper(registry,SPELL_RESONATES);
+		registerHelper(registry,SPELL_FAILS);
+		registerHelper(registry,GATHERER_HUMS);		
+		registerHelper(registry,GATHERER_GATHERS);	
+		registerHelper(registry,RITUAL_PYLON_THRUMS);	
+		registerHelper(registry,RITUAL_BEGINS);	
+		registerHelper(registry,RITUAL_ENDS);	
+		registerHelper(registry,RED_SPIRIT_WORKS);	
 	}
 }

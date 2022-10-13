@@ -2,62 +2,66 @@ package com.mactso.redstonemagic.item;
 
 import com.mactso.redstonemagic.block.ModBlocks;
 
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.Properties;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModItems 
 {
 
 	public static final Item GATHERER
-	 = new BlockItem(ModBlocks.GATHERER, new Properties().tab(CreativeModeTab.TAB_REDSTONE)).setRegistryName("gatherer");
-	public static final Item TEST_BLOCK2
-	 = new BlockItem(ModBlocks.TEST_BLOCK2, new Properties().tab(CreativeModeTab.TAB_REDSTONE)).setRegistryName("test_block2");
-	public static final Item FLYING_REAGENT =  new Item((new Item.Properties()).tab(CreativeModeTab.TAB_MATERIALS)).setRegistryName("flying_reagent");
-
+	 = new BlockItem(ModBlocks.GATHERER, new Properties().tab(CreativeModeTab.TAB_REDSTONE));
+	public static final Item FLYING_REAGENT =  new Item((new Item.Properties()).tab(CreativeModeTab.TAB_MATERIALS));
 	public static final Item RITUAL_PYLON 
-	 = new BlockItem(ModBlocks.RITUAL_PYLON, new Properties().tab(CreativeModeTab.TAB_REDSTONE)).setRegistryName("ritual_pylon");
+	 = new BlockItem(ModBlocks.RITUAL_PYLON, new Properties().tab(CreativeModeTab.TAB_REDSTONE));
 	public static final Item REDSTONE_FOCUS_ITEM	
-	 = new RedstoneFocusItem(new Properties().tab(CreativeModeTab.TAB_REDSTONE).durability(484)).setRegistryName("redstone_focus");
+	 = new RedstoneFocusItem(new Properties().tab(CreativeModeTab.TAB_REDSTONE).durability(484));
 	public static final ArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterials.NETHERITE,"redstonemagic", 17);
-	private static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.HEAD, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_helmet");
-	private static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.CHEST, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_chestplate");
-	private static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.LEGS, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_leggings");
-	private static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.FEET, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC), "redstonemagic_boots");
+	private static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.HEAD, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC));
+	private static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.CHEST, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC));
+	private static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.LEGS, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC));
+	private static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.FEET, new Properties().tab(CreativeModeTab.TAB_COMBAT).fireResistant().rarity(Rarity.EPIC));
 
 	public static final ArmorMaterial REDSTONEMAGIC_LEATHER_MATERIAL = new RedstoneArmorMaterial(ArmorMaterials.LEATHER,"redstonemagic", 25);
-	private static final Item REDSTONEMAGIC_LEATHER_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.HEAD, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(160).defaultDurability(180), "redstonemagic_leather_helmet");
-	private static final Item REDSTONEMAGIC_LEATHER_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.CHEST, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(220).defaultDurability(240), "redstonemagic_leather_chestplate");
-	private static final Item REDSTONEMAGIC_LEATHER_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.LEGS, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(210).defaultDurability(220), "redstonemagic_leather_leggings");
-	private static final Item REDSTONEMAGIC_LEATHER_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.FEET, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(170).defaultDurability(180), "redstonemagic_leather_boots");
+	private static final Item REDSTONEMAGIC_LEATHER_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.HEAD, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(160).defaultDurability(180));
+	private static final Item REDSTONEMAGIC_LEATHER_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.CHEST, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(220).defaultDurability(240));
+	private static final Item REDSTONEMAGIC_LEATHER_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.LEGS, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(210).defaultDurability(220));
+	private static final Item REDSTONEMAGIC_LEATHER_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL, EquipmentSlot.FEET, new Properties().tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON).durability(170).defaultDurability(180));
 
 //	public static final Item REDSTONE_POWER_BLOCK = new BlockItem(ModBlocks.REDSTONE_POWER_BLOCK, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_power_block");
 
 	public static void register(IForgeRegistry<Item> forgeRegistry)
 	{
-		forgeRegistry.register(RITUAL_PYLON );
-		forgeRegistry.register(REDSTONE_FOCUS_ITEM );
-		forgeRegistry.register(GATHERER);	
-		forgeRegistry.register(FLYING_REAGENT);
-//		forgeRegistry.register(TEST_BLOCK2);	
-		forgeRegistry.registerAll(REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS);
-		forgeRegistry.registerAll(REDSTONEMAGIC_LEATHER_HELMET, REDSTONEMAGIC_LEATHER_CHESTPLATE, REDSTONEMAGIC_LEATHER_LEGGINGS, REDSTONEMAGIC_LEATHER_BOOTS);
+		forgeRegistry.register("ritual_pylon", RITUAL_PYLON );
+		forgeRegistry.register("redstone_focus", REDSTONE_FOCUS_ITEM );
+		forgeRegistry.register("gatherer", GATHERER);	
+		forgeRegistry.register("flying_reagent",FLYING_REAGENT);
+
+		forgeRegistry.register("redstonemagic_leather_helmet", REDSTONEMAGIC_LEATHER_HELMET);
+		forgeRegistry.register("redstonemagic_leather_chestplate", REDSTONEMAGIC_LEATHER_CHESTPLATE);
+		forgeRegistry.register("redstonemagic_leather_leggings", REDSTONEMAGIC_LEATHER_LEGGINGS);
+		forgeRegistry.register("redstonemagic_leather_boots", REDSTONEMAGIC_LEATHER_BOOTS);
+
+		forgeRegistry.register("redstonemagic_helmet", REDSTONEMAGIC_HELMET);
+		forgeRegistry.register("redstonemagic_chestplate", REDSTONEMAGIC_CHESTPLATE);
+		forgeRegistry.register("redstonemagic_leggings", REDSTONEMAGIC_LEGGINGS);
+		forgeRegistry.register("redstonemagic_boots", REDSTONEMAGIC_BOOTS);
 
 	}
 	@OnlyIn(Dist.CLIENT)
-	public static void register(ItemColors itemColors)
+	public static void register(RegisterColorHandlersEvent.Item event)
 	{
-		itemColors.register((itemstack, index) -> {
+		event.register((itemstack, index) -> {
         	return index > 0 ? -1 : ((DyeableLeatherItem)itemstack.getItem()).getColor(itemstack);
         }, REDSTONEMAGIC_HELMET, REDSTONEMAGIC_CHESTPLATE, REDSTONEMAGIC_LEGGINGS, REDSTONEMAGIC_BOOTS
 				, REDSTONEMAGIC_LEATHER_HELMET, REDSTONEMAGIC_LEATHER_CHESTPLATE, REDSTONEMAGIC_LEATHER_LEGGINGS, REDSTONEMAGIC_LEATHER_BOOTS);

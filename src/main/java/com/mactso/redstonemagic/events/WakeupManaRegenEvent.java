@@ -20,9 +20,9 @@ public class WakeupManaRegenEvent {
 
 	@SubscribeEvent
 	public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
-		if (event.getPlayer().level instanceof ServerLevel) {
+		if (event.getEntity().level instanceof ServerLevel) {
 
-			Iterable<ItemStack> ar = event.getPlayer().getArmorSlots();
+			Iterable<ItemStack> ar = event.getEntity().getArmorSlots();
 			float armorModifier = 1.0f;
 			for (ItemStack is : ar) {
 				armorModifier -= 0.24f;
@@ -34,9 +34,9 @@ public class WakeupManaRegenEvent {
 						armorModifier += 0.13f;
 					}
 				}
-//				MyConfig.sendChat(event.getPlayer(),  "Wakeup Regen ArmorModifier:" + armorModifier 	);
+//				MyConfig.sendChat(event.getEntity(),  "Wakeup Regen ArmorModifier:" + armorModifier 	);
 			}
-			IMagicStorage pMS = event.getPlayer().getCapability(CapabilityMagic.MAGIC).orElse(null);
+			IMagicStorage pMS = event.getEntity().getCapability(CapabilityMagic.MAGIC).orElse(null);
 			int maxMana = MyConfig.getMaxPlayerRedstoneMagic();
 			float netModifier = (float) (armorModifier * MyConfig.getWakeupManaRegenPercent());
 			float wakeupManaRegenAmount = (maxMana * netModifier);
@@ -45,8 +45,8 @@ public class WakeupManaRegenEvent {
 			}
 			pMS.addMana((int) wakeupManaRegenAmount );
 			Network.sendToClient(new SyncClientManaPacket(pMS.getManaStored(), MyConfig.NO_CHUNK_MANA_UPDATE),
-					(ServerPlayer) event.getPlayer());
-//			MyConfig.sendChat(event.getPlayer(),  "Wakeup Regen:" + wakeupManaRegenAmount +
+					(ServerPlayer) event.getEntity());
+//			MyConfig.sendChat(event.getEntity(),  "Wakeup Regen:" + wakeupManaRegenAmount +
 //					" ArmorModifier:" + armorModifier +
 //					" netModifier:" + netModifier);
 		}

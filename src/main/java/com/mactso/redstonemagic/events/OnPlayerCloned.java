@@ -14,11 +14,11 @@ public class OnPlayerCloned {
     public void onPlayerCloned(Clone event)
     {
 
-		if (!(event.getPlayer() instanceof ServerPlayer)) {
+		if (!(event.getEntity() instanceof ServerPlayer)) {
 			return;
 		}
 	
-    	ServerPlayer newPlayer = (ServerPlayer) event.getPlayer();
+    	ServerPlayer newPlayer = (ServerPlayer) event.getEntity();
     	ServerPlayer oldPlayer = (ServerPlayer) event.getOriginal();
     	IMagicStorage capNew = newPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
     	IMagicStorage capOld = oldPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);

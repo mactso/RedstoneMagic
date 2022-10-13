@@ -8,9 +8,35 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
@@ -18,40 +44,13 @@ import net.minecraft.world.level.block.MelonBlock;
 import net.minecraft.world.level.block.PumpkinBlock;
 import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.TallGrassBlock;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemNameBlockItem;
-import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.Tags;
 
 public class RitualPylonTileEntity extends BlockEntity {
@@ -242,7 +241,7 @@ public class RitualPylonTileEntity extends BlockEntity {
 
 			if (playerManaStorage == null) {
 				MyConfig.sendChat(player, "Impossible Error: You do not have a mana pool.",
-						TextColor.fromLegacyFormat((ChatFormatting.YELLOW)));
+						ChatFormatting.YELLOW);
 				this.currentRitual = RITUAL_NONE;
 				return false;
 			}
@@ -357,9 +356,15 @@ public class RitualPylonTileEntity extends BlockEntity {
 			if (bS.getBlock() == Blocks.SOUL_SAND) return true;
 			if (bS.getBlock() == Blocks.SOUL_SOIL) return true;
 		}
-		return (BlockTags.FLOWERS.contains(bS.getBlock()) || (bS.getBlock() instanceof TallGrassBlock)
-				|| (bS.getBlock() instanceof DoublePlantBlock) || BlockTags.DIRT.contains(bS.getBlock())
-				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock()))));
+
+		return (
+				(bS.is(BlockTags.FLOWERS)) ||
+				(bS.getBlock() instanceof TallGrassBlock) ||
+				(bS.getBlock() instanceof DoublePlantBlock) ||
+				(bS.is(BlockTags.DIRT)) ||
+				(bS.is(Tags.Blocks.GRAVEL)) ||
+				(bS.is(BlockTags.SAND))
+				);
 	}
 
 	private boolean isItemDamagingRitual(Item ritualItem) {
@@ -390,7 +395,8 @@ public class RitualPylonTileEntity extends BlockEntity {
 
 	private boolean isLoggable(BlockPos cursorPos) {
 		BlockState bS = level.getBlockState(cursorPos);
-		if (BlockTags.LEAVES.contains(bS.getBlock()) || BlockTags.LOGS.contains(bS.getBlock())) {
+
+		if ((bS.is(BlockTags.LEAVES)) || (bS.is(BlockTags.LOGS))) {
 			return true;
 		}
 		return false;
@@ -406,9 +412,9 @@ public class RitualPylonTileEntity extends BlockEntity {
 			if (bS.getBlock() == Blocks.SOUL_SOIL) return true;
 		}
 
-		return (bS.getBlock() == Blocks.NETHERRACK) || (Tags.Blocks.STONE.contains(bS.getBlock()))
-				|| (BlockTags.DIRT.contains(bS.getBlock()))
-				|| (Tags.Blocks.GRAVEL.contains(bS.getBlock()) || (Tags.Blocks.SAND.contains(bS.getBlock())));
+		return (bS.is(Tags.Blocks.NETHERRACK)) || (bS.is(Tags.Blocks.STONE))
+				|| (bS.is(BlockTags.DIRT))
+				|| (bS.is(Tags.Blocks.GRAVEL)) || (bS.is(Tags.Blocks.SAND));
 	}
 
 	private boolean isReadyCropBlock(BlockPos cursorPos) {
@@ -528,7 +534,7 @@ public class RitualPylonTileEntity extends BlockEntity {
 	private void processLoggingRitual(BlockPos cursorPos) {
 		BlockState tBS = level.getBlockState(cursorPos);
 		Block tBlock = tBS.getBlock();
-		if (BlockTags.LEAVES.contains(tBlock)) {
+		if (tBS.is(BlockTags.LEAVES)) {
 			level.destroyBlock(cursorPos, false);
 			harvestWorkTotal += 0.1f;
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {
@@ -538,7 +544,7 @@ public class RitualPylonTileEntity extends BlockEntity {
 				}
 			}
 		}
-		if (BlockTags.LOGS.contains(level.getBlockState(cursorPos).getBlock())) {
+		if (tBS.is(BlockTags.LOGS)) {
 			level.destroyBlock(cursorPos, false);
 			harvestWorkTotal += 1.0f;
 			for (ItemStack dropsStack : tBS.getDrops(utilDoGetLootBuilder(cursorPos))) {

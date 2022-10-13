@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
+import net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class MyPlaceBlockEvent {
@@ -25,8 +25,8 @@ public class MyPlaceBlockEvent {
 				if (t instanceof GathererTileEntity) {
 					x++;
 					if (x > 2) {
-						if (event.getWorld() instanceof ServerLevel) {
-							ServerLevel serverWorld = (ServerLevel) event.getWorld();
+						if (event.getLevel() instanceof ServerLevel) {
+							ServerLevel serverWorld = (ServerLevel) event.getLevel();
 							serverWorld.playSound(null, event.getPos(), ModSounds.SPELL_FAILS, SoundSource.AMBIENT, 0.6f, 0.8f);
 					        serverWorld.sendParticles(ParticleTypes.POOF, event.getPos().getX(), event.getPos().getY(), event.getPos().getZ(), 3, 0.5, 0.5, 0.5, -0.14D);
 

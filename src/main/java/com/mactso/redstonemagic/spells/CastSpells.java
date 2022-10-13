@@ -1,7 +1,6 @@
 package com.mactso.redstonemagic.spells;
 
 import java.util.Collection;
-import java.util.Random;
 
 import com.mactso.redstonemagic.block.ModBlocks;
 import com.mactso.redstonemagic.config.MyConfig;
@@ -14,46 +13,46 @@ import com.mactso.redstonemagic.network.Network;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.animal.Wolf;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
+import net.minecraft.world.phys.Vec3;
 
 public class CastSpells {
 	static final int THREE_SECONDS = 60;
@@ -346,7 +345,7 @@ public class CastSpells {
 			netherBoost = THIRTY_SECONDS;
 		}
 
-		Random r = serverPlayer.getLevel().getRandom();
+		RandomSource r = serverPlayer.getLevel().getRandom();
 		int randomBoost = (int) (320 * r.nextFloat());
 
 		int durationBoosts = netherBoost + randomBoost;
@@ -416,10 +415,11 @@ public class CastSpells {
 				}
 			}
 			if (ei == null) {
+
 				ResourceKey<Level> rK = w.dimension();
 				ResourceLocation rL1 = rK.location();
-				ResourceLocation rl2 = rK.getRegistryName();
 				boolean castNightVision = true;
+
 				if ((rL1.getPath().equals("the_nether")) || (rL1.getPath().equals("the_end"))) {
 					castNightVision = false;
 				}
@@ -603,7 +603,7 @@ public class CastSpells {
 				0.25f);
 		if (!(serverPlayer.getInventory().contains(MILK_STACK))) {
 			MyConfig.sendChat(serverPlayer, "You have no milk in your inventory.",
-					TextColor.fromLegacyFormat(ChatFormatting.DARK_RED));
+					ChatFormatting.DARK_RED);
 			serverWorld.playSound(null, serverPlayer.blockPosition(), ModSounds.SPELL_FAILS, SoundSource.AMBIENT,
 					0.8f, 0.1f);
 			return false;
@@ -756,7 +756,7 @@ public class CastSpells {
 
 		if (serverPlayer.level.dimension() != Level.OVERWORLD) {
 			MyConfig.sendChat(serverPlayer, "You can only teleport in the Overworld.",
-					TextColor.fromLegacyFormat((ChatFormatting.YELLOW)));
+					ChatFormatting.YELLOW);
 			return false;
 		}
 
@@ -870,7 +870,7 @@ public class CastSpells {
 		IMagicStorage playerManaStorage = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 		if (playerManaStorage == null) {
 			MyConfig.sendChat(serverPlayer, "Impossible Error: You do not have a mana pool.",
-					TextColor.fromLegacyFormat((ChatFormatting.YELLOW)));
+					ChatFormatting.YELLOW);
 			return;
 		}
 
@@ -892,7 +892,7 @@ public class CastSpells {
 					SoundSource.BLOCKS, 0.8f, 0.4f);
 			serverSpawnMagicalParticles(serverPlayer, serverPlayer.getLevel(), 2, ParticleTypes.POOF);
 			MyConfig.sendChat(serverPlayer, "You do not have enough mana.",
-					TextColor.fromLegacyFormat((ChatFormatting.RED)));
+					ChatFormatting.RED);
 			return;
 		}
 

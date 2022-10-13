@@ -14,15 +14,15 @@ public class OnPlayerLoggedIn {
 	   @SubscribeEvent
 	    public void onPlayerLogged( PlayerLoggedInEvent event )
 	    {
-	    	if (event.getPlayer() == null) {
+	    	if (event.getEntity() == null) {
 	    		return;
 	    	}
 	    	
 
-			if (!(event.getPlayer() instanceof ServerPlayer)) {
+			if (!(event.getEntity() instanceof ServerPlayer)) {
 				return;
 			}
-	    	ServerPlayer serverPlayer = (ServerPlayer) event.getPlayer();
+	    	ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
 			IMagicStorage cap = serverPlayer.getCapability(CapabilityMagic.MAGIC).orElse(null);
 			if (cap != null) {
 				Network.sendToClient(new SyncClientManaPacket(cap.getManaStored(), -1) , serverPlayer);

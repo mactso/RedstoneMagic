@@ -15,7 +15,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ScreenEvent.MouseClickedEvent;
+import net.minecraftforge.client.event.ScreenEvent.MouseButtonPressed;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -28,7 +28,7 @@ public interface IGuiRightClick  {
 	{
         @OnlyIn(Dist.CLIENT)
 	    @SubscribeEvent
-	    public static void onMouseScreenEvent(MouseClickedEvent.Pre event)
+	    public static void onMouseScreenEvent(MouseButtonPressed.Pre event)
 	    {
 	    	if (event.isCanceled())
 	    		return;

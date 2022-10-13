@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
@@ -30,16 +29,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -188,7 +185,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		CompoundTag tag = stack.getTag();
         if (tag != null) {
         	if (tag.contains("ownerName")) {
-                 tooltip.add(new TextComponent("Owner: "+ tag.getString("ownerName")).withStyle(ChatFormatting.GOLD));
+                 tooltip.add(Component.literal("Owner: "+ tag.getString("ownerName")).withStyle(ChatFormatting.GOLD));
         	}
         	if (tag.contains("preparedSpellNumber")) {
         		preparedSpellNumber = tag.getInt("preparedSpellNumber");
@@ -196,7 +193,7 @@ public class RedstoneFocusItem extends ShieldItem {
         }
    		SpellManager.RedstoneMagicSpellItem spellItem = SpellManager
 				.getRedstoneMagicSpellItem(Integer.toString(preparedSpellNumber));
-		tooltip.add(new TextComponent("Spell: " + spellItem.getSpellComment()).withStyle(ChatFormatting.RED));
+		tooltip.add(Component.literal("Spell: " + spellItem.getSpellComment()).withStyle(ChatFormatting.RED));
 
         // @TODO
         // TranslationTextComponent("ca.hover.claim_block").withStyle(TextFormatting.DARK_GREEN));
@@ -246,7 +243,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		CompoundTag compoundnbt = player.getPersistentData();
 		long chunkAge = compoundnbt.getLong("chunkAge");
 		if (MyConfig.getDebugLevel() > 0) {
-			MyConfig.sendChat(player, "ChunkAge:" + chunkAge, TextColor.fromLegacyFormat(ChatFormatting.AQUA));
+			MyConfig.sendChat(player, "ChunkAge:" + chunkAge, ChatFormatting.AQUA);
 		}
 		return chunkAge;
 	}
@@ -264,7 +261,7 @@ public class RedstoneFocusItem extends ShieldItem {
 			return false;
 		}
 
-		String i = handItem.getDescriptionId().toString();
+//		String i = handItem.getDescriptionId().toString();
 		if (handItem.getUseDuration() == 0) {
 			canUseRedstoneFocus = true;
 		}
@@ -276,7 +273,8 @@ public class RedstoneFocusItem extends ShieldItem {
 		
 		// replace this with the item being clicked!  (waystones) but hand device should work.
 		// replace this with a list later but hard coded for now.
-		String modName = handItem.getItem().getRegistryName().getNamespace();
+		
+		String modName = handItem.getItem().builtInRegistryHolder().key().location().getNamespace();
 		if (playerIn.level.getGameTime()%20 == 0) {
 			MyConfig.dbgPrintln(1, "modname of item in hand:"+ modName);
 		}
@@ -564,9 +562,9 @@ public class RedstoneFocusItem extends ShieldItem {
 					if (netSpellCastingTime < minimumCastingTime) {
 						if (RedstoneMagicGuiEvent.getFizzleSpamLimiter() < 0) {
 							RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
-							BaseComponent msg = new TranslatableComponent("redstonemagic.fizz");
+							TranslatableContents msg = new TranslatableContents("redstonemagic.fizz");
 							if (!MyConfig.getGuiSpamChatFilter()) {
-								MyConfig.sendChat(clientPlayer, msg.getString(), TextColor.fromLegacyFormat((ChatFormatting.RED)));
+								MyConfig.sendChat(clientPlayer, msg.toString(), ChatFormatting.RED);
 							}
 							clientPlayer.level.playSound(clientPlayer, clientPlayer.blockPosition(), soundEvent,
 									SoundSource.AMBIENT, 0.6f, 0.3f);
@@ -739,7 +737,7 @@ public class RedstoneFocusItem extends ShieldItem {
 		} else { // client side - update gui.
 			long gametime = worldIn.getGameTime();
 			Player p = (Player) entityIn;
-			Random rand = p.level.random;
+			RandomSource rand = p.level.random;
 
 			
 			// show redstone sparkles if the chunk has over 64 mana.
