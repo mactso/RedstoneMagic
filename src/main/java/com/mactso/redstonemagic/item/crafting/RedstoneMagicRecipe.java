@@ -27,9 +27,9 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 	public static final Serializer SERIALIZER = new Serializer();
 	public static final ResourceLocation NAME = new ResourceLocation(Main.MODID, "crafting_shapeless");
 
-	public RedstoneMagicRecipe(ResourceLocation idIn, String groupIn, ItemStack recipeOutputIn,
+	public RedstoneMagicRecipe(ResourceLocation resourceLocationIn, String groupIn, ItemStack recipeOutputIn,
 			NonNullList<Ingredient> recipeItemsIn, String operationIn) {
-		super(idIn, groupIn, recipeOutputIn, recipeItemsIn);
+		super(resourceLocationIn, groupIn, null, recipeOutputIn, recipeItemsIn);
 		operation = operationIn;
 		boolean copyDamage = false;
 		if (recipeOutputIn.isDamageableItem()) {

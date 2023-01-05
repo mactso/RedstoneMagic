@@ -213,7 +213,7 @@ public class CastSpells {
 		lE.setLastHurtByPlayer(serverPlayer); // set attacking player (I think)
 		serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 				SoundSource.AMBIENT, 0.6f, 0.8f);
-		serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_SNARE, SoundSource.AMBIENT,
+		serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_SNARE.get(), SoundSource.AMBIENT,
 				0.7f, 0.3f);
 		drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.ITEM_SLIME);
 		serverSpawnMagicalParticles(targetEntity, serverWorld, 3, ParticleTypes.CAMPFIRE_COSY_SMOKE);
@@ -298,7 +298,7 @@ public class CastSpells {
 			}
 			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.BEACON_ACTIVATE,
 					SoundSource.AMBIENT, 0.2f, 0.8f);
-			serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE,
+			serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE.get(),
 					SoundSource.AMBIENT, 0.7f, 0.86f);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.HEART);
@@ -629,9 +629,9 @@ public class CastSpells {
 		}
 
 		if (curseRemoved) {
-			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_BELL,
+			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_BELL.get(),
 					SoundSource.AMBIENT, 0.6f, 0.65f);
-			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_HARP,
+			serverWorld.playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_HARP.get(),
 					SoundSource.AMBIENT, 0.6f, 0.75f);
 			drawSpellBeam(serverPlayer, serverWorld, targetEntity, ParticleTypes.WITCH);
 			serverSpawnMagicalParticles(targetEntity, serverWorld, spellTime, ParticleTypes.ENCHANT);
@@ -738,7 +738,7 @@ public class CastSpells {
 			serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT,
 					SoundSource.AMBIENT, 0.6f, 0.8f);
 		}
-		serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_SNARE, SoundSource.AMBIENT,
+		serverWorld.playSound(null, targetEntity.blockPosition(), SoundEvents.NOTE_BLOCK_SNARE.get(), SoundSource.AMBIENT,
 				0.7f, 0.3f);
 		drawSpellBeam(serverPlayer, serverWorld, targetEntity,
 				new BlockParticleOption(ParticleTypes.BLOCK, Blocks.CRYING_OBSIDIAN.defaultBlockState()));
@@ -906,7 +906,7 @@ public class CastSpells {
 		}
 
 		if (castSpellAtTarget(serverPlayer, targetEntity, spellTime, spell, targetPos)) {
-			serverPlayer.getLevel().playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME,
+			serverPlayer.getLevel().playSound(null, serverPlayer.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.get(),
 					SoundSource.AMBIENT, 0.4f, 0.9f);
 			LevelChunk playerChunk = (LevelChunk) serverPlayer.level.getChunk(serverPlayer.blockPosition());
 			// possible bug here. getting from player not chunk

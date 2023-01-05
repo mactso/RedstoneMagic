@@ -184,7 +184,7 @@ public class GathererTileEntity extends BlockEntity {
 		if (player instanceof ServerPlayer) {
 			showManaLevel = !showManaLevel;
 			if (showManaLevel) {
-				level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING,
+				level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING.get(),
 						SoundSource.BLOCKS, 0.2f, 0.45f);	
 			}
 			LevelChunk chunk = (LevelChunk) level.getChunk(pos);

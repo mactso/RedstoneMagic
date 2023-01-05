@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import org.joml.Vector3f;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
 import com.mactso.redstonemagic.config.ModExclusionListDataManager;
@@ -20,8 +21,6 @@ import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.spells.CastSpells;
-import com.mojang.math.Vector3f;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -590,13 +589,13 @@ public class RedstoneFocusItem extends ShieldItem {
 							}
 							int distance = 10 + (int) (7 * clientPlayer.level.random.nextFloat());
 							targetPos = doLookForDistantBlock(clientPlayer, distance);
-							soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
+							soundEvent = SoundEvents.NOTE_BLOCK_CHIME.get();
 						}
 
 						if (spell.getSpellTargetType().equals(SpellManager.SPELL_TARGET_SELF)) {
 							targetEntity = clientPlayer;
 							targetPos = targetEntity.blockPosition();
-							soundEvent = SoundEvents.NOTE_BLOCK_CHIME;
+							soundEvent = SoundEvents.NOTE_BLOCK_CHIME.get();
 						}
 
 						if (targetEntity != null) {
