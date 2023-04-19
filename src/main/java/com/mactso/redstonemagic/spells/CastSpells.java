@@ -88,8 +88,9 @@ public class CastSpells {
 
 		String spellTranslationKey = spell.getSpellTranslationKey();
 		String spellTargetType = spell.getSpellTargetType();
-		DamageSource myDamageSource = DamageSource.playerAttack(serverPlayer).bypassArmor().setMagic();
 
+		DamageSource myDamageSource = serverPlayer.damageSources().indirectMagic(serverPlayer, targetEntity);
+		
 		ServerLevel serverWorld = (ServerLevel) targetEntity.level;
 
 		posX = targetEntity.getX();
@@ -194,7 +195,7 @@ public class CastSpells {
 		}
 
 //		boolean nukeHit = false;
-		myDamageSource.bypassArmor();
+
 		boolean nukeHit = targetEntity.hurt(myDamageSource, nukeDamage);
 
 		MobEffectInstance ei = targetEntity.getEffect(MobEffects.POISON);
@@ -707,8 +708,7 @@ public class CastSpells {
 			duration += 1;
 		}
 
-		myDamageSource.bypassArmor();
-//		boolean nukeHit = false;
+
 		boolean nukeHit = targetEntity.hurt(myDamageSource, nukeDamage);
 
 		MobEffectInstance ei = targetEntity.getEffect(MobEffects.WITHER);

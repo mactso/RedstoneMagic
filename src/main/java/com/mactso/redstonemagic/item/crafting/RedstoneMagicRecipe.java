@@ -19,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 
 public class RedstoneMagicRecipe extends ShapelessRecipe {
@@ -51,8 +52,8 @@ public class RedstoneMagicRecipe extends ShapelessRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer inv) {
-		ItemStack ret = this.getResultItem().copy();
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess reg) {
+		ItemStack ret = this.getResultItem(reg).copy();
 		if (copyDamage) {
 			for (int j = 0; j < inv.getContainerSize(); ++j) {
 				ItemStack itemstack = inv.getItem(j);

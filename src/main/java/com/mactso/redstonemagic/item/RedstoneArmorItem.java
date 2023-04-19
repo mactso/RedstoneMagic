@@ -13,8 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.DyeableArmorItem;
 import net.minecraft.world.item.ItemStack;
@@ -25,16 +25,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClick {
-	private final EquipmentSlot slotType;
-	private final boolean isChestSlotType;
+	private final ArmorItem.Type itemType;
+	private final boolean isChestplate;
 
-	public RedstoneArmorItem(ArmorMaterial material, EquipmentSlot slotType, Properties prop) {
-		super(material, slotType, prop);
-		this.slotType = slotType;
-		if (slotType == EquipmentSlot.CHEST) {
-			isChestSlotType = true;
+	public RedstoneArmorItem(ArmorMaterial material, ArmorItem.Type itemType, Properties prop) {
+		
+		super(material, itemType, prop);
+		
+		this.itemType = itemType;
+		if (itemType == ArmorItem.Type.CHESTPLATE) {
+			isChestplate = true;
 		} else {
-			isChestSlotType = false;
+			isChestplate = false;
 		}
 
 	}
@@ -60,15 +62,15 @@ public class RedstoneArmorItem extends DyeableArmorItem implements IGuiRightClic
 		final int ONE_SECOND = 20;
 		final int MANA_REGEN_PERIOD = 160; // 160 ticks... 8 seconds
 		final int ARMOR_MEND_PERIOD = 80; // 80 ticks... 4 seconds
-
+		stack.getEquipmentSlot();
 		if ((player instanceof ServerPlayer)) {
 			ServerPlayer sPlayer = (ServerPlayer) player;
-
+		
 			long gameTime = sPlayer.level.getGameTime();
 			boolean isFullSuit = isFullSuit(stack, sPlayer);
 
 			if (gameTime % ONE_SECOND == 0) {
-				if (isFullSuit && isChestSlotType) {
+				if (isFullSuit && isChestplate) {
 					doSuitBonuses(sPlayer, gameTime);
 				}
 

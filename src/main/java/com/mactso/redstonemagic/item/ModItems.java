@@ -2,7 +2,7 @@ package com.mactso.redstonemagic.item;
 
 import com.mactso.redstonemagic.block.ModBlocks;
 
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
@@ -24,25 +24,25 @@ public class ModItems {
 			new Properties().rarity(Rarity.RARE).durability(484));
 	public static final ArmorMaterial REDSTONEMAGIC_MATERIAL = new RedstoneArmorMaterial(ArmorMaterials.NETHERITE,
 			"redstonemagic", 17);
-	public static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.HEAD,
+	public static final Item REDSTONEMAGIC_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, ArmorItem.Type.HELMET,
 			new Properties().fireResistant().rarity(Rarity.EPIC));
 	public static final Item REDSTONEMAGIC_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL,
-			EquipmentSlot.CHEST, new Properties().fireResistant().rarity(Rarity.EPIC));
-	public static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.LEGS,
+			ArmorItem.Type.CHESTPLATE, new Properties().fireResistant().rarity(Rarity.EPIC));
+	public static final Item REDSTONEMAGIC_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, ArmorItem.Type.LEGGINGS,
 			new Properties().fireResistant().rarity(Rarity.EPIC));
-	public static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, EquipmentSlot.FEET,
+	public static final Item REDSTONEMAGIC_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_MATERIAL, ArmorItem.Type.BOOTS,
 			new Properties().fireResistant().rarity(Rarity.EPIC));
 
 	public static final ArmorMaterial REDSTONEMAGIC_LEATHER_MATERIAL = new RedstoneArmorMaterial(ArmorMaterials.LEATHER,
 			"redstonemagic", 25);
 	public static final Item REDSTONEMAGIC_LEATHER_HELMET = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL,
-			EquipmentSlot.HEAD, new Properties().rarity(Rarity.UNCOMMON).durability(160).defaultDurability(180));
+			ArmorItem.Type.HELMET, new Properties().rarity(Rarity.UNCOMMON).durability(160).defaultDurability(180));
 	public static final Item REDSTONEMAGIC_LEATHER_CHESTPLATE = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL,
-			EquipmentSlot.CHEST, new Properties().rarity(Rarity.UNCOMMON).durability(220).defaultDurability(240));
+			ArmorItem.Type.CHESTPLATE, new Properties().rarity(Rarity.UNCOMMON).durability(220).defaultDurability(240));
 	public static final Item REDSTONEMAGIC_LEATHER_LEGGINGS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL,
-			EquipmentSlot.LEGS, new Properties().rarity(Rarity.UNCOMMON).durability(210).defaultDurability(220));
+			ArmorItem.Type.LEGGINGS, new Properties().rarity(Rarity.UNCOMMON).durability(210).defaultDurability(220));
 	public static final Item REDSTONEMAGIC_LEATHER_BOOTS = new RedstoneArmorItem(REDSTONEMAGIC_LEATHER_MATERIAL,
-			EquipmentSlot.FEET, new Properties().rarity(Rarity.UNCOMMON).durability(170).defaultDurability(180));
+			ArmorItem.Type.BOOTS, new Properties().rarity(Rarity.UNCOMMON).durability(170).defaultDurability(180));
 
 //	public static final Item REDSTONE_POWER_BLOCK = new BlockItem(ModBlocks.REDSTONE_POWER_BLOCK, new Properties().group(ItemGroup.REDSTONE)).setRegistryName("redstone_power_block");
 

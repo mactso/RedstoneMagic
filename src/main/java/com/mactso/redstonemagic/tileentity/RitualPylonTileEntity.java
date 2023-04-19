@@ -21,7 +21,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.HoeItem;
@@ -272,7 +271,7 @@ public class RitualPylonTileEntity extends BlockEntity {
 			luck = player.getLuck();
 			level.playSound(null, worldPosition, ModSounds.RITUAL_BEGINS, SoundSource.BLOCKS, 0.5f, 0.2f);
 			if (getRitualID(handItemStack.getItem()) == RITUAL_REDSTONE) {
-				player.hurt(DamageSource.GENERIC, 19.0f);
+				player.hurt(player.level.damageSources().generic(), 19.0f);
 				level.playSound(null, worldPosition, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.HOSTILE, 0.5f, 0.2f);
 			}
 			calcRitualArea();

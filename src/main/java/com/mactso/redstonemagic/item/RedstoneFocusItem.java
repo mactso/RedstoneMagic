@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.joml.Vector3f;
 
 import com.mactso.redstonemagic.client.gui.RedstoneMagicGuiEvent;
@@ -21,6 +22,7 @@ import com.mactso.redstonemagic.network.SyncClientGuiPacket;
 import com.mactso.redstonemagic.network.SyncClientManaPacket;
 import com.mactso.redstonemagic.sounds.ModSounds;
 import com.mactso.redstonemagic.spells.CastSpells;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -29,7 +31,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -151,7 +153,7 @@ public class RedstoneFocusItem extends ShieldItem {
 
 		if (hitPosition2 != null) {
 			Vec3 vL = clientPlayer.getViewVector(1.0F);
-			targetPos = new BlockPos(hitPosition.x() - vL.x(), hitPosition.y() - vL.y(), hitPosition.z() - vL.z());
+			targetPos = BlockPos.containing(hitPosition.x() - vL.x(), hitPosition.y() - vL.y(), hitPosition.z() - vL.z());
 			Block b = world.getBlockState(targetPos).getBlock();
 			if (!(b instanceof AirBlock)) {
 				targetPos = null;
@@ -561,7 +563,7 @@ public class RedstoneFocusItem extends ShieldItem {
 					if (netSpellCastingTime < minimumCastingTime) {
 						if (RedstoneMagicGuiEvent.getFizzleSpamLimiter() < 0) {
 							RedstoneMagicGuiEvent.setFizzleSpamLimiter(120);
-							TranslatableContents msg = new TranslatableContents("redstonemagic.fizz");
+							MutableComponent msg = Component.translatable("redstonemagic.fizz");
 							if (!MyConfig.getGuiSpamChatFilter()) {
 								MyConfig.sendChat(clientPlayer, msg.toString(), ChatFormatting.RED);
 							}

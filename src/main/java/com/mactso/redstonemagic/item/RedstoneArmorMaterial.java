@@ -2,11 +2,11 @@ package com.mactso.redstonemagic.item;
 
 import com.mactso.redstonemagic.Main;
 
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorMaterials;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class RedstoneArmorMaterial implements ArmorMaterial {
 
@@ -26,32 +26,33 @@ public class RedstoneArmorMaterial implements ArmorMaterial {
 //  return Ingredient.fromItems(Items.NETHERITE_INGOT);
 //  });
 
+	
 	@Override
-	public int getDurabilityForSlot(EquipmentSlot slotIn) {
-		return clone.getDurabilityForSlot(slotIn);
+	public int getDurabilityForType(ArmorItem.Type typeIn) {
+		return clone.getDurabilityForType(typeIn);
 	}
 
 	@Override
-	public int getDefenseForSlot(EquipmentSlot slotIn) {
+	public int getDefenseForType(ArmorItem.Type typeIn) {
 		// Leather 1, 2, 3, 1
 		// Chain: 1, 4, 5, 2 
 		// RML : 2, 4, 5, 2
 		// Iron: 2, 5, 6, 2
 		if (this.clone == ArmorMaterials.LEATHER) {
-			if (slotIn == EquipmentSlot.HEAD) {
+			if (typeIn == ArmorItem.Type.HELMET) {
 				return 2;
 			}
-			if (slotIn == EquipmentSlot.CHEST) {
+			if (typeIn == ArmorItem.Type.CHESTPLATE) {
 				return 5;
 			}
-			if (slotIn == EquipmentSlot.LEGS) {
+			if (typeIn == ArmorItem.Type.LEGGINGS) {
 				return 5;
 			}
-			if (slotIn == EquipmentSlot.FEET) {
+			if (typeIn == ArmorItem.Type.BOOTS) {
 				return 2;
 			}
 		}
-		return clone.getDefenseForSlot(slotIn);
+		return clone.getDefenseForType(typeIn);
 	}
 
 	@Override
